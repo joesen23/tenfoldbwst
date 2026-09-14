@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=1280"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Tenfold Legends</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;700&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+
+/* ── BG ── */
+.bg{
+  position:fixed;inset:0;z-index:0;
+  background:url('background.png') center center/cover no-repeat;
+}
+.bg-dark{
+  position:fixed;inset:0;z-index:1;
+  background:linear-gradient(
+    180deg,
+    rgba(0,0,0,0.55) 0%,
+    rgba(0,0,0,0.30) 40%,
+    rgba(0,0,0,0.70) 80%,
+    rgba(0,0,0,0.92) 100%
+  );
+}
+
+/* ── PARTICLES ── */
+.ptc{position:fixed;inset:0;z-index:2;pointer-events:none;}
+.p{
+  position:absolute;bottom:-10px;border-radius:50%;opacity:0;
+  animation:ptcRise linear infinite;
+}
+@keyframes ptcRise{
+  0%  {opacity:0;  transform:translateY(0) translateX(0);}
+  15% {opacity:0.9;}
+  85% {opacity:0.3;}
+  100%{opacity:0;  transform:translateY(-105vh) translateX(var(--dx,0px));}
+}
+
+/* ── CONTENT ── */
+.wrap{
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:20px;
+  gap:0;
+}
+
+/* ── LOGO ── */
+.logo-tenfold{
+  font-family:'Cinzel',serif;
+  font-size:clamp(3.8rem,12vw,8rem);
+  font-weight:900;
+  letter-spacing:clamp(4px,2vw,12px);
+  line-height:1;
+  background:linear-gradient(135deg,#9a6200 0%,#f0c040 30%,#fffbe0 55%,#f0c040 75%,#9a6200 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:glow 2.4s ease-in-out infinite;
+  text-align:center;
+}
+@keyframes glow{
+  0%,100%{filter:drop-shadow(0 0 18px rgba(240,192,64,.6)) drop-shadow(0 4px 8px rgba(0,0,0,1));}
+  50%    {filter:drop-shadow(0 0 50px rgba(240,192,64,1))  drop-shadow(0 4px 8px rgba(0,0,0,1));}
+}
+
+.logo-legends{
+  font-family:'Cinzel',serif;
+  font-size:clamp(.9rem,3vw,1.55rem);
+  font-weight:700;
+  color:#fff;
+  letter-spacing:clamp(8px,3vw,16px);
+  text-shadow:0 2px 12px #000, 0 0 28px #000;
+  margin-top:6px;
+  text-align:center;
+}
+
+.logo-sub{
+  font-family:'Cinzel',serif;
+  font-size:clamp(.58rem,1.8vw,.82rem);
+  color:#d4a830;
+  letter-spacing:clamp(3px,1.5vw,7px);
+  text-shadow:0 1px 8px #000;
+  margin-top:8px;
+  text-align:center;
+}
+
+/* ── DIVIDER ── */
+.divider{
+  width:min(320px,75vw);height:1px;
+  background:linear-gradient(90deg,transparent,rgba(240,192,64,.8),transparent);
+  margin:22px 0 20px;
+}
+
+/* ── SWORD ── */
+.sword{
+  font-size:clamp(1.8rem,5vw,2.8rem);
+  animation:swAnim 3s ease-in-out infinite;
+  filter:drop-shadow(0 0 14px rgba(240,192,64,.9));
+  margin-bottom:20px;
+}
+@keyframes swAnim{
+  0%,100%{transform:rotate(-12deg) scale(1);}
+  25%    {transform:rotate(0deg)   scale(1.12);}
+  50%    {transform:rotate(12deg)  scale(1);}
+  75%    {transform:rotate(0deg)   scale(1.12);}
+}
+
+/* ── PROGRESS ── */
+.prog-wrap{width:min(400px,82vw);margin-bottom:16px;}
+.prog-top{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:8px;
+}
+.prog-label{
+  font-family:'Rajdhani',sans-serif;
+  font-size:clamp(.65rem,2vw,.78rem);
+  font-weight:700;
+  color:#b0a070;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  text-shadow:0 1px 6px #000;
+}
+.prog-pct{
+  font-family:'Cinzel',serif;
+  font-size:clamp(.75rem,2.2vw,.9rem);
+  font-weight:700;
+  color:#f0c040;
+  text-shadow:0 0 12px rgba(240,192,64,.8),0 1px 6px #000;
+}
+.prog-track{
+  width:100%;height:8px;
+  background:rgba(255,255,255,.07);
+  border-radius:4px;
+  border:1px solid rgba(240,192,64,.18);
+  overflow:hidden;
+}
+.prog-fill{
+  height:100%;width:0%;border-radius:4px;
+  background:linear-gradient(90deg,#7a4a00,#f0c040,#fffbe0,#f0c040,#7a4a00);
+  background-size:250% 100%;
+  animation:shimmer 1.4s linear infinite;
+  transition:width .3s ease;
+  box-shadow:0 0 10px rgba(240,192,64,.6);
+}
+@keyframes shimmer{
+  0%  {background-position:150% 0;}
+  100%{background-position:-150% 0;}
+}
+
+/* ── STATUS ── */
+.status{
+  font-family:'Rajdhani',sans-serif;
+  font-size:clamp(.72rem,2.2vw,.88rem);
+  font-weight:600;
+  color:#9090b8;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  text-shadow:0 1px 6px #000;
+  min-height:1.4em;
+  text-align:center;
+  animation:blink 2s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.45;}}
+
+/* ── FADE OUT ── */
+@keyframes fadeOut{to{opacity:0;}}
+.fading{animation:fadeOut .85s ease forwards;}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="bg-dark"></div>
+<div class="ptc" id="ptc"></div>
+
+<div class="wrap">
+  <div class="logo-tenfold">TENFOLD</div>
+  <div class="logo-legends">LEGENDS</div>
+  <div class="logo-sub">✦ &nbsp; RISE &nbsp; OF &nbsp; THE &nbsp; TEN &nbsp; ✦</div>
+
+  <div class="divider"></div>
+
+  <div class="sword">⚔</div>
+
+  <div class="prog-wrap">
+    <div class="prog-top">
+      <span class="prog-label">Loading</span>
+      <span class="prog-pct" id="pct">0%</span>
+    </div>
+    <div class="prog-track">
+      <div class="prog-fill" id="fill"></div>
+    </div>
+  </div>
+
+  <div class="status" id="status">Awakening legends…</div>
+</div>
+
+<script>
+// ── PARTICLES ──────────────────────────────────────────────
+(function(){
+  const c = document.getElementById('ptc');
+  const colors = ['#f0c040','#ff6a00','#00cfff','#cc66ff','#88ffcc','#ffffff'];
+  const count = 55;
+  for(let i=0;i<count;i++){
+    const el  = document.createElement('div');
+    el.className='p';
+    const sz  = 1.5+Math.random()*3.5;
+    const dur = 5+Math.random()*10;
+    const del = Math.random()*12;
+    const dx  = (Math.random()-.5)*130;
+    el.style.cssText=`
+      left:${Math.random()*100}%;
+      width:${sz}px;height:${sz}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${dur}s;
+      animation-delay:-${del}s;
+      --dx:${dx}px;
+    `;
+    c.appendChild(el);
+  }
+})();
+
+// ── PROGRESS ───────────────────────────────────────────────
+const fill   = document.getElementById('fill');
+const pct    = document.getElementById('pct');
+const status = document.getElementById('status');
+
+const MSGS = [
+  'Awakening legends…',
+  'Forging weapons…',
+  'Summoning warriors…',
+  'Igniting the flames…',
+  'Preparing the arena…',
+  'Rise of the Ten begins…',
+];
+
+let val   = 0;
+let mIdx  = 0;
+const DUR = 3000; // ms
+const INT = 35;
+const INC = 100/(DUR/INT);
+
+const t = setInterval(()=>{
+  val = Math.min(100, val + INC*(0.85+Math.random()*.5));
+  fill.style.width    = val+'%';
+  pct.textContent     = Math.floor(val)+'%';
+
+  const nIdx = Math.min(MSGS.length-1, Math.floor((val/100)*MSGS.length));
+  if(nIdx!==mIdx){ mIdx=nIdx; status.textContent=MSGS[mIdx]; }
+
+  if(val>=100){
+    clearInterval(t);
+    fill.style.width='100%';
+    pct.textContent='100%';
+    status.textContent='Enter the arena…';
+    setTimeout(()=>{
+      document.body.classList.add('fading');
+      setTimeout(()=>{ window.location.href='index.html'; },900);
+    },600);
+  }
+},INT);
+</script>
+</body>
+</html>
