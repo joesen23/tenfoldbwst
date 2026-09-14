@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <link rel="manifest" href="manifest.json"/>
   <title>Tenfold Legends: Rise of the Ten</title>
   <link rel="stylesheet" href="style.css"/>
@@ -126,6 +126,11 @@
     .hero-icon-bubble:hover { transform: scale(1.15); }
 
   </style>
+<script>
+(function(){
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); } catch(e) {}
+})();
+</script>
 </head>
 <body>
 <div class="login-bg-animated"></div>
