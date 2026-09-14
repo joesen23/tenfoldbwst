@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=1280"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Battle Arena — Tenfold Legends</title>
+<script>
+(function(){
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(function(){});
+  }
+})();
+</script>
+<link rel="stylesheet" href="style.css"/>
+<style>
+/* ── PAGE ── */
+html,body{margin:0;padding:0;overflow:hidden;height:100%;background:#050510;}
+.arena-page{display:flex;flex-direction:column;height:100vh;position:relative;}
+/* Prevent iOS bounce / double-tap zoom in game */
+html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+/* ── ROLL OVERLAY ── */
+#roll-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.96);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  z-index:9999;
+}
+.roll-title{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:#f0c040;letter-spacing:6px;}
+.roll-subtitle{font-size:.85rem;color:#8888aa;letter-spacing:3px;}
+.roll-fighters{display:flex;align-items:center;gap:40px;margin:10px 0;}
+
+/* Roll card */
+.roll-card{
+  width:160px;height:230px;border-radius:14px;
+  border:2px solid rgba(240,192,64,.3);
+  background:#0c0c1e;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+}
+.roll-portrait{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  object-fit:cover;object-position:top center;display:block;
+}
+.roll-card-overlay{
+  position:relative;z-index:2;width:100%;
+  background:linear-gradient(0deg,rgba(0,0,0,.95) 0%,rgba(0,0,0,.6) 60%,transparent 100%);
+  padding:30px 8px 12px;text-align:center;
+}
+.roll-card-emoji{font-size:2rem;display:block;margin-bottom:3px;}
+.roll-card-name{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;color:#f0c040;letter-spacing:1px;}
+.roll-card-sub{font-size:.68rem;color:#8888aa;margin-top:3px;}
+
+@keyframes rollSpin{
+  0%{border-color:rgba(240,192,64,.1);}
+  50%{border-color:#f0c040;box-shadow:0 0 28px rgba(240,192,64,.5);}
+  100%{border-color:rgba(240,192,64,.1);}
+}
+.roll-card.spinning{animation:rollSpin .09s linear infinite;}
+.roll-card.settled{border-color:#f0c040;box-shadow:0 0 36px rgba(240,192,64,.55);animation:none;}
+
+.roll-vs{font-family:'Cinzel',serif;font-size:3rem;font-weight:900;color:#e94560;text-shadow:0 0 26px rgba(233,69,96,.8);}
+
+.roll-map-wrap{text-align:center;}
+.roll-map-label{font-size:.72rem;color:#8888aa;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.roll-map-name{font-family:'Cinzel',serif;font-size:1.2rem;color:#f0c040;}
+@keyframes mapSpin{0%{opacity:.2;}50%{opacity:1;}100%{opacity:.2;}}
+.roll-map-name.spinning{animation:mapSpin .1s linear infinite;}
+
+#roll-start-btn{
+  margin-top:8px;padding:14px 40px;
+  background:linear-gradient(135deg,#c8960c,#f0c040,#c8960c);
+  color:#1a1000;font-family:'Cinzel',serif;font-weight:900;
+  font-size:1rem;letter-spacing:3px;border:none;border-radius:8px;
+  cursor:pointer;display:none;
+  transition:transform .15s,box-shadow .15s;
+}
+#roll-start-btn:hover{transform:scale(1.05);box-shadow:0 0 28px rgba(240,192,64,.6);}
+
+/* ── STAGE ── */
+.arena-stage{position:relative;flex:1;min-height:0;overflow:hidden;}
+.arena-bg{position:absolute;inset:0;background-size:cover;background-position:center;}
+.arena-bg-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.05) 40%,rgba(0,0,0,.05) 60%,rgba(0,0,0,.6) 100%);}
+.map-tag{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);border:1px solid rgba(240,192,64,.35);border-radius:20px;padding:4px 18px;font-family:'Cinzel',serif;font-size:.78rem;color:#f0c040;letter-spacing:2px;z-index:10;}
+
+/* ── FIGHTERS ── */
+.fighters-row{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:space-between;padding:0 60px 20px;pointer-events:none;}
+.fighter{position:relative;display:flex;flex-direction:column;align-items:center;}
+.fighter-sprite-wrap{position:relative;width:240px;height:300px;}
+/* Facing direction is handled per-hero in JS via facesRight flag — no static override here */
+.fighter-sprite{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  object-fit:contain;object-position:bottom center;
+  filter:drop-shadow(0 8px 30px rgba(0,0,0,.95));display:block;
+}
+.fighter-sprite-fallback{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:7rem;filter:drop-shadow(0 6px 24px rgba(0,0,0,.9));
+}
+
+/* Shake applied to the wrap so it never conflicts with the sprite's scaleX flip */
+@keyframes hitShake{0%{transform:translateX(0);}20%{transform:translateX(-16px);}40%{transform:translateX(16px);}60%{transform:translateX(-8px);}80%{transform:translateX(8px);}100%{transform:translateX(0);}}
+.fighter-sprite-wrap.shake{animation:hitShake .35s ease;}
+
+@keyframes dieFade{to{opacity:0;filter:grayscale(1) brightness(.2);}}
+.fighter.player .fighter-sprite.dead{animation:dieFade 1.1s ease forwards;}
+.fighter.enemy  .fighter-sprite.dead{animation:dieFade 1.1s ease forwards;}
+
+@keyframes burnGlow{0%,100%{filter:drop-shadow(0 0 10px #ff4500);}50%{filter:drop-shadow(0 0 28px #ff4500) brightness(1.1);}}
+@keyframes iceGlow{0%,100%{filter:brightness(.75) hue-rotate(185deg) drop-shadow(0 0 12px #00cfff);}50%{filter:brightness(.85) hue-rotate(185deg) drop-shadow(0 0 28px #00cfff);}}
+.fighter-sprite.burning{animation:burnGlow .6s ease-in-out infinite;}
+.fighter-sprite.frozen{animation:iceGlow .8s ease-in-out infinite;}
+
+.frozen-overlay{position:absolute;inset:0;background:rgba(0,207,255,.18);border:2px solid rgba(0,207,255,.6);border-radius:8px;pointer-events:none;display:none;}
+.frozen-overlay.active{display:block;}
+
+/* ── SKILL FX ── */
+.skill-fx{position:absolute;pointer-events:none;z-index:60;width:220px;height:220px;}
+.skill-fx img{width:100%;height:100%;object-fit:contain;}
+@keyframes impactPop{0%{transform:translate(-50%,-50%) scale(.1);opacity:1;}55%{transform:translate(-50%,-50%) scale(2.4);opacity:.9;}100%{transform:translate(-50%,-50%) scale(3);opacity:0;}}
+.impact-burst{position:absolute;pointer-events:none;z-index:65;width:130px;height:130px;border-radius:50%;animation:impactPop .45s ease-out forwards;transform:translate(-50%,-50%);}
+@keyframes dmgPop{0%{transform:translateX(-50%) translateY(0) scale(.5);opacity:1;}30%{transform:translateX(-50%) translateY(-40px) scale(1.4);}100%{transform:translateX(-50%) translateY(-100px) scale(.9);opacity:0;}}
+.dmg-num{position:absolute;pointer-events:none;z-index:70;font-family:'Cinzel',serif;font-weight:900;font-size:2.6rem;text-shadow:0 2px 10px #000;animation:dmgPop 1.2s ease-out forwards;white-space:nowrap;left:50%;top:20%;}
+.dmg-num.crit{font-size:3.2rem;color:#ffdd00!important;}
+.dmg-num.heal{color:#44ff99!important;}
+
+/* ── HUD ── */
+.hud-top{position:absolute;top:0;left:0;right:0;display:flex;flex-direction:column;align-items:stretch;padding:10px 14px;z-index:20;gap:4px;pointer-events:none;}
+.hud-top > div:last-child{display:flex;gap:6px;pointer-events:all;}
+.hud-box{background:rgba(4,4,12,.9);border:1px solid rgba(240,192,64,.2);border-radius:8px;padding:8px 12px;flex:1;pointer-events:all;}
+.hud-box.enemy-box{text-align:right;}
+.hud-hero-name{font-family:'Cinzel',serif;font-size:.9rem;font-weight:800;color:#f0c040;display:flex;align-items:center;gap:6px;}
+.hud-box.enemy-box .hud-hero-name{justify-content:flex-end;}
+.hud-lv{font-size:.68rem;color:#8888aa;font-family:'Rajdhani',sans-serif;}
+.hud-bars{margin-top:5px;}
+.hud-bar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.hud-bar-label{font-size:.68rem;font-weight:700;color:#8888aa;width:26px;text-transform:uppercase;flex-shrink:0;}
+.hud-bar-track{flex:1;height:9px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;}
+.hud-bar-fill{height:100%;border-radius:4px;transition:width .35s;}
+.bar-hp{background:linear-gradient(90deg,#aa0000,#ff4444,#ff9999);}
+.bar-mana{background:linear-gradient(90deg,#003399,#0077ff,#66bbff);}
+.hud-bar-val{font-size:.72rem;font-weight:700;color:#e8e0d0;min-width:66px;text-align:right;}
+.hud-box.enemy-box .hud-bar-row{flex-direction:row-reverse;}
+.hud-box.enemy-box .hud-bar-val{text-align:left;}
+.hud-box.your-turn{border-color:rgba(240,192,64,.7);box-shadow:0 0 18px rgba(240,192,64,.35);}
+.hud-box.enemy-turn{border-color:rgba(233,69,96,.7);box-shadow:0 0 18px rgba(233,69,96,.35);}
+.hud-vs{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;padding:2px 0;}
+.vs-text{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:900;color:#e94560;text-shadow:0 0 18px rgba(233,69,96,.7);line-height:1;}
+.turn-text{font-size:.68rem;color:#8888aa;letter-spacing:2px;text-transform:uppercase;}
+.status-badges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
+.status-badge{font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:12px;border:1px solid currentColor;}
+.sb-burn{color:#ff4500;background:rgba(255,69,0,.12);}
+.sb-freeze{color:#00cfff;background:rgba(0,207,255,.12);}
+.sb-paralyzed{color:#ffe600;background:rgba(255,230,0,.12);}
+.sb-guard{color:#c0c0c0;background:rgba(192,192,192,.12);}
+
+/* ── CONTROLS ── */
+.controls-wrap{flex-shrink:0;background:rgba(4,4,12,.97);border-top:1px solid rgba(240,192,64,.2);padding:10px 16px;display:flex;align-items:center;gap:14px;z-index:30;}
+.skills-wrap{display:flex;gap:10px;align-items:flex-start;}
+.skill-slot{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.skill-slot-label{font-size:.6rem;color:#8888aa;letter-spacing:1px;text-transform:uppercase;}
+
+.skill-btn{
+  position:relative;width:76px;height:76px;border-radius:10px;
+  border:2px solid rgba(240,192,64,.3);cursor:pointer;
+  overflow:hidden;background:rgba(0,0,0,.7);padding:0;flex-shrink:0;
+  transition:all .18s;
+}
+.skill-btn:hover:not(:disabled){border-color:#f0c040;box-shadow:0 0 20px rgba(240,192,64,.5);transform:scale(1.08);}
+.skill-btn:disabled{opacity:.35;cursor:not-allowed;}
+.skill-btn.basic-s{border-color:rgba(160,160,160,.45);}
+.skill-btn.special-s{border-color:rgba(60,130,255,.55);}
+.skill-btn.ultimate-s{border-color:rgba(240,192,64,.7);box-shadow:0 0 12px rgba(240,192,64,.2);}
+.skill-btn.story-locked{border-color:rgba(255,255,255,.12)!important;box-shadow:none!important;filter:grayscale(1) brightness(.55);cursor:not-allowed;}
+.skill-lock-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:8px;z-index:7;pointer-events:none;}
+.skill-lock-overlay span{font-size:1.3rem;line-height:1;}
+.skill-lock-overlay small{font-size:.45rem;color:#ffcc55;font-weight:700;letter-spacing:.5px;text-align:center;line-height:1.3;padding:0 4px;}
+
+/* Icon fills entire button */
+.skill-btn .sk-icon{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1;}
+/* Fallback shown when no icon */
+.skill-btn-fb{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:1.6rem;z-index:1;}
+.skill-btn-fb small{font-size:.55rem;color:#f0c040;font-weight:700;}
+/* Overlays sit above icon */
+.skill-cd-overlay{position:absolute;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;color:#fff;border-radius:8px;z-index:5;}
+.skill-key-hint{position:absolute;bottom:2px;right:4px;font-size:.62rem;font-weight:900;color:#f0c040;text-shadow:0 1px 3px #000;z-index:6;}
+.skill-mana-cost{position:absolute;top:2px;left:4px;font-size:.6rem;font-weight:700;color:#66ccff;text-shadow:0 1px 3px #000;z-index:6;}
+.skill-name-tag{font-size:.58rem;color:rgba(255,255,255,.55);text-align:center;max-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+
+.ctrl-divider{width:1px;height:62px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.battle-log{flex:1;max-width:380px;min-width:180px;height:76px;overflow-y:auto;padding:5px 10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:6px;font-size:.76rem;line-height:1.6;}
+.battle-log p{margin:0;}
+.battle-log .lp{color:#f0c040;}
+.battle-log .le{color:#ff8888;}
+.battle-log .ls{color:#8888aa;font-style:italic;}
+.battle-log .lh{color:#44ff99;}
+.action-area{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+#btn-attack{padding:10px 22px;font-size:.9rem;letter-spacing:2px;}
+.btn-flee{padding:6px 18px;font-size:.78rem;background:transparent;border:1px solid rgba(255,255,255,.1);color:#8888aa;cursor:pointer;border-radius:4px;transition:all .2s;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.btn-flee:hover{border-color:#e94560;color:#e94560;}
+
+/* ── RESULT OVERLAY ── */
+#result-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.92);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:9998;opacity:0;pointer-events:none;transition:opacity .5s;
+}
+#result-overlay.show{opacity:1;pointer-events:all;}
+@keyframes resultIn{from{transform:scale(.6) translateY(-30px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+.result-box{animation:resultIn .5s cubic-bezier(.3,1.5,.5,1) forwards;text-align:center;}
+.result-label{font-family:'Cinzel',serif;font-size:6rem;font-weight:900;line-height:1;letter-spacing:10px;}
+.result-label.win{background:linear-gradient(135deg,#a06800,#f0c040,#fff8dc,#f0c040,#a06800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-label.lose{background:linear-gradient(135deg,#600000,#e94560,#ff9090);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-sub{font-family:'Cinzel',serif;font-size:1rem;color:#8888aa;letter-spacing:5px;margin:6px 0 16px;}
+.result-pts{font-family:'Cinzel',serif;font-size:1.5rem;color:#f0c040;margin-bottom:8px;}
+.result-pts span{font-size:2.5rem;}
+.result-hero-info{font-size:.85rem;color:#8888aa;margin-bottom:26px;letter-spacing:1px;}
+.result-btns{display:flex;gap:14px;justify-content:center;}
+.rbtn{padding:12px 28px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:2px;font-size:.9rem;border:none;border-radius:6px;cursor:pointer;transition:all .2s;}
+.rbtn.gold{background:linear-gradient(135deg,#c8960c,#f0c040);color:#1a1000;}
+.rbtn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#e8e0d0;}
+.rbtn:hover{transform:translateY(-2px);}
+
+@keyframes lvlUp{0%{opacity:0;transform:translateX(-50%) scale(.5);}60%{opacity:1;transform:translateX(-50%) scale(1.2) translateY(-8px);}100%{opacity:0;transform:translateX(-50%) scale(1) translateY(-55px);}}
+.lvl-up-notif{position:absolute;bottom:290px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:1.3rem;color:#f0c040;text-shadow:0 0 20px #f0c040;white-space:nowrap;pointer-events:none;z-index:80;animation:lvlUp 1.8s ease forwards;}
+
+/* ══ MOBILE OVERRIDES ══════════════════════════════════════ */
+
+/* ── ROLL OVERLAY — mobile ── */
+@media (max-width: 600px) {
+  #roll-overlay { gap: 12px; padding: 20px 14px; justify-content: flex-start; padding-top: 40px; overflow-y: auto; }
+  .roll-title { font-size: 1.2rem; letter-spacing: 3px; }
+  .roll-subtitle { font-size: 0.75rem; letter-spacing: 2px; }
+  .roll-fighters { gap: 16px; }
+  .roll-card { width: 120px; height: 175px; border-radius: 10px; }
+  .roll-vs { font-size: 2rem; }
+  .roll-card-name { font-size: 0.82rem; }
+  .roll-card-sub  { font-size: 0.6rem; }
+  .roll-map-name  { font-size: 1rem; }
+  #roll-start-btn { padding: 12px 28px; font-size: 0.88rem; letter-spacing: 2px; margin-top: 4px; }
+}
+
+@media (max-width: 400px) {
+  .roll-card { width: 100px; height: 148px; }
+  .roll-fighters { gap: 10px; }
+  .roll-vs { font-size: 1.6rem; }
+}
+
+/* ── HUD — mobile: stack into 2-row layout ── */
+@media (max-width: 700px) {
+  .hud-top {
+    flex-direction: column;
+    gap: 0;
+    padding: 6px 8px 4px;
+  }
+  /* Row 1: player box left, enemy box right, side by side */
+  .hud-top { flex-wrap: wrap; }
+  .hud-box      { min-width: 0; flex: 1; padding: 5px 8px; border-radius: 6px; }
+  .hud-box.enemy-box { text-align: right; }
+  .hud-vs       { order: -1; width: 100%; flex-direction: row;
+                  justify-content: center; gap: 8px; padding: 0 0 4px; }
+  .vs-text      { font-size: 1.1rem; }
+  .turn-text    { font-size: 0.6rem; letter-spacing: 1px; }
+  .hud-hero-name{ font-size: 0.75rem; }
+  .hud-lv       { font-size: 0.6rem; }
+  .hud-bar-row  { margin-bottom: 2px; }
+  .hud-bar-track{ height: 7px; }
+  .hud-bar-val  { font-size: 0.62rem; min-width: 52px; }
+  .hud-bar-label{ font-size: 0.6rem; width: 22px; }
+  .status-badges{ gap: 3px; margin-top: 2px; }
+  .status-badge { font-size: 0.55rem; padding: 1px 4px; }
+}
+
+/* ── FIGHTERS — shrink sprites on mobile ── */
+@media (max-width: 700px) {
+  .fighters-row { padding: 0 16px 10px; }
+  .fighter-sprite-wrap { width: 160px; height: 200px; }
+}
+@media (max-width: 480px) {
+  .fighters-row { padding: 0 6px 8px; }
+  .fighter-sprite-wrap { width: 120px; height: 155px; }
+  .map-tag { font-size: 0.65rem; padding: 3px 12px; top: 8px; }
+  .dmg-num { font-size: 1.8rem; }
+  .dmg-num.crit { font-size: 2.2rem; }
+}
+
+/* ── CONTROLS — mobile: 2-row layout ── */
+@media (max-width: 700px) {
+  .controls-wrap {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  /* Row 1: skill buttons fill the width */
+  .skills-wrap {
+    order: 1;
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+  }
+  /* Row 2: log + action buttons side by side */
+  .battle-log {
+    order: 2;
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    height: 58px;
+    font-size: 0.7rem;
+  }
+  .action-area {
+    order: 2;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+  }
+  #btn-attack { padding: 8px 14px; font-size: 0.8rem; letter-spacing: 1px; }
+  .btn-flee   { padding: 8px 12px; font-size: 0.72rem; }
+  .ctrl-divider { display: none; }
+
+  /* Skill buttons: larger touch target, equal size */
+  .skill-btn { width: 68px; height: 68px; }
+  .skill-slot-label { font-size: 0.55rem; }
+  .skill-name-tag   { font-size: 0.52rem; max-width: 68px; }
+  .skill-key-hint   { font-size: 0.55rem; }
+  .skill-mana-cost  { font-size: 0.52rem; }
+  .skill-cd-overlay { font-size: 1.4rem; }
+}
+
+@media (max-width: 420px) {
+  .skill-btn { width: 60px; height: 60px; border-radius: 8px; }
+  .skills-wrap { gap: 6px; }
+  #btn-attack { padding: 7px 10px; font-size: 0.75rem; }
+  .battle-log { height: 52px; font-size: 0.65rem; }
+  .controls-wrap { padding: 6px 8px; }
+}
+
+/* ── RESULT OVERLAY — mobile ── */
+@media (max-width: 600px) {
+  .result-label   { font-size: 3.5rem; letter-spacing: 5px; }
+  .result-sub     { font-size: 0.82rem; letter-spacing: 2px; }
+  .result-pts     { font-size: 1.1rem; }
+  .result-pts span{ font-size: 1.8rem; }
+  .result-hero-info { font-size: 0.75rem; }
+  .result-btns    { flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .rbtn           { padding: 10px 18px; font-size: 0.82rem; }
+}
+
+@media (max-width: 400px) {
+  .result-label   { font-size: 2.8rem; letter-spacing: 3px; }
+  .rbtn           { padding: 9px 14px; font-size: 0.78rem; flex: 1; min-width: 120px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ ROTATE PROMPT (mobile portrait only) ══ -->
+<div class="rotate-prompt" id="rotate-prompt">
+  <div class="rotate-icon">📱</div>
+  <div class="rotate-title">ROTATE YOUR DEVICE</div>
+  <div class="rotate-sub">Tenfold Legends Battle Arena plays best in <strong style="color:var(--gold);">landscape mode</strong>. Please rotate your phone to continue.</div>
+</div>
+
+<!-- ══ ROLL OVERLAY (fixed, outside arena-page) ══ -->
+<div id="roll-overlay">
+  <div class="roll-title">⚔ BATTLE ARENA</div>
+  <div class="roll-subtitle" id="roll-status">ROLLING COMBATANTS &amp; MAP…</div>
+
+  <div class="roll-fighters">
+    <!-- Player card -->
+    <div class="roll-card spinning" id="roll-player">
+      <img class="roll-portrait" id="roll-p-img" src="" alt=""/>
+      <div class="roll-card-overlay">
+        <span id="roll-p-emoji" class="roll-card-emoji"></span>
+        <div  id="roll-p-name"  class="roll-card-name">???</div>
+        <div  id="roll-p-sub"   class="roll-card-sub"></div>
+      </div>
+    </div>
+
+    <div class="roll-vs">VS</div>
+
+    <!-- Enemy card -->
+    <div class="roll-card spinning" id="roll-enemy">
+      <img class="roll-portrait" id="roll-e-img" src="" alt=""/>
+      <div class="roll-card-overlay">
+        <span id="roll-e-emoji" class="roll-card-emoji"></span>
+        <div  id="roll-e-name"  class="roll-card-name">???</div>
+        <div  id="roll-e-sub"   class="roll-card-sub"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="roll-map-wrap">
+    <div class="roll-map-label">MAP</div>
+    <div class="roll-map-name spinning" id="roll-map">???</div>
+  </div>
+
+  <button id="roll-start-btn" onclick="startBattle()">⚔ FIGHT!</button>
+</div>
+
+<!-- ══ RESULT OVERLAY (fixed, outside arena-page) ══ -->
+<div id="result-overlay">
+  <div class="result-box">
+    <div class="result-label" id="result-label">WIN</div>
+    <div class="result-sub"   id="result-sub">Victory!</div>
+    <div class="result-pts"><span id="result-pts-num">+100</span> POINTS</div>
+    <div class="result-hero-info" id="result-hero-info"></div>
+    <div class="result-btns" id="result-btns">
+      <button class="rbtn gold"  onclick="location.reload()">⚔ PLAY AGAIN</button>
+      <button class="rbtn ghost" onclick="location.href='dashboard.html'">🏠 Dashboard</button>
+      <button class="rbtn ghost" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ARENA PAGE ══ -->
+<div class="arena-page">
+
+  <!-- STAGE -->
+  <div class="arena-stage" id="arena-stage">
+    <div class="arena-bg"         id="arena-bg"></div>
+    <div class="arena-bg-overlay"></div>
+    <div class="map-tag"          id="map-tag">—</div>
+
+    <!-- HUD -->
+    <div class="hud-top">
+      <div class="hud-vs">
+        <div class="vs-text">VS</div>
+        <div class="turn-text" id="turn-text">—</div>
+      </div>
+      <div style="display:flex;gap:6px;width:100%;">
+      <div class="hud-box" id="hud-player">
+        <div class="hud-hero-name" id="hud-p-name">—</div>
+        <div class="status-badges" id="p-status"></div>
+        <div class="hud-bars">
+          <div class="hud-bar-row">
+            <div class="hud-bar-label">HP</div>
+            <div class="hud-bar-track"><div class="hud-bar-fill bar-hp"   id="p-hp-bar"  style="width:100%"></div></div>
+            <div class="hud-bar-val"  id="p-hp-val">—</div>
+          </div>
+          <div class="hud-bar-row">
+            <div class="hud-bar-label">MP</div>
+            <div class="hud-bar-track"><div class="hud-bar-fill bar-mana" id="p-mp-bar"  style="width:100%"></div></div>
+            <div class="hud-bar-val"  id="p-mp-val">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-box enemy-box" id="hud-enemy">
+        <div class="hud-hero-name" id="hud-e-name">—</div>
+        <div class="status-badges" id="e-status" style="justify-content:flex-end;display:flex;"></div>
+        <div class="hud-bars">
+          <div class="hud-bar-row">
+            <div class="hud-bar-label">HP</div>
+            <div class="hud-bar-track"><div class="hud-bar-fill bar-hp"   id="e-hp-bar"  style="width:100%"></div></div>
+            <div class="hud-bar-val"  id="e-hp-val">—</div>
+          </div>
+          <div class="hud-bar-row">
+            <div class="hud-bar-label">MP</div>
+            <div class="hud-bar-track"><div class="hud-bar-fill bar-mana" id="e-mp-bar"  style="width:100%"></div></div>
+            <div class="hud-bar-val"  id="e-mp-val">—</div>
+          </div>
+        </div>
+      </div>
+      </div><!-- /hud row -->
+    </div>
+
+    <!-- FIGHTERS -->
+    <div class="fighters-row">
+      <div class="fighter player" id="fighter-player">
+        <div class="fighter-sprite-wrap" id="p-wrap">
+          <div class="frozen-overlay" id="p-frozen"></div>
+        </div>
+      </div>
+      <div class="fighter enemy" id="fighter-enemy">
+        <div class="fighter-sprite-wrap" id="e-wrap">
+          <div class="frozen-overlay" id="e-frozen"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /arena-stage -->
+
+  <!-- CONTROLS -->
+  <div class="controls-wrap">
+    <div class="skills-wrap">
+      <div class="skill-slot">
+        <div class="skill-slot-label">Basic</div>
+        <button class="skill-btn basic-s" id="btn-basic" onclick="useSkill('basic')">
+          <div class="skill-btn-fb" id="fb-basic"><span>⚔</span><small>BASIC</small></div>
+          <span class="skill-key-hint">Q</span>
+        </button>
+        <div class="skill-name-tag" id="name-basic">—</div>
+      </div>
+      <div class="skill-slot">
+        <div class="skill-slot-label">Special</div>
+        <button class="skill-btn special-s" id="btn-special" onclick="useSkill('special')">
+          <div class="skill-btn-fb" id="fb-special"><span>✨</span><small>SPECIAL</small></div>
+          <span class="skill-mana-cost" id="cost-special">30MP</span>
+          <span class="skill-key-hint">W</span>
+        </button>
+        <div class="skill-name-tag" id="name-special">—</div>
+      </div>
+      <div class="skill-slot">
+        <div class="skill-slot-label">Ultimate</div>
+        <button class="skill-btn ultimate-s" id="btn-ultimate" onclick="useSkill('ultimate')">
+          <div class="skill-btn-fb" id="fb-ultimate"><span>💥</span><small>ULTIMATE</small></div>
+          <span class="skill-mana-cost" id="cost-ultimate">80MP</span>
+          <span class="skill-key-hint">E</span>
+        </button>
+        <div class="skill-name-tag" id="name-ultimate">—</div>
+      </div>
+    </div>
+    <div class="ctrl-divider"></div>
+    <div class="battle-log" id="battle-log"><p class="ls">Waiting for battle…</p></div>
+    <div class="ctrl-divider"></div>
+    <div class="action-area">
+      <button class="btn btn-gold" id="btn-attack" onclick="useAttack()">⚔ ATTACK [Q]</button>
+      <button class="btn-flee"     onclick="fleeBattle()">↩ Flee</button>
+    </div>
+  </div>
+
+</div><!-- /arena-page -->
+
+<script src="game.js"></script>
+<script>
+'use strict';
+
+// ── MOBILE VIEWPORT HEIGHT FIX (iOS Safari address bar) ──────
+function setVh() {
+  document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+}
+setVh();
+window.addEventListener('resize', setVh);
+// Apply to arena-page height via inline style when needed
+document.addEventListener('DOMContentLoaded', () => {
+  const page = document.querySelector('.arena-page');
+  if (page) page.style.height = 'calc(var(--vh, 1vh) * 100)';
+});
+
+// ── PORTRAIT LOCK (battle page — blocking) ────────────────────
+(function() {
+  const prompt = document.getElementById('rotate-prompt');
+  if (!prompt) return;
+
+  function isMobile() {
+    return window.innerWidth <= 900 || 'ontouchstart' in window;
+  }
+  function isPortrait() {
+    if (screen.orientation && screen.orientation.type) {
+      return screen.orientation.type.startsWith('portrait');
+    }
+    return window.innerHeight > window.innerWidth;
+  }
+  function checkOrientation() {
+    if (isMobile() && isPortrait()) {
+      prompt.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    } else {
+      prompt.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Fire immediately — no delay, no portrait flash
+  checkOrientation();
+  window.addEventListener('resize', checkOrientation);
+  window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 150));
+  if (screen.orientation) {
+    screen.orientation.addEventListener('change', () => setTimeout(checkOrientation, 150));
+  }
+})();
+
+// ── AUTO LOGIN (no redirect on file://) ──────────────────────
+Game.loadUser();
+if (!Game.user) {
+  Game.login({ userID:'demo', username:'Player', totalScore:0, sessionID:'local' });
+}
+const user = Game.user;
+
+// ── ENSURE HERO SELECTED ─────────────────────────────────────
+(function() {
+  let h = Game.getSelectedHero();
+  if (!h || !HEROES[h]) {
+    Game.selectHero('aeron');
+  }
+})();
+
+
+
+// ── MAPS ─────────────────────────────────────────────────────
+const MAPS = [
+  { name:'Flame Sanctum',    bg:'Sprite/Aeron/1background.png' },
+  { name:'Ashen Wasteland',  bg:'Sprite/Aeron/2background.png' },
+  { name:'Inferno Forge',    bg:'Sprite/Aeron/3background.png' },
+  { name:'Phoenix Crater',   bg:'Sprite/Aeron/4background.png' },
+  { name:'Frozen Tundra',    bg:'Sprite/Lyra/background1.png'  },
+  { name:'Crystal Glacier',  bg:'Sprite/Lyra/background2.png'  },
+  { name:'Frostbite Valley', bg:'Sprite/Lyra/background3.png'  },
+  { name:'Thunder Plains',   bg:'Sprite/Kael/background1.png'  },
+  { name:'Storm Peak',       bg:'Sprite/Kael/background2.png'  },
+  { name:'Crumbled Canyon',  bg:'Sprite/Riven/background1.png' },
+  { name:'Earthen Ruins',    bg:'Sprite/Riven/background2.png' },
+  { name:'Moonlit Shrine',   bg:'Sprite/Selene/background1.png'},
+  { name:'Celestial Peaks',  bg:'Sprite/Selene/background2.png'},
+  { name:'Starfall Glade',   bg:'Sprite/Selene/background3.png'},
+  { name:'Shadow Alley',     bg:'Sprite/Draven/background1.png'},
+  { name:'Crimson District', bg:'Sprite/Draven/background2.png'},
+  { name:'Dark Sanctum',     bg:'Sprite/Draven/background3.png'},
+  { name:'Phantom Ridge',    bg:'Sprite/Draven/background4.png'},
+  { name:'Night Citadel',    bg:'Sprite/Draven/background5.png'},
+  { name:'Coral Depths',     bg:'Sprite/Mira/background1.png'  },
+  { name:'Tidal Cavern',     bg:'Sprite/Mira/background2.png'  },
+  { name:'Sunken Temple',    bg:'Sprite/Mira/background3.png'  },
+  { name:'Ocean Abyss',      bg:'Sprite/Mira/background4.png'  },
+  { name:'Stormy Shores',    bg:'Sprite/Mira/background5.png'  },
+  { name:'Iron Fortress',    bg:'Sprite/Brutus/background1.png'},
+  { name:'Steel Ramparts',   bg:'Sprite/Brutus/background2.png'},
+  { name:'Siege Grounds',    bg:'Sprite/Brutus/background3.png'},
+  { name:'War Throne',       bg:'Sprite/Brutus/background4.png'},
+  { name:'Gale Peak',        bg:'Sprite/Orion/background1.png' },
+  { name:'Stormwind Ridge',  bg:'Sprite/Orion/background2.png' },
+  { name:'Tempest Hollow',   bg:'Sprite/Orion/background3.png' },
+  { name:'Arcane Sanctum',   bg:'Sprite/Elysia/background1.png'},
+  { name:'Celestial Spire',  bg:'Sprite/Elysia/background2.png'},
+  { name:'Starlight Realm',  bg:'Sprite/Elysia/background3.png'},
+];
+
+// ── BATTLE STATE ─────────────────────────────────────────────
+let B = {};
+let rollPlayerHeroId, rollEnemyHeroId, rollMap;
+
+// ── $ HELPER ─────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+// ── ENTITY HELPER — hero or story monster ────────────────────
+function getEntity(id) {
+  return HEROES[id] || STORY_ENEMIES[id] || null;
+}
+
+// ── INIT BATTLE STATE ────────────────────────────────────────
+function initBattleState(pId, eId, mapObj, pLv, eLv) {
+  const pH = getEntity(pId), eH = getEntity(eId);
+  const pS = getScaledStats(pId, pLv), eS = getScaledStats(eId, eLv);
+  B = {
+    mode:    safeSessionStorage.getItem('tenfold_battle_mode')    || 'arena',
+    chapter: +safeSessionStorage.getItem('tenfold_battle_chapter') || 0,
+    stage:   +safeSessionStorage.getItem('tenfold_battle_stage')   || 0,
+    playerHeroId:pId, enemyHeroId:eId, map:mapObj,
+    pHero:pH, pMaxHp:pS.hp, pHp:pS.hp, pMaxMp:100, pMp:100,
+    pAtk:pS.atk, pDef:pS.def, pSpd:pS.spd, pCrit:pS.crit, pLevel:pLv,
+    pBurning:0, pFrozen:0, pParalyzed:0, pGuard:false, pBoost:0,
+    pCD:{basic:0,special:0,ultimate:0},
+    eHero:eH, eMaxHp:eS.hp, eHp:eS.hp, eMaxMp:100, eMp:100,
+    eAtk:eS.atk, eDef:eS.def, eSpd:eS.spd, eCrit:eS.crit, eLevel:eLv,
+    eBurning:0, eFrozen:0, eParalyzed:0, eGuard:false, eBoost:0,
+    eCD:{basic:0,special:0,ultimate:0},
+    turn:'player', over:false, turnCount:0, locked:false,
+  };
+}
+
+// ── SPRITE FLIP HELPER ───────────────────────────────────────
+// Player is on the LEFT  → needs to face RIGHT
+// Enemy  is on the RIGHT → needs to face LEFT
+// facesRight=true  → sprite naturally faces right
+//   player: no flip (scaleX 1)   enemy: flip (scaleX -1)
+// facesRight=false → sprite naturally faces left
+//   player: flip (scaleX -1)     enemy: no flip (scaleX 1)
+function getSpriteFlip(who, heroId, state) {
+  const entity = getEntity(heroId);
+  // Per-sprite flip override (e.g. ash_wolf has inconsistent sprite directions)
+  if (entity && entity.flipStates && state && state in entity.flipStates) {
+    const facesRight = entity.flipStates[state];
+    if (who === 'player') return facesRight ?  1 : -1;
+    else                  return facesRight ? -1 :  1;
+  }
+  const facesRight = entity ? entity.facesRight !== false : true;
+  if (who === 'player') return facesRight ?  1 : -1;
+  else                  return facesRight ? -1 :  1;
+}
+
+// ── BUILD FIGHTER SPRITE ─────────────────────────────────────
+function buildSprite(who, heroId) {
+  const wrapId = who === 'player' ? 'p-wrap' : 'e-wrap';
+  const sprId  = who === 'player' ? 'p-sprite' : 'e-sprite';
+  const wrap   = $(wrapId);
+  const h      = getEntity(heroId);
+  const frozen = wrap.querySelector('.frozen-overlay');
+
+  wrap.querySelectorAll('.fighter-sprite,.fighter-sprite-fallback').forEach(el => el.remove());
+
+  const idleSrc = h.sprites && h.sprites.idle;
+  const flip    = getSpriteFlip(who, heroId, 'idle');
+  if (idleSrc) {
+    const img = document.createElement('img');
+    img.className = 'fighter-sprite';
+    img.id  = sprId;
+    img.alt = h.name;
+    img.src = idleSrc;
+    img.style.transform = `scaleX(${flip})`;
+    img.onerror = () => { img.remove(); addFallback(wrap, who, heroId, h, frozen, sprId); };
+    wrap.insertBefore(img, frozen);
+  } else {
+    addFallback(wrap, who, heroId, h, frozen, sprId);
+  }
+}
+
+function addFallback(wrap, who, heroId, h, frozen, sprId) {
+  const fb = document.createElement('div');
+  fb.className   = 'fighter-sprite-fallback';
+  fb.id          = sprId;
+  fb.textContent = ELEMENT_ICONS[h.element] || '⚔';
+  fb.style.transform = `scaleX(${getSpriteFlip(who, heroId, 'idle')})`;
+  wrap.insertBefore(fb, frozen);
+}
+
+function setSprite(who, state) {
+  const heroId = who === 'player' ? B.playerHeroId : B.enemyHeroId;
+  const h  = getEntity(heroId);
+  const el = $(who === 'player' ? 'p-sprite' : 'e-sprite');
+  if (!el || el.tagName !== 'IMG') return;
+  const src = (h.sprites && h.sprites[state]) || (h.sprites && h.sprites.idle) || '';
+  if (src) {
+    el.src = src;
+    // Re-apply the correct flip per state
+    el.style.transform = `scaleX(${getSpriteFlip(who, heroId, state)})`;
+  }
+}
+
+// ── LOAD SKILL ICONS ─────────────────────────────────────────
+function loadSkillIcons(heroId) {
+  const h = getEntity(heroId);
+  ['basic','special','ultimate'].forEach(type => {
+    const sk   = h.skills[type];
+    const btn  = $(`btn-${type}`);
+    const fb   = $(`fb-${type}`);
+    const ntag = $(`name-${type}`);
+    if (ntag) ntag.textContent = sk.name;
+    if (type !== 'basic') {
+      const c = $(`cost-${type}`);
+      if (c) c.textContent = sk.manaCost + 'MP';
+    }
+    btn.title = `${sk.name} — ${sk.desc}`;
+    btn.querySelectorAll('img.sk-icon').forEach(i => i.remove());
+    if (sk.icon) {
+      const img = document.createElement('img');
+      img.className = 'sk-icon';
+      img.alt = sk.name;
+      img.src = sk.icon;
+      img.onload  = () => { if (fb) fb.style.display = 'none'; };
+      img.onerror = () => { img.remove(); if (fb) fb.style.display = 'flex'; };
+      btn.insertBefore(img, btn.firstChild);
+    }
+  });
+}
+
+// ── HUD ──────────────────────────────────────────────────────
+function renderHUD() {
+  $('hud-p-name').innerHTML = `${B.pHero.name} <span class="hud-lv">Lv ${B.pLevel}</span>`;
+  $('hud-e-name').innerHTML = `${B.eHero.name} <span class="hud-lv">Lv ${B.eLevel}</span>`;
+  updateBar('p-hp-bar','p-hp-val', B.pHp, B.pMaxHp, true);
+  updateBar('p-mp-bar','p-mp-val', B.pMp, B.pMaxMp, false);
+  updateBar('e-hp-bar','e-hp-val', B.eHp, B.eMaxHp, true);
+  updateBar('e-mp-bar','e-mp-val', B.eMp, B.eMaxMp, false);
+  $('hud-player').className = 'hud-box' + (B.turn==='player' ? ' your-turn' : '');
+  $('hud-enemy').className  = 'hud-box enemy-box' + (B.turn==='enemy' ? ' enemy-turn' : '');
+  $('turn-text').textContent = B.turn==='player' ? 'YOUR TURN' : 'ENEMY TURN';
+  renderStatus('p-status', B.pBurning, B.pFrozen, B.pParalyzed, B.pGuard);
+  renderStatus('e-status', B.eBurning, B.eFrozen, B.eParalyzed, B.eGuard);
+  $('p-frozen').className = 'frozen-overlay' + (B.pFrozen > 0 ? ' active' : '');
+  $('e-frozen').className = 'frozen-overlay' + (B.eFrozen > 0 ? ' active' : '');
+  updateSkillBtns();
+}
+
+function updateBar(barId, valId, cur, max, isHp) {
+  const pct = Math.max(0, Math.min(100, cur/max*100));
+  const el  = $(barId); if (!el) return;
+  el.style.width = pct + '%';
+  const vl = $(valId); if (vl) vl.textContent = `${Math.max(0,Math.floor(cur))} / ${max}`;
+  if (isHp) {
+    if (pct < 25)      el.style.background = 'linear-gradient(90deg,#660000,#cc0000,#ff2222)';
+    else if (pct < 50) el.style.background = 'linear-gradient(90deg,#884400,#ee6600,#ffaa44)';
+    else               el.style.background = 'linear-gradient(90deg,#aa0000,#ff4444,#ff9999)';
+  }
+}
+
+function renderStatus(elId, burn, freeze, paralyzed, guard) {
+  const el = $(elId); if (!el) return;
+  el.innerHTML =
+    (burn      > 0 ? `<span class="status-badge sb-burn">🔥 Burn ${burn}</span>`          : '') +
+    (freeze    > 0 ? `<span class="status-badge sb-freeze">❄ Frozen ${freeze}</span>`      : '') +
+    (paralyzed > 0 ? `<span class="status-badge sb-paralyzed">⚡ Paralyzed ${paralyzed}</span>` : '') +
+    (guard         ? `<span class="status-badge sb-guard">🛡 Guard</span>`                  : '');
+}
+
+function updateSkillBtns() {
+  const isStory  = B.mode === 'story';
+  const skillUL  = isStory ? null :
+    JSON.parse(safeLocalStorage.getItem('tenfold_skills_' + (Game.user && Game.user.userID || 'demo')) || '{}');
+
+  // In arena mode, a skill is playable only if it has been unlocked via story progress.
+  // Basic is gated behind ch1 stage1, special stage3, ultimate stage4.
+  // In story mode skills are always available (no gating during the story battles themselves).
+  function isSkillPlayable(type) {
+    if (isStory) return true;
+    const heroId  = B.playerHeroId;
+    const unlocked = (skillUL && skillUL[heroId]) ? skillUL[heroId] : [];
+    return unlocked.includes(type);
+  }
+
+  // Hint shown beneath each locked skill
+  const SKILL_HINTS = {
+    basic:    'Clear Ch.1 Stage 1',
+    special:  'Clear Ch.1 Stage 3',
+    ultimate: 'Clear Ch.1 Stage 4',
+  };
+
+  ['basic','special','ultimate'].forEach(t => {
+    const btn = $(`btn-${t}`); if (!btn) return;
+    const sk  = B.pHero.skills[t];
+    const cd  = B.pCD[t];
+    const noMp = sk.manaCost > 0 && B.pMp < sk.manaCost;
+    const storyLocked = !isSkillPlayable(t);
+
+    // Toggle story-locked class and overlay
+    btn.classList.toggle('story-locked', storyLocked);
+    let lockEl = btn.querySelector('.skill-lock-overlay');
+    if (storyLocked) {
+      if (!lockEl) {
+        lockEl = document.createElement('div');
+        lockEl.className = 'skill-lock-overlay';
+        btn.appendChild(lockEl);
+      }
+      lockEl.innerHTML = `<span>🔒</span><small>${SKILL_HINTS[t]}</small>`;
+    } else if (lockEl) {
+      lockEl.remove();
+    }
+
+    // Disable if story-locked OR normal reasons
+    btn.disabled = storyLocked || B.turn !== 'player' || B.locked || B.over || cd > 0 || noMp;
+
+    let cdEl = btn.querySelector('.skill-cd-overlay');
+    if (cd > 0 && !storyLocked) {
+      if (!cdEl) { cdEl = document.createElement('div'); cdEl.className = 'skill-cd-overlay'; btn.appendChild(cdEl); }
+      cdEl.textContent = cd;
+    } else if (cdEl) cdEl.remove();
+  });
+  const atk = $('btn-attack');
+  if (atk) atk.disabled = B.turn !== 'player' || B.locked || B.over;
+}
+
+// ── LOG ──────────────────────────────────────────────────────
+function logMsg(msg, cls='ls') {
+  const log = $('battle-log');
+  const p   = document.createElement('p');
+  p.className = cls; p.textContent = msg;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ── DAMAGE CALC ──────────────────────────────────────────────
+function calcDmg(atk, def, base, crit) {
+  const isCrit = Math.random()*100 < crit;
+  const v = 0.88 + Math.random()*0.24;
+  let dmg = Math.floor(base * (atk/120) * v * (100/(100+def*0.6)));
+  if (isCrit) dmg = Math.floor(dmg*1.75);
+  return { dmg:Math.max(1,dmg), isCrit };
+}
+
+// ── APPROACH / RETREAT ANIMATION ─────────────────────────────
+// Cycles walk → run → sprint forward, then sprint → run → walk backward
+// Uses CSS translateX on the fighter-sprite-wrap
+
+const APPROACH_STEPS = [
+  { state:'walk',   x:25,  dur:120 },
+  { state:'walk',   x:55,  dur:110 },
+  { state:'run',    x:95,  dur:100 },
+  { state:'run',    x:145, dur:95  },
+  { state:'sprint', x:210, dur:85  },
+  { state:'sprint', x:265, dur:80  },
+  { state:'sprint', x:300, dur:0   },  // last step — right up close to enemy
+];
+const RETREAT_STEPS = [
+  { state:'sprint', x:255, dur:80  },
+  { state:'run',    x:185, dur:90  },
+  { state:'run',    x:120, dur:100 },
+  { state:'walk',   x:60,  dur:110 },
+  { state:'walk',   x:15,  dur:120 },
+  { state:'idle',   x:0,   dur:0   },
+];
+
+function doApproach(who, onDone) {
+  const wrapEl = $(who === 'player' ? 'p-wrap' : 'e-wrap');
+  // Enemy moves toward player (negative X since it's on the right)
+  const dir = who === 'player' ? 1 : -1;
+  let idx = 0;
+  function next() {
+    if (idx >= APPROACH_STEPS.length) { onDone(); return; }
+    const step = APPROACH_STEPS[idx++];
+    setSprite(who, step.state);
+    wrapEl.style.transform = `translateX(${step.x * dir}px)`;
+    if (step.dur > 0) setTimeout(next, step.dur);
+    else onDone();
+  }
+  next();
+}
+
+function doRetreat(who, onDone) {
+  const wrapEl = $(who === 'player' ? 'p-wrap' : 'e-wrap');
+  const dir = who === 'player' ? 1 : -1;
+  let idx = 0;
+  function next() {
+    if (idx >= RETREAT_STEPS.length) {
+      wrapEl.style.transform = '';
+      if (onDone) onDone();
+      return;
+    }
+    const step = RETREAT_STEPS[idx++];
+    setSprite(who, step.state);
+    wrapEl.style.transform = `translateX(${step.x * dir}px)`;
+    if (step.dur > 0) setTimeout(next, step.dur);
+    else {
+      wrapEl.style.transform = '';
+      if (onDone) onDone();
+    }
+  }
+  next();
+}
+
+// ── SKILL EFFECT ─────────────────────────────────────────────
+// plainattack → approach → attack.png → shake → retreat  (no projectile)
+// basic/special/ultimate → approach → cast frames → travel → impact → retreat
+function spawnEffect(fromWho, skillType, onDone) {
+  const heroId = fromWho === 'player' ? B.playerHeroId : B.enemyHeroId;
+  const h      = getEntity(heroId);
+  const stage  = $('arena-stage');
+
+  // ── PLAIN ATTACK (ATTACK button) — no skill animation ──
+  if (skillType === 'plainattack') {
+    doApproach(fromWho, () => {
+      setSprite(fromWho, 'attack');
+      hitShake(fromWho === 'player' ? 'enemy' : 'player');
+      setTimeout(() => doRetreat(fromWho, onDone), 280);
+    });
+    return;
+  }
+
+  const sk = h.skills[skillType];
+
+  // ── SKILL WITH NO FRAMES → quick shake only ──
+  if (!sk.frames || sk.frames.length === 0) {
+    doApproach(fromWho, () => {
+      hitShake(fromWho === 'player' ? 'enemy' : 'player');
+      setTimeout(() => doRetreat(fromWho, onDone), 200);
+    });
+    return;
+  }
+
+  // ── HEAL SKILL (damage < 0) → play frames on self, no approach/travel ──
+  if (sk.damage < 0) {
+    const stR  = stage.getBoundingClientRect();
+    const fR   = $(fromWho === 'player' ? 'p-wrap' : 'e-wrap').getBoundingClientRect();
+    const HALF = 110;
+    const cx   = fR.left - stR.left + fR.width/2  - HALF;
+    const cy   = fR.top  - stR.top  + fR.height/2 - HALF;
+
+    const fx = document.createElement('div');
+    fx.className = 'skill-fx';
+    fx.style.cssText = `left:${cx}px;top:${cy}px;opacity:0;`;
+    stage.appendChild(fx);
+
+    const FRAME_MS = 110;
+    let fi = 0;
+    function nextHealFrame() {
+      fx.innerHTML = `<img src="${sk.frames[fi]}" alt=""
+        style="filter:drop-shadow(0 0 22px ${h.color}) brightness(1.4);">`;
+      fx.style.opacity = '1';
+      fi++;
+      if (fi < sk.frames.length) {
+        setTimeout(nextHealFrame, FRAME_MS);
+      } else {
+        setTimeout(() => { fx.remove(); onDone(); }, 200);
+      }
+    }
+    nextHealFrame();
+    return;
+  }
+
+  // Approach first, then cast
+  doApproach(fromWho, () => {
+    const stR  = stage.getBoundingClientRect();
+    const pR   = $('p-wrap').getBoundingClientRect();
+    const eR   = $('e-wrap').getBoundingClientRect();
+    const fR   = fromWho === 'player' ? pR : eR;
+    const tR   = fromWho === 'player' ? eR : pR;
+    const HALF = 110;
+    const sx   = fR.left - stR.left + fR.width/2  - HALF;
+    const sy   = fR.top  - stR.top  + fR.height/2 - HALF;
+    const ex   = tR.left - stR.left + tR.width/2  - HALF;
+    const ey   = tR.top  - stR.top  + tR.height/2 - HALF;
+
+    const fx = document.createElement('div');
+    fx.className = 'skill-fx';
+    // Skill FX faces the direction it travels.
+    // We derive the flip from getSpriteFlip using the 'attack' state,
+    // which respects flipStates overrides (needed for story enemies like AshWolf).
+    // Enemy attacks travel LEFT  → flip when the sprite naturally faces right in 'attack' state.
+    // Player attacks travel RIGHT → flip when the sprite naturally faces left in 'attack' state.
+    let fxFlip = false;
+    if (fromWho === 'enemy') {
+      // getSpriteFlip returns -1 when the enemy sprite needs no flip (already faces left/player).
+      // It returns +1 when the enemy sprite needs a flip (naturally faces right).
+      // For the FX we want to flip if the sprite naturally faces right.
+      const sprFlip = getSpriteFlip('enemy', B.enemyHeroId, 'attack');
+      fxFlip = sprFlip === 1; // sprite faces right → FX must flip to face left (toward player)
+    } else {
+      const sprFlip = getSpriteFlip('player', B.playerHeroId, 'attack');
+      fxFlip = sprFlip === -1; // sprite faces left → FX must flip to face right (toward enemy)
+    }
+    fx.style.cssText = `left:${sx}px;top:${sy}px;opacity:0;` +
+      (fxFlip ? 'transform:scaleX(-1);' : '');
+    stage.appendChild(fx);
+
+    // Frame rate: 110ms — natural timing
+    const FRAME_MS = 110;
+    let fi = 0;
+    const totalFrames = sk.frames.length;
+    function nextFrame() {
+      // Move the effect progressively toward the target as frames play.
+      // Frames cover the first 70% of the distance; travel() handles the rest.
+      const progress = (fi / totalFrames) * 0.7;
+      const cx = sx + (ex - sx) * progress;
+      const cy = sy + (ey - sy) * progress;
+      fx.style.left = cx + 'px';
+      fx.style.top  = cy + 'px';
+      fx.innerHTML = `<img src="${sk.frames[fi]}" alt=""
+        style="filter:drop-shadow(0 0 22px ${h.color}) brightness(1.25);">`;
+      fx.style.opacity = '1';
+      fi++;
+      if (fi < totalFrames) {
+        setTimeout(nextFrame, FRAME_MS);
+      } else {
+        // Travel the remaining 30% to the target
+        travel(fx, cx, cy, ex, ey, h.color, fromWho, sk, fxFlip, () => {
+          // After impact: retreat
+          doRetreat(fromWho, onDone);
+        }, stage);
+      }
+    }
+    nextFrame();
+  });
+}
+
+function travel(fx, sx, sy, ex, ey, color, fromWho, sk, fxFlip, onDone, stage) {
+  const dx = ex-sx, dy = ey-sy;
+  // Travel speed: moderate — not too fast, not too slow
+  const dur = Math.max(480, Math.min(700, Math.hypot(dx,dy) * 0.6));
+  fx.innerHTML = `<img src="${sk.frames[sk.frames.length-1]}" alt=""
+    style="width:100%;height:100%;object-fit:contain;
+    filter:drop-shadow(0 0 26px ${color}) brightness(1.3);">`;
+  let t0 = null;
+  const HALF = 110;
+  const ease = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+  function step(ts) {
+    if (!t0) t0 = ts;
+    const t = Math.min((ts-t0)/dur, 1), e = ease(t), sc = 1 + e * 0.3;
+    fx.style.left      = (sx+dx*e)+'px';
+    fx.style.top       = (sy+dy*e)+'px';
+    fx.style.transform = fxFlip ? `scaleX(-1) scale(${sc})` : `scale(${sc})`;
+    fx.style.opacity   = t > 0.78 ? String(1-(t-0.78)/0.22) : '1';
+    if (t < 1) { requestAnimationFrame(step); return; }
+    fx.remove();
+    spawnImpact(ex+HALF, ey+HALF, color, stage);
+    hitShake(fromWho === 'player' ? 'enemy' : 'player');
+    onDone();
+  }
+  requestAnimationFrame(step);
+}
+
+function spawnImpact(x, y, color, stage) {
+  const b = document.createElement('div');
+  b.className = 'impact-burst';
+  b.style.cssText = `left:${x}px;top:${y}px;background:radial-gradient(circle,${color} 0%,${color}55 45%,transparent 70%);`;
+  stage.appendChild(b);
+  b.addEventListener('animationend', () => b.remove(), {once:true});
+}
+
+function hitShake(who) {
+  const el = $(who === 'player' ? 'p-wrap' : 'e-wrap'); if (!el) return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  el.addEventListener('animationend', () => el.classList.remove('shake'), {once:true});
+}
+
+function spawnDmg(who, value, isCrit=false, isHeal=false) {
+  const wrap = $(who === 'player' ? 'p-wrap' : 'e-wrap');
+  const n    = document.createElement('div');
+  n.className = 'dmg-num' + (isCrit?' crit':'') + (isHeal?' heal':'');
+  if (isHeal)        n.textContent = '+'+Math.abs(value);
+  else if (value===0){ n.style.color='#888'; n.textContent='MISS'; }
+  else {
+    n.textContent = (isCrit ? '⚡ ' : '')+value;
+    n.style.color = isCrit ? '#ffdd00'
+      : (getEntity(who==='player'?B.enemyHeroId:B.playerHeroId)||{color:'#ff8888'}).color;
+  }
+  wrap.appendChild(n);
+  n.addEventListener('animationend', ()=>n.remove(), {once:true});
+}
+
+// ── APPLY DMG / HEAL ─────────────────────────────────────────
+function applyDmg(target, amount) {
+  const guarded = target==='enemy' ? B.eGuard : B.pGuard;
+  const r = guarded ? Math.floor(amount*.4) : amount;
+  if (target==='enemy') B.eHp = Math.max(0, B.eHp-r);
+  else                  B.pHp = Math.max(0, B.pHp-r);
+  return r;
+}
+function applyHeal(target, amount) {
+  if (target==='player') B.pHp = Math.min(B.pMaxHp, B.pHp+amount);
+  else                   B.eHp = Math.min(B.eMaxHp, B.eHp+amount);
+}
+
+// ── USE PLAIN ATTACK (ATTACK button / Q key) — no skill frames ────────────
+function useAttack() {
+  if (B.turn!=='player'||B.locked||B.over) return;
+
+  if (B.pFrozen > 0) {
+    B.pFrozen--;
+    renderHUD();
+    if (B.pFrozen > 0) { logMsg('❄ Still frozen — cannot act!','ls'); return; }
+    logMsg('❄ Thawed! You can act now.','ls');
+  }
+
+  // Paralysis: 50% chance to lose turn
+  if (B.pParalyzed > 0 && Math.random() < 0.5) {
+    B.pParalyzed--;
+    renderHUD();
+    logMsg(`⚡ Paralyzed! You can't move! (${B.pParalyzed} left)`,'ls');
+    tickStatus('player');
+    tickCD('player'); regenMp('player');
+    B.turn='enemy'; B.locked=false; renderHUD();
+    setTimeout(enemyAI, 900+Math.random()*400);
+    return;
+  }
+
+  B.locked = true;
+  B.pMp = Math.min(B.pMaxMp, B.pMp + 5); // plain attack still regens 5 MP
+  updateSkillBtns();
+  spawnEffect('player', 'plainattack', () => {
+    const sk = B.pHero.skills.basic; // use basic damage stats but no effect
+    const boost = B.pBoost > 0 ? 1.3 : 1;
+    const {dmg, isCrit} = calcDmg(B.pAtk * boost, B.eDef, sk.damage, B.pCrit);
+    const r = applyDmg('enemy', dmg); spawnDmg('enemy', r, isCrit);
+    logMsg(`⚔ ${B.pHero.name} attacks! Deals ${r}${isCrit?' (CRIT!)':''} dmg.`, 'lp');
+    if (B.playerHeroId==='aeron') { B.eBurning=Math.max(B.eBurning,2); logMsg('🔥 Enemy burns!','lp'); }
+    if (B.playerHeroId==='kael')  { B.eParalyzed=Math.max(B.eParalyzed,1); logMsg('⚡ Enemy paralyzed!','lp'); }
+    checkEnd(()=>{ tickStatus('enemy'); renderHUD();
+      checkEnd(()=>{ tickCD('player'); regenMp('player');
+        B.turn='enemy'; B.locked=false; renderHUD();
+        setTimeout(enemyAI, 900+Math.random()*400);
+      });
+    });
+  });
+}
+
+// ── USE SKILL (PLAYER) ───────────────────────────────────────
+function useSkill(type) {
+  if (B.turn!=='player'||B.locked||B.over) return;
+
+  // Block story-locked skills in arena mode
+  if (B.mode !== 'story') {
+    const skillUL  = JSON.parse(safeLocalStorage.getItem('tenfold_skills_' + (Game.user && Game.user.userID || 'demo')) || '{}');
+    const unlocked = (skillUL[B.playerHeroId]) || [];
+    if (!unlocked.includes(type)) {
+      const hints = { basic:'Clear Chapter 1 Stage 1', special:'Clear Chapter 1 Stage 3', ultimate:'Clear Chapter 1 Stage 4' };
+      logMsg(`🔒 ${B.pHero.skills[type].name} is locked! ${hints[type]} in Story Mode to unlock.`, 'ls');
+      return;
+    }
+  }
+
+  // Tick down freeze at start of player turn (not block — just decrement)
+  if (B.pFrozen > 0) {
+    B.pFrozen--;
+    renderHUD();
+    if (B.pFrozen > 0) { logMsg('❄ Still frozen — cannot act!','ls'); return; }
+    logMsg('❄ Thawed! You can act now.','ls');
+    // Don't return — let them act
+  }
+
+  // Paralysis: 50% chance to lose turn
+  if (B.pParalyzed > 0 && Math.random() < 0.5) {
+    B.pParalyzed--;
+    renderHUD();
+    logMsg(`⚡ Paralyzed! You can't move! (${B.pParalyzed} left)`,'ls');
+    tickStatus('player');
+    tickCD('player'); regenMp('player');
+    B.turn='enemy'; B.locked=false; renderHUD();
+    setTimeout(enemyAI, 900+Math.random()*400);
+    return;
+  }
+
+  const sk = B.pHero.skills[type];
+  if (B.pCD[type]>0) { logMsg(`⏳ ${sk.name} on cooldown (${B.pCD[type]})`, 'ls'); return; }
+  if (sk.manaCost>0 && B.pMp<sk.manaCost) { logMsg(`💧 Not enough MP for ${sk.name}!`, 'ls'); return; }
+  B.locked = true;
+  B.pMp = Math.max(0, B.pMp - sk.manaCost);
+  // Basic attack rewards MP (+5)
+  if (type === 'basic') B.pMp = Math.min(B.pMaxMp, B.pMp + 5);
+  if (sk.cooldown>0) B.pCD[type] = sk.cooldown;
+  updateSkillBtns();
+  // doApproach handles walk→run→sprint→attack sprite switching
+  spawnEffect('player', type, () => execPlayer(type, sk));
+}
+
+function execPlayer(type, sk) {
+  const ph = B.pHero; let extra='';
+  const boost = B.pBoost>0 ? 1.3 : 1;
+
+  if (type==='basic') {
+    const {dmg,isCrit} = calcDmg(B.pAtk*boost, B.eDef, sk.damage, B.pCrit);
+    const r = applyDmg('enemy',dmg); spawnDmg('enemy',r,isCrit);
+    logMsg(`⚔ ${ph.name} uses ${sk.name}! Deals ${r}${isCrit?' (CRIT!)':''} dmg.`, 'lp');
+    if (B.playerHeroId==='aeron') { B.eBurning=Math.max(B.eBurning,2); extra=' 🔥 Enemy burns!'; }
+    if (B.playerHeroId==='kael')  { B.eParalyzed=Math.max(B.eParalyzed,1); extra=' ⚡ Enemy paralyzed!'; }
+  } else if (type==='special') {
+    if (sk.damage<0) {
+      const h=Math.abs(sk.damage); applyHeal('player',h); spawnDmg('player',h,false,true);
+      logMsg(`💧 ${ph.name} uses ${sk.name}! +${h} HP.`,'lh');
+    } else if (sk.damage===0) {
+      B.pGuard = true; extra=' 🛡 Guard raised!';
+      logMsg(`🛡 ${ph.name} uses ${sk.name}!`, 'lp');
+    } else {
+      const {dmg,isCrit} = calcDmg(B.pAtk*boost, B.eDef, sk.damage, B.pCrit+5);
+      const r = applyDmg('enemy',dmg); spawnDmg('enemy',r,isCrit);
+      logMsg(`✨ ${ph.name} uses ${sk.name}! Deals ${r}${isCrit?' (CRIT!)':''} dmg.`, 'lp');
+      if (B.playerHeroId==='lyra')   { B.eFrozen=1;  extra=' ❄ Enemy FROZEN!'; }
+      if (B.playerHeroId==='aeron')  { B.eBurning=Math.max(B.eBurning,2); extra=' 🔥'; }
+      if (B.playerHeroId==='kael')   { B.eParalyzed=Math.max(B.eParalyzed,2); extra=' ⚡ Enemy paralyzed!'; }
+      if (B.playerHeroId==='selene') { B.pBoost=2; extra=' 🌙 Power surge!'; }
+      if (B.playerHeroId==='draven') { B.pBoost=2; extra=' 🌑 Stepping from the shadows!'; }
+    }
+  } else {
+    const {dmg,isCrit} = calcDmg(B.pAtk*1.5*boost, B.eDef, sk.damage, B.pCrit+10);
+    const r = applyDmg('enemy',dmg); spawnDmg('enemy',r,isCrit);
+    logMsg(`💥 ${ph.name} UNLEASHES ${sk.name}!! ${r}${isCrit?' (CRIT!!)':''} MASSIVE DMG!`, 'lp');
+    if (B.playerHeroId==='aeron')  { B.eBurning=Math.max(B.eBurning,3); extra=' 🔥🔥 Phoenix flames!'; }
+    if (B.playerHeroId==='lyra')   { B.eFrozen=2; extra=' ❄ ABSOLUTE ZERO!'; }
+    if (B.playerHeroId==='mira')   { const h=80; applyHeal('player',h); extra=` +${h} HP healed!`; }
+    if (B.playerHeroId==='kael')   { B.eParalyzed=Math.max(B.eParalyzed,3); extra=' ⚡⚡ STORM JUDGMENT!'; }
+    if (B.playerHeroId==='riven')  { B.eFrozen=Math.max(B.eFrozen,1); extra=' 💥 Enemy STUNNED!'; }
+    if (B.playerHeroId==='selene') { B.pBoost=3; extra=' 🌙✨ MOONFALL!'; }
+    if (B.playerHeroId==='draven') { B.pBoost=3; extra=' 💀 NIGHTMARE EXECUTION!'; }
+  }
+  if (extra) logMsg(extra,'lp');
+  // doRetreat (called inside spawnEffect) handles sprint→run→walk→idle
+  checkEnd(()=>{ tickStatus('enemy'); renderHUD();
+    checkEnd(()=>{ tickCD('player'); regenMp('player');
+      B.turn='enemy'; B.locked=false; renderHUD();
+      setTimeout(enemyAI, 900+Math.random()*400);
+    });
+  });
+}
+
+// ── ENEMY AI ─────────────────────────────────────────────────
+function enemyAI() {
+  if (B.over) return;
+
+  // Handle frozen — skip turn but tick down
+  if (B.eFrozen > 0) {
+    B.eFrozen--;
+    logMsg(`❄ ${B.eHero.name} is frozen! (${B.eFrozen} turns left)`,'le');
+    tickCD('enemy'); regenMp('enemy');
+    B.turn='player'; B.locked=false; renderHUD(); return;
+  }
+
+  // Handle paralyzed — 50% chance to skip turn
+  if (B.eParalyzed > 0 && Math.random() < 0.5) {
+    B.eParalyzed--;
+    logMsg(`⚡ ${B.eHero.name} is paralyzed and can't move! (${B.eParalyzed} left)`,'le');
+    tickCD('enemy'); regenMp('enemy');
+    B.turn='player'; B.locked=false; renderHUD(); return;
+  }
+
+  const type = pickEnemySkill();
+  const sk   = B.eHero.skills[type];
+  logMsg(`${B.eHero.name} uses ${sk.name}…`,'le');
+  B.locked = true;
+  B.eMp = Math.max(0, B.eMp - sk.manaCost);
+  // Basic attack also regens MP for enemy (+5)
+  if (type === 'basic') B.eMp = Math.min(B.eMaxMp, B.eMp + 5);
+  if (sk.cooldown > 0) B.eCD[type] = sk.cooldown;
+  updateSkillBtns();
+  spawnEffect('enemy', type, () => execEnemy(type, sk));
+}
+
+function pickEnemySkill() {
+  const hp  = B.eHp / B.eMaxHp;
+  const mp  = B.eMp;
+  const rng = Math.random();
+
+  // ── ULTIMATE — use whenever available + affordable ──
+  // More aggressive: use at 80 MP even at full health (25% chance), always when low HP
+  if (B.eCD.ultimate === 0 && mp >= 80) {
+    if (hp < 0.5 || rng < 0.35) return 'ultimate';
+  }
+
+  // ── SPECIAL — use frequently when available ──
+  if (B.eCD.special === 0 && mp >= 30) {
+    const sp = B.eHero.skills.special;
+    // Heal special: always use when HP below 55%
+    if (sp.damage < 0 && hp < 0.55) return 'special';
+    // Guard special: use 40% of the time
+    if (sp.damage === 0 && rng < 0.4) return 'special';
+    // Damage special: use 60% of the time when available
+    if (sp.damage > 0 && rng < 0.60) return 'special';
+  }
+
+  // ── BASIC fallback ──
+  return 'basic';
+}
+
+function execEnemy(type, sk) {
+  const eh=B.eHero; let extra='';
+  const boost = B.eBoost>0?1.3:1;
+  const eElem = eh.element || '';
+  const eId   = B.enemyHeroId;
+
+  if (type==='basic') {
+    const {dmg,isCrit} = calcDmg(B.eAtk*boost, B.pDef, sk.damage, B.eCrit);
+    const r=applyDmg('player',dmg); spawnDmg('player',r,isCrit);
+    logMsg(`${eh.name} uses ${sk.name}! You take ${r}${isCrit?' (CRIT!)':''}.`,'le');
+    // Status effects by element (works for both heroes and story enemies)
+    if (eElem==='Fire')      { B.pBurning=Math.max(B.pBurning,2); extra=' 🔥 You burn!'; }
+    if (eElem==='Lightning') { B.pParalyzed=Math.max(B.pParalyzed,1); extra=' ⚡ You are paralyzed!'; }
+    // Hero-specific overrides (only if it's actually that hero)
+    if (eId==='kael')        { B.pParalyzed=Math.max(B.pParalyzed,1); extra=' ⚡ You are paralyzed!'; }
+  } else if (type==='special') {
+    if (sk.damage<0) {
+      const h=Math.abs(sk.damage); applyHeal('enemy',h); spawnDmg('enemy',h,false,true);
+      logMsg(`${eh.name} uses ${sk.name}! Heals ${h} HP.`,'le');
+    } else if (sk.damage===0) {
+      B.eGuard = true; extra=' 🛡 Guard raised!';
+      logMsg(`🛡 ${eh.name} uses ${sk.name}!`, 'le');
+    } else {
+      const {dmg,isCrit} = calcDmg(B.eAtk*boost, B.pDef, sk.damage, B.eCrit+5);
+      const r=applyDmg('player',dmg); spawnDmg('player',r,isCrit);
+      logMsg(`${eh.name} uses ${sk.name}! You take ${r}${isCrit?' (CRIT!)':''}.`,'le');
+      // Status effects by element
+      if (eElem==='Fire')      { B.pBurning=Math.max(B.pBurning,2); extra=' 🔥 Scorching flames!'; }
+      if (eElem==='Ice')       { B.pFrozen=1; extra=' ❄ You are FROZEN!'; }
+      if (eElem==='Lightning') { B.pParalyzed=Math.max(B.pParalyzed,2); extra=' ⚡ You are paralyzed!'; }
+      // Hero-specific overrides
+      if (eId==='lyra')   { B.pFrozen=1; extra=' ❄ You are FROZEN!'; }
+      if (eId==='kael')   { B.pParalyzed=Math.max(B.pParalyzed,2); extra=' ⚡ You are paralyzed!'; }
+      if (eId==='selene') { B.eBoost=2; extra=' 🌙 Power surge!'; }
+      if (eId==='draven') { B.eBoost=2; extra=' 🌑 Stepping from the shadows!'; }
+    }
+  } else {
+    const {dmg,isCrit} = calcDmg(B.eAtk*1.5*boost, B.pDef, sk.damage, B.eCrit+10);
+    const r=applyDmg('player',dmg); spawnDmg('player',r,isCrit);
+    logMsg(`💥 ${eh.name} UNLEASHES ${sk.name}!! You take ${r}${isCrit?' (CRIT!!)':''} MASSIVE DMG!`,'le');
+    // Status effects by element
+    if (eElem==='Fire')      { B.pBurning=Math.max(B.pBurning,3); extra=' 🔥🔥 Burning inferno!'; }
+    if (eElem==='Ice')       { B.pFrozen=2; extra=' ❄ Frozen solid!'; }
+    if (eElem==='Lightning') { B.pParalyzed=Math.max(B.pParalyzed,3); extra=' ⚡⚡ STORM JUDGMENT!'; }
+    // Hero-specific overrides
+    if (eId==='aeron')  { B.pBurning=Math.max(B.pBurning,3); extra=' 🔥🔥'; }
+    if (eId==='lyra')   { B.pFrozen=2; extra=' ❄ Frozen solid!'; }
+    if (eId==='mira')   { const h=80; applyHeal('enemy',h); extra=` Healed ${h}!`; }
+    if (eId==='kael')   { B.pParalyzed=Math.max(B.pParalyzed,3); extra=' ⚡⚡ STORM JUDGMENT!'; }
+    if (eId==='riven')  { B.pFrozen=Math.max(B.pFrozen,1); extra=' 💥 You are STUNNED!'; }
+    if (eId==='selene') { B.eBoost=3; extra=' 🌙✨ MOONFALL!'; }
+    if (eId==='draven') { B.eBoost=3; extra=' 💀 NIGHTMARE EXECUTION!'; }
+  }
+  if (extra) logMsg(extra,'le');
+  // doRetreat handles sprint→run→walk→idle for enemy too
+  checkEnd(()=>{ tickStatus('player'); renderHUD();
+    checkEnd(()=>{ tickCD('enemy'); regenMp('enemy');
+      B.turn='player'; B.locked=false; B.turnCount++;
+      renderHUD();
+    });
+  });
+}
+
+// ── STATUS TICKS ─────────────────────────────────────────────
+function tickStatus(who) {
+  if (who==='player'&&B.pBurning>0) {
+    const d=Math.floor(B.pMaxHp*.05);
+    B.pHp=Math.max(0,B.pHp-d); B.pBurning--;
+    logMsg(`🔥 ${B.pHero.name} takes ${d} burn!`,'le'); spawnDmg('player',d);
+  }
+  if (who==='enemy'&&B.eBurning>0) {
+    const d=Math.floor(B.eMaxHp*.05);
+    B.eHp=Math.max(0,B.eHp-d); B.eBurning--;
+    logMsg(`🔥 ${B.eHero.name} takes ${d} burn!`,'lp'); spawnDmg('enemy',d);
+  }
+  if (who==='player'&&B.pFrozen>0)    B.pFrozen--;
+  if (who==='enemy'&&B.eFrozen>0)     B.eFrozen--;
+  if (who==='player'&&B.pParalyzed>0) B.pParalyzed--;
+  if (who==='enemy'&&B.eParalyzed>0)  B.eParalyzed--;
+  if (who==='player') { B.pGuard=false; if(B.pBoost>0)B.pBoost--; }
+  if (who==='enemy')  { B.eGuard=false; if(B.eBoost>0)B.eBoost--; }
+}
+function tickCD(who) {
+  const cds = who==='player'?B.pCD:B.eCD;
+  for (const k in cds) if(cds[k]>0) cds[k]--;
+}
+function regenMp(who) {
+  if (who==='player') B.pMp = Math.min(B.pMaxMp, B.pMp + 6);
+  else                B.eMp = Math.min(B.eMaxMp, B.eMp + 6);
+}
+
+// ── CHECK END ────────────────────────────────────────────────
+function checkEnd(onContinue) {
+  renderHUD();
+  if (B.eHp<=0&&!B.over) { B.over=true; B.locked=true; const s=$('e-sprite'); if(s)s.classList.add('dead'); setTimeout(()=>showResult('win'),1300); return; }
+  if (B.pHp<=0&&!B.over) { B.over=true; B.locked=true; const s=$('p-sprite'); if(s)s.classList.add('dead'); setTimeout(()=>showResult('lose'),1300); return; }
+  if (onContinue) onContinue();
+}
+
+// ── SHOW RESULT ──────────────────────────────────────────────
+async function showResult(outcome) {
+  const won = outcome==='win';
+  const pts = won?100:10;
+  $('result-label').textContent = won?'VICTORY!':'DEFEATED';
+  $('result-label').className   = 'result-label '+(won?'win':'lose');
+  $('result-sub').textContent   = won?`You defeated ${B.eHero.name}!`:`${B.eHero.name} has bested you.`;
+  $('result-pts-num').textContent = '+'+pts;
+  $('result-hero-info').textContent = `${B.pHero.name} · ${B.map.name} · Turn ${B.turnCount+1}`;
+  $('result-overlay').classList.add('show');
+
+  const newScore = (user.totalScore||0)+pts;
+  user.totalScore = newScore; Game.login(user);
+
+  const bl = JSON.parse(safeLocalStorage.getItem('tenfold_battles_'+user.userID)||'[]');
+  bl.unshift({heroID:B.playerHeroId,heroName:B.pHero.name,enemyHeroID:B.enemyHeroId,
+    enemyHeroName:B.eHero.name,result:outcome,battleDate:new Date().toISOString(),
+    storyChapter: B.mode==='story' ? B.chapter : 0});
+  safeLocalStorage.setItem('tenfold_battles_'+user.userID, JSON.stringify(bl.slice(0,20)));
+
+  const lvls = JSON.parse(safeLocalStorage.getItem('tenfold_levels_'+user.userID)||'{}');
+  const prevLv = lvls[B.playerHeroId]||1;
+  let xp = (lvls[B.playerHeroId+'_xp']||0)+pts, lv=prevLv;
+  while (xp>=lv*100) { xp-=lv*100; lv++; }
+  lvls[B.playerHeroId]=lv; lvls[B.playerHeroId+'_xp']=xp;
+  safeLocalStorage.setItem('tenfold_levels_'+user.userID, JSON.stringify(lvls));
+  if (lv>prevLv) {
+    const n=document.createElement('div'); n.className='lvl-up-notif';
+    n.textContent=`⬆ ${B.pHero.name} reached Level ${lv}!`;
+    $('arena-stage').appendChild(n);
+    n.addEventListener('animationend',()=>n.remove(),{once:true});
+  }
+
+  // ── STORY MODE: save progress & build result buttons ──────
+  if (B.mode==='story' && won) {
+    // Save stage completion to safeLocalStorage for story.html to pick up
+    const starsEarned = B.pHp > B.pMaxHp*0.5 ? 3 : B.pHp > B.pMaxHp*0.25 ? 2 : 1;
+    safeSessionStorage.setItem('tenfold_story_return', JSON.stringify({
+      chNum: B.chapter, stageNum: B.stage, won: true, stars: starsEarned
+    }));
+
+    // Save progress immediately here too so it's not lost
+    const storyProg = JSON.parse(safeLocalStorage.getItem('tenfold_story_'+user.userID)||'{}');
+    const key = `ch${B.chapter}_st${B.stage}`;
+    if (!storyProg[key] || starsEarned > (storyProg[key].stars||0)) {
+      storyProg[key] = { completed:true, stars:starsEarned };
+      safeLocalStorage.setItem('tenfold_story_'+user.userID, JSON.stringify(storyProg));
+    }
+
+    // Figure out the next stage
+    const curChapter = B.chapter;
+    const curStage   = B.stage;
+    const nextStage  = curStage + 1;
+    const isFinalStage = curStage === 5; // stage 5 = boss, last in chapter
+    const nextChapter  = isFinalStage ? curChapter + 1 : curChapter;
+    const hasNextCh    = nextChapter <= 10;
+
+    // Build story-mode buttons
+    const btns = $('result-btns');
+    if (!isFinalStage) {
+      // There's a next stage in the same chapter
+      btns.innerHTML = `
+        <button class="rbtn gold" onclick="goNextStage(${nextChapter}, ${nextStage})">▶ NEXT STAGE</button>
+        <button class="rbtn ghost" onclick="location.href='story.html'">📖 Story Map</button>
+        <button class="rbtn ghost" onclick="location.href='dashboard.html'">🏠 Dashboard</button>`;
+    } else if (hasNextCh) {
+      // Cleared chapter boss — next chapter available
+      btns.innerHTML = `
+        <button class="rbtn gold" onclick="location.href='story.html'">📖 Next Chapter</button>
+        <button class="rbtn ghost" onclick="location.href='dashboard.html'">🏠 Dashboard</button>
+        <button class="rbtn ghost" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>`;
+    } else {
+      // Final chapter cleared
+      btns.innerHTML = `
+        <button class="rbtn gold" onclick="location.href='story.html'">👑 Story Complete!</button>
+        <button class="rbtn ghost" onclick="location.href='dashboard.html'">🏠 Dashboard</button>
+        <button class="rbtn ghost" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>`;
+    }
+  } else if (B.mode==='story' && !won) {
+    // Lost in story mode — no "Play Again", retry same stage
+    const btns = $('result-btns');
+    btns.innerHTML = `
+      <button class="rbtn gold" onclick="location.reload()">↺ RETRY STAGE</button>
+      <button class="rbtn ghost" onclick="location.href='story.html'">📖 Story Map</button>
+      <button class="rbtn ghost" onclick="location.href='dashboard.html'">🏠 Dashboard</button>`;
+  }
+
+  apiCall({action:'addScore',userID:user.userID,username:user.username,
+    heroID:B.playerHeroId,heroName:B.pHero.name,
+    enemyHeroID:B.enemyHeroId,enemyName:B.eHero.name,
+    result:outcome,chapter:B.chapter});
+}
+
+// ── NEXT STAGE HELPER ─────────────────────────────────────────
+// Stores the next stage info and reloads battle.html directly —
+// no trip back to story.html needed for sequential stages.
+function goNextStage(chNum, stageNum) {
+  safeSessionStorage.setItem('tenfold_story_autonext', JSON.stringify({ chNum, stageNum }));
+  location.href = 'story.html';
+}
+
+function fleeBattle() {
+  if (B.over) return;
+  if (confirm('Flee the battle?')) { B.over=true; showResult('lose'); }
+}
+
+// ── ROLL CARD UPDATE ─────────────────────────────────────────
+function setRollCard(side, heroId) {
+  const h = HEROES[heroId]; if (!h) return;
+  const imgEl   = $(`roll-${side}-img`);
+  const emojiEl = $(`roll-${side}-emoji`);
+  const nameEl  = $(`roll-${side}-name`);
+  const subEl   = $(`roll-${side}-sub`);
+
+  const portSrc = (h.sprites&&h.sprites.portrait)||(h.sprites&&h.sprites.idle)||'';
+  if (imgEl) {
+    imgEl.src = portSrc;
+    imgEl.style.display = portSrc ? 'block' : 'none';
+  }
+  if (emojiEl) emojiEl.textContent = portSrc ? '' : (ELEMENT_ICONS[h.element]||'⚔');
+  if (nameEl)  nameEl.textContent  = h.name;
+  if (subEl)   subEl.textContent   = `${ELEMENT_ICONS[h.element]||''} ${h.element} · ${h.title}`;
+}
+
+// ── ROLL IDs (player card uses p, enemy uses e) ───────────────
+// HTML ids: roll-p-img, roll-p-emoji, roll-p-name, roll-p-sub
+//           roll-e-img, roll-e-emoji, roll-e-name, roll-e-sub
+function updateRollCard(side, entityId) {
+  // side = 'p' or 'e'  — works for both heroes and story enemies/mobs
+  const h = getEntity(entityId); if (!h) return;
+  const imgEl   = $('roll-'+side+'-img');
+  const emojiEl = $('roll-'+side+'-emoji');
+  const nameEl  = $('roll-'+side+'-name');
+  const subEl   = $('roll-'+side+'-sub');
+
+  const portSrc = (h.sprites&&h.sprites.portrait)||(h.sprites&&h.sprites.idle)||'';
+  if (imgEl) { imgEl.src=portSrc; imgEl.style.display=portSrc?'block':'none'; }
+  if (emojiEl) emojiEl.textContent = portSrc ? '' : (ELEMENT_ICONS[h.element]||'👾');
+  if (nameEl)  nameEl.textContent  = h.name;
+  // Show role badge for mobs (Monster/Boss), title for heroes
+  const roleTag = (h.role && h.role !== 'Damage Dealer' && h.role !== 'Tank' && h.role !== 'Support / Damage' && h.role !== 'Assassin' && h.role !== 'Mage')
+    ? h.role : h.title || '';
+  if (subEl) subEl.textContent = `${ELEMENT_ICONS[h.element]||''} ${h.element} · ${roleTag}`;
+}
+
+// ── DO ROLL ──────────────────────────────────────────────────
+async function doRoll() {
+  $('roll-status').textContent = 'ROLLING COMBATANTS & MAP…';
+
+  const pId = Game.getSelectedHero() || 'aeron';
+  rollPlayerHeroId = pId;
+
+  // Ensure unlocks
+  const saved = JSON.parse(safeLocalStorage.getItem('tenfold_unlocked_'+user.userID)||'[]');
+  const unlocked = Array.from(new Set(['aeron','lyra','kael','riven','selene','draven','mira','orion','brutus','elysia',...saved]));
+  safeLocalStorage.setItem('tenfold_unlocked_'+user.userID, JSON.stringify(unlocked));
+
+  const mode       = safeSessionStorage.getItem('tenfold_battle_mode') || 'arena';
+  const fixedEnemy = safeSessionStorage.getItem('tenfold_battle_enemy') || '';
+
+  // ══════════════════════════════════════════════════════════
+  // STORY MODE — fixed enemy (mob or story hero), skip roll
+  // ══════════════════════════════════════════════════════════
+  if (mode === 'story' && fixedEnemy) {
+    const isStoryMonster = !!STORY_ENEMIES[fixedEnemy];
+    const isStoryHero    = !!HEROES[fixedEnemy];
+
+    if (isStoryMonster) {
+      const monster = STORY_ENEMIES[fixedEnemy];
+      rollEnemyHeroId = fixedEnemy;
+      rollMap = { name: monster.name, bg: monster.sprites.backgrounds[0] || '' };
+    } else if (isStoryHero) {
+      rollEnemyHeroId = fixedEnemy;
+      // Use the hero's own background as map
+      const h = HEROES[fixedEnemy];
+      const bg = (h.sprites && h.sprites.backgrounds && h.sprites.backgrounds[0]) || '';
+      rollMap = { name: h.name + '\'s Domain', bg };
+    } else {
+      // Fallback — unknown enemy, treat as arena
+      rollEnemyHeroId = unlocked.filter(id=>id!==pId)[0] || 'aeron';
+      rollMap = MAPS[Math.floor(Math.random()*MAPS.length)];
+    }
+
+    updateRollCard('p', pId);
+    updateRollCard('e', rollEnemyHeroId);
+    $('roll-map').textContent = rollMap.name;
+    $('roll-map').classList.remove('spinning');
+
+    const pCard = $('roll-player');
+    const eCard = $('roll-enemy');
+    pCard.classList.remove('spinning'); pCard.classList.add('settled');
+    eCard.classList.remove('spinning'); eCard.classList.add('settled');
+    $('roll-status').textContent = '— READY —';
+    await sleep(400);
+    $('roll-start-btn').style.display = 'inline-block';
+    return;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ARENA MODE — random hero enemy + random map from ALL heroes
+  // Always heroes only, never story mobs
+  // ══════════════════════════════════════════════════════════
+
+  // Enemy pool: all heroes except the player's chosen hero
+  const enemyPool = unlocked.filter(id => id !== pId && HEROES[id]);
+  if (!enemyPool.length) enemyPool.push(pId === 'aeron' ? 'lyra' : 'aeron');
+
+  // Show player card immediately (settled)
+  updateRollCard('p', pId);
+  const pCard = $('roll-player');
+  pCard.classList.remove('spinning');
+  pCard.classList.add('settled');
+
+  // Spin enemy + map for 2.4s
+  const DUR = 2400, t0 = Date.now();
+  const ticker = setInterval(() => {
+    const rE = enemyPool[Math.floor(Math.random() * enemyPool.length)];
+    const rM = MAPS[Math.floor(Math.random() * MAPS.length)];
+    updateRollCard('e', rE);
+    $('roll-map').textContent = rM.name;
+    if (Date.now() - t0 > DUR - 300) clearInterval(ticker);
+  }, 85);
+
+  await sleep(DUR);
+  clearInterval(ticker);
+
+  // Settle final enemy + map
+  rollEnemyHeroId = enemyPool[Math.floor(Math.random() * enemyPool.length)];
+  rollMap         = MAPS[Math.floor(Math.random() * MAPS.length)];
+  updateRollCard('e', rollEnemyHeroId);
+  $('roll-map').textContent = rollMap.name;
+  $('roll-map').classList.remove('spinning');
+
+  await sleep(80);
+  const eCard = $('roll-enemy');
+  eCard.classList.remove('spinning');
+  eCard.classList.add('settled');
+
+  $('roll-status').textContent = '— READY —';
+  await sleep(350);
+  $('roll-start-btn').style.display = 'inline-block';
+}
+
+// ── START BATTLE ─────────────────────────────────────────────
+function startBattle() {
+  const lvls = JSON.parse(safeLocalStorage.getItem('tenfold_levels_'+user.userID)||'{}');
+  const pLv  = lvls[rollPlayerHeroId]||1;
+  // Story monsters use their fixed level from safeSessionStorage; others scale near player
+  const fixedELv = +safeSessionStorage.getItem('tenfold_battle_enemy_lv');
+  const eLv  = fixedELv || Math.max(1, pLv+rand(-1,1));
+
+  initBattleState(rollPlayerHeroId, rollEnemyHeroId, rollMap, pLv, eLv);
+
+  $('arena-bg').style.backgroundImage = `url('${rollMap.bg}')`;
+  $('map-tag').textContent = rollMap.name;
+
+  buildSprite('player', rollPlayerHeroId);
+  buildSprite('enemy',  rollEnemyHeroId);
+  loadSkillIcons(rollPlayerHeroId);
+
+  // Hide roll overlay
+  $('roll-overlay').style.display = 'none';
+
+  renderHUD();
+  logMsg(`⚔ ${B.pHero.name} VS ${B.eHero.name}`, 'ls');
+  logMsg(`📍 ${rollMap.name}`, 'ls');
+  const isMobile = window.innerWidth <= 700;
+  logMsg(isMobile ? 'Tap skill buttons to fight!' : 'Q=Basic  W=Special  E=Ultimate', 'ls');
+  B.turn='player'; renderHUD();
+}
+
+// ── KEYBOARD ─────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (B.over||B.locked) return;
+  if (e.key==='q'||e.key==='Q') useAttack();
+  if (e.key==='w'||e.key==='W') useSkill('special');
+  if (e.key==='e'||e.key==='E') useSkill('ultimate');
+});
+
+// ── START ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>{
+  doRoll().catch(err=>{
+    console.error('doRoll error:', err);
+    $('roll-status').textContent = 'ERROR: '+err.message;
+    $('roll-status').style.color = '#ff4444';
+  });
+});
+</script>
+</body>
+</html>
