@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Dashboard — Tenfold Legends</title>
+  <script>
+  (function(){
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(function(){});
+    }
+  })();
+  </script>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .dash-page { min-height: 100vh; padding-bottom: 60px; }
+
+    /* ── HERO WELCOME BANNER ── */
+    .dash-banner {
+      position: relative; overflow: hidden;
+      min-height: 220px;
+      display: flex; align-items: flex-end;
+      padding: 0 40px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dash-banner-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center top;
+      transition: opacity 0.6s;
+    }
+    .dash-banner-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(4,4,12,0.97) 0%,
+        rgba(4,4,12,0.75) 40%,
+        rgba(4,4,12,0.3)  70%,
+        rgba(4,4,12,0.5)  100%
+      );
+    }
+    .dash-banner-content {
+      position: relative; z-index: 2;
+      display: flex; align-items: flex-end; gap: 24px;
+      flex: 1;
+    }
+    .dash-hero-portrait {
+      width: 120px; height: 140px;
+      object-fit: cover; object-position: top;
+      border-radius: 10px;
+      border: 2px solid var(--gold);
+      box-shadow: 0 0 24px rgba(240,192,64,0.4);
+      flex-shrink: 0;
+    }
+    .dash-hero-portrait-fb {
+      width: 120px; height: 140px;
+      border-radius: 10px;
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+      background: rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+    .dash-banner-info { flex: 1; }
+    .dash-welcome {
+      font-size: 0.85rem; color: var(--subtext);
+      letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .dash-username {
+      font-family: 'Cinzel', serif;
+      font-size: 2.2rem; font-weight: 900;
+      color: var(--gold); letter-spacing: 3px; line-height: 1;
+    }
+    .dash-hero-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem; color: var(--text);
+      letter-spacing: 2px; margin-top: 4px;
+    }
+    .dash-hero-name span { color: var(--subtext); font-size: 0.8rem; }
+    .dash-quote {
+      font-style: italic; font-size: 0.82rem;
+      color: var(--subtext); margin-top: 8px;
+      max-width: 400px; line-height: 1.6;
+    }
+    .dash-banner-right {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+    }
+    .dash-score-box {
+      text-align: center;
+      background: rgba(0,0,0,0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+      backdrop-filter: blur(8px);
+      min-width: 130px;
+    }
+    .dash-score-val {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem; font-weight: 900;
+      color: var(--gold); line-height: 1;
+    }
+    .dash-score-lbl {
+      font-size: 0.68rem; color: var(--subtext);
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .dash-rank-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem; font-weight: 700;
+      padding: 5px 14px; border-radius: 20px;
+      border: 1px solid currentColor;
+      background: rgba(0,0,0,0.5);
+      text-align: center;
+    }
+
+    /* ── GRID LAYOUT ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      max-width: 1280px;
+      margin: 24px auto 0;
+      padding: 0 32px;
+    }
+    @media (max-width: 1050px) { .dash-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 680px)  { .dash-grid { grid-template-columns: 1fr; } }
+
+    /* ── CARD ── */
+    .dash-card {
+      background: rgba(8,8,18,0.92);
+      border: 1px solid rgba(240,192,64,0.15);
+      border-radius: 10px; overflow: hidden;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.2s;
+    }
+    .dash-card:hover { border-color: rgba(240,192,64,0.3); }
+    .dash-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(240,192,64,0.05);
+      border-bottom: 1px solid rgba(240,192,64,0.1);
+    }
+    .dash-card-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem; color: var(--gold);
+      letter-spacing: 3px; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dash-card-action {
+      font-size: 0.72rem; color: var(--subtext);
+      cursor: pointer; transition: color 0.2s;
+      background: none; border: none;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 1px;
+    }
+    .dash-card-action:hover { color: var(--gold); }
+    .dash-card-body { padding: 16px; }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+    }
+    .stat-box {
+      text-align: center; padding: 12px 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+    }
+    .stat-box-val {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem; font-weight: 900;
+      line-height: 1; margin-bottom: 4px;
+    }
+    .stat-box-lbl {
+      font-size: 0.65rem; color: var(--subtext);
+      letter-spacing: 1.5px; text-transform: uppercase;
+    }
+
+    /* ── WINRATE BAR ── */
+    .wr-bar-wrap { margin-top: 14px; }
+    .wr-bar-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.75rem; margin-bottom: 5px;
+    }
+    .wr-bar-label span:first-child { color: var(--subtext); }
+    .wr-bar-label span:last-child  { color: var(--gold); font-weight: 700; }
+    .wr-bar { height: 10px; background: rgba(255,255,255,0.07); border-radius:5px; overflow:hidden; }
+    .wr-fill-w { height:100%; float:left; background: linear-gradient(90deg,#006600,#44ff99); border-radius:5px 0 0 5px; transition: width 0.7s; }
+    .wr-fill-l { height:100%; float:left; background: linear-gradient(90deg,#660000,#cc4444); border-radius:0 5px 5px 0; transition: width 0.7s; }
+
+    /* ── MY HERO CARD ── */
+    .my-hero-body {
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .my-hero-portrait {
+      width: 80px; height: 95px;
+      object-fit: cover; object-position: top;
+      border-radius: 7px; border: 2px solid var(--border);
+      flex-shrink: 0;
+    }
+    .my-hero-portrait-fb {
+      width: 80px; height: 95px;
+      border-radius: 7px; border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; background: rgba(255,255,255,0.03);
+      flex-shrink: 0;
+    }
+    .my-hero-details { flex: 1; }
+    .my-hero-title-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 6px;
+    }
+    .my-hero-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem; font-weight: 800; color: var(--gold);
+    }
+    .my-hero-elem {
+      font-size: 0.7rem; font-weight: 700; padding: 2px 7px;
+      border-radius: 20px; border: 1px solid currentColor;
+    }
+    .my-hero-level {
+      font-size: 0.78rem; color: var(--subtext); margin-bottom: 6px;
+    }
+    .xp-bar-wrap { margin-bottom: 8px; }
+    .xp-bar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+    .xp-bar-label { font-size:0.6rem; font-weight:700; color:#a0c4ff; letter-spacing:2px; text-transform:uppercase; }
+    .xp-bar-val { font-size:0.62rem; color:var(--subtext); }
+    .xp-bar-track { width:100%; height:6px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; }
+    .xp-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#3a7bd5,#a0c4ff,#3a7bd5); background-size:200% 100%; animation:xpShimmer 2s linear infinite; }
+    @keyframes xpShimmer { 0%{background-position:100% 0;} 100%{background-position:-100% 0;} }
+    .mini-stat-bar { margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+    .mini-stat-bar-lbl { width: 30px; font-size:0.65rem; color:var(--subtext); text-transform:uppercase; }
+    .mini-stat-bar-track { flex:1; height:5px; background:rgba(255,255,255,0.07); border-radius:3px; overflow:hidden; }
+    .mini-stat-bar-fill  { height:100%; border-radius:3px; }
+    .mini-stat-bar-val { width: 30px; text-align:right; font-size:0.7rem; font-weight:700; }
+
+    .hero-skills-mini {
+      display: flex; gap: 6px; margin-top: 10px;
+    }
+    .skill-mini {
+      width: 36px; height: 36px; border-radius: 5px;
+      border: 1px solid var(--border);
+      object-fit: cover; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; background: rgba(255,255,255,0.03);
+    }
+    .skill-mini img { width:100%; height:100%; object-fit:cover; }
+
+    /* ── STORY PROGRESS CARD ── */
+    .story-prog-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .story-prog-item:last-child { border-bottom: none; }
+    .sp-chapter-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .sp-info { flex: 1; }
+    .sp-chapter-name { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .sp-stage-text   { font-size: 0.72rem; color: var(--subtext); margin-top: 1px; }
+    .sp-stars { display: flex; gap: 2px; flex-shrink: 0; }
+    .sp-star  { font-size: 0.78rem; }
+    .sp-star.on  { color: var(--gold); }
+    .sp-star.off { color: rgba(255,255,255,0.15); }
+    .sp-prog-bar-wrap { margin-top: 6px; }
+    .sp-prog-bar { height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+    .sp-prog-fill { height:100%; border-radius: 3px; background: linear-gradient(90deg, #a06800, #f0c040); }
+    .sp-prog-txt { font-size: 0.68rem; color: var(--subtext); margin-top: 3px; text-align: right; }
+    .sp-locked { opacity: 0.38; }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+    .qa-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px; cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+      text-decoration: none;
+    }
+    .qa-btn:hover {
+      background: rgba(240,192,64,0.07);
+      border-color: rgba(240,192,64,0.3);
+      transform: translateX(4px);
+    }
+    .qa-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .qa-text { flex: 1; }
+    .qa-title { font-size: 0.92rem; font-weight: 700; color: var(--text); }
+    .qa-sub   { font-size: 0.72rem; color: var(--subtext); margin-top: 1px; }
+    .qa-arrow { color: var(--subtext); font-size: 1rem; }
+    .qa-btn.highlight {
+      border-color: rgba(240,192,64,0.4);
+      background: rgba(240,192,64,0.06);
+    }
+    .qa-btn.highlight .qa-title { color: var(--gold); }
+
+    /* ── HEROES UNLOCKED ── */
+    .heroes-unlock-grid {
+      display: grid; grid-template-columns: repeat(5,1fr); gap: 7px;
+    }
+    .hu-slot {
+      aspect-ratio: 1;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.02);
+      transition: transform 0.18s;
+      cursor: pointer;
+    }
+    .hu-slot:hover { transform: scale(1.07); }
+    .hu-slot.locked { filter: grayscale(1) brightness(0.4); cursor: default; }
+    .hu-slot.locked:hover { transform: none; }
+    .hu-slot img { width:100%; height:100%; object-fit:cover; object-position:top; }
+    .hu-slot-fb { font-size: 1.6rem; }
+    .hu-slot-lv {
+      position: absolute; bottom: 2px; right: 3px;
+      font-size: 0.55rem; font-weight: 900;
+      color: var(--gold); text-shadow: 0 1px 3px #000;
+    }
+    .hu-slot-lock {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .hu-slot.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 10px rgba(240,192,64,0.4);
+    }
+
+    /* ── RECENT BATTLES ── */
+    .battle-log-list { display: flex; flex-direction: column; gap: 6px; }
+    .bl-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 7px;
+    }
+    .bl-result {
+      width: 32px; height: 32px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 900; letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .bl-result.win  { background: rgba(68,255,153,0.15); border: 1px solid rgba(68,255,153,0.4); color: #44ff99; }
+    .bl-result.lose { background: rgba(233,69,96,0.15);  border: 1px solid rgba(233,69,96,0.4);  color: #ff7090; }
+    .bl-info { flex: 1; }
+    .bl-matchup { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .bl-meta    { font-size: 0.7rem;  color: var(--subtext); margin-top: 1px; }
+    .bl-pts {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem; font-weight: 900; flex-shrink: 0;
+    }
+    .bl-pts.win  { color: #44ff99; }
+    .bl-pts.lose { color: var(--subtext); }
+    .no-battles {
+      text-align: center; padding: 20px;
+      color: var(--subtext); font-style: italic; font-size: 0.85rem;
+    }
+
+    /* ── LEADERBOARD MINI ── */
+    .lb-mini-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .lb-mini-row:last-child { border-bottom: none; }
+    .lb-mini-rank {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 900;
+      flex-shrink: 0;
+    }
+    .lb-mini-rank.r1 { background:rgba(255,215,0,0.15);  border:1.5px solid #ffd700; color:#ffd700; }
+    .lb-mini-rank.r2 { background:rgba(192,192,192,0.15); border:1.5px solid #c0c0c0; color:#c0c0c0; }
+    .lb-mini-rank.r3 { background:rgba(205,127,50,0.15);  border:1.5px solid #cd7f32; color:#cd7f32; }
+    .lb-mini-rank.rn { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); color:var(--subtext); font-size:0.68rem; }
+    .lb-mini-name { flex:1; font-size:0.85rem; font-weight:700; }
+    .lb-mini-name.you { color: var(--gold); }
+    .lb-mini-score { font-family:'Cinzel',serif; font-size:0.85rem; color:var(--gold); font-weight:900; }
+
+    /* ── SPAN 2 ── */
+    .col-span-2 { grid-column: span 2; }
+    @media (max-width: 680px) { .col-span-2 { grid-column: span 1; } }
+
+    /* ── DAILY TIP ── */
+    .tip-card {
+      background: linear-gradient(135deg, rgba(20,5,0,0.9), rgba(10,5,20,0.9));
+      border: 1px solid rgba(240,192,64,0.25);
+    }
+    .tip-body {
+      padding: 16px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .tip-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .tip-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+    .tip-text strong { color: var(--gold); }
+
+    /* ── NEXT UNLOCK ── */
+    .next-unlock-body { padding: 14px 16px; }
+    .nu-progress-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .nu-hero-icon { font-size: 2rem; flex-shrink: 0; }
+    .nu-info { flex: 1; }
+    .nu-hero-name { font-size:0.9rem; font-weight:700; color:var(--text); }
+    .nu-sub { font-size:0.72rem; color:var(--subtext); margin-top:2px; }
+    .nu-bar  { height:8px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; margin-bottom:4px; }
+    .nu-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#a06800,#f0c040); transition:width 0.7s; }
+    .nu-pts-row {
+      display:flex; justify-content:space-between;
+      font-size:0.72rem; color:var(--subtext);
+    }
+    .nu-pts-row span:last-child { color:var(--gold); font-weight:700; }
+
+    /* ── MOBILE OVERRIDES ── */
+    @media (max-width: 900px) {
+      .dash-grid { grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 16px; margin-top: 16px; }
+      .col-span-2 { grid-column: span 2; }
+      .dash-banner { padding: 0 20px 20px; min-height: 180px; }
+      .dash-banner-content { gap: 14px; }
+      .dash-hero-portrait { width: 90px; height: 108px; }
+      .dash-hero-portrait-fb { width: 90px; height: 108px; font-size: 3rem; }
+      .dash-username { font-size: 1.6rem; }
+      .dash-score-box { padding: 9px 14px; min-width: 100px; }
+      .dash-score-val { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 680px) {
+      .dash-grid { grid-template-columns: 1fr; padding: 0 12px; }
+      .col-span-2 { grid-column: span 1; }
+
+      /* Banner: stack portrait + info vertically on very small screens */
+      .dash-banner { min-height: 160px; padding: 0 14px 16px; }
+      .dash-banner-content { flex-direction: row; gap: 12px; align-items: flex-end; }
+      .dash-banner-right { gap: 6px; }
+      .dash-score-box { padding: 7px 10px; min-width: 80px; }
+      .dash-score-val { font-size: 1.3rem; }
+      .dash-score-lbl { font-size: 0.6rem; }
+      .dash-rank-badge { font-size: 0.72rem; padding: 3px 10px; }
+      .dash-username { font-size: 1.35rem; letter-spacing: 1px; }
+      .dash-welcome { font-size: 0.75rem; letter-spacing: 2px; }
+      .dash-hero-name { font-size: 0.85rem; }
+      .dash-quote { display: none; }
+
+      /* Stats row: tighter */
+      .stats-row { gap: 7px; }
+      .stat-box { padding: 9px 5px; }
+      .stat-box-val { font-size: 1.2rem; }
+
+      /* Heroes roster: 5 cols stays, just smaller */
+      .heroes-unlock-grid { grid-template-columns: repeat(5,1fr); gap: 5px; }
+
+      /* Quick actions: more compact */
+      .qa-btn { padding: 10px 12px; }
+      .qa-title { font-size: 0.88rem; }
+      .qa-sub   { font-size: 0.68rem; }
+
+      /* Battle log items */
+      .bl-item { padding: 7px 8px; gap: 8px; }
+      .bl-result { width: 28px; height: 28px; font-size: 0.6rem; }
+      .bl-matchup { font-size: 0.78rem; }
+      .bl-meta    { font-size: 0.65rem; }
+      .bl-pts     { font-size: 0.78rem; }
+    }
+
+    @media (max-width: 400px) {
+      .dash-grid { padding: 0 8px; gap: 10px; }
+      .dash-banner { padding: 0 10px 14px; min-height: 140px; }
+      .dash-hero-portrait, .dash-hero-portrait-fb { width: 72px; height: 86px; }
+      .dash-username { font-size: 1.15rem; }
+      .dash-card-title { font-size: 0.65rem; letter-spacing: 2px; }
+      .heroes-unlock-grid { grid-template-columns: repeat(5,1fr); gap: 4px; }
+    }
+  </style>
+</head>
+<body class="dash-page">
+<div class="bg-particles"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-logo">
+    <span>TENFOLD LEGENDS</span>
+  </div>
+  <div class="navbar-links">
+    <button class="nav-btn active" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="nav-btn" onclick="location.href='characters.html'">Heroes</button>
+    <button class="nav-btn" onclick="location.href='story.html'">Story Mode</button>
+    <button class="nav-btn" onclick="location.href='battle.html'">Arena</button>
+    <button class="nav-btn" onclick="location.href='leaderboard.html'">Leaderboard</button>
+  </div>
+  <div class="nav-user">
+    <span>Welcome, <span class="username" id="nav-username">—</span></span>
+    <div class="nav-score">🏆 <span id="nav-score">0</span> pts</div>
+    <button class="nav-btn danger btn-sm" onclick="Game.logout()">Logout</button>
+  </div>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<!-- MOBILE DRAWER -->
+<div class="nav-mobile-drawer" id="nav-mobile-drawer">
+  <button class="nav-btn active" onclick="location.href='dashboard.html'">🏠 Dashboard</button>
+  <button class="nav-btn" onclick="location.href='characters.html'">⚔ Heroes</button>
+  <button class="nav-btn" onclick="location.href='story.html'">📖 Story Mode</button>
+  <button class="nav-btn" onclick="location.href='battle.html'">🏟 Arena</button>
+  <button class="nav-btn" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>
+  <div class="nav-user-row">
+    <span class="nav-username-label">Welcome, <span id="nav-username-mobile">—</span></span>
+    <div class="nav-score">🏆 <span id="nav-score-mobile">0</span> pts</div>
+    <button class="nav-btn danger btn-sm" onclick="Game.logout()">Logout</button>
+  </div>
+</div>
+
+<!-- ROTATE TOAST -->
+<div class="rotate-toast" id="rotate-toast">
+  <span class="rotate-toast-icon">📱</span>
+  Rotate to landscape for the best experience
+</div>
+
+<!-- ══════════════ HERO BANNER ══════════════ -->
+<div class="dash-banner" id="dash-banner">
+  <div class="dash-banner-bg" id="banner-bg"></div>
+  <div class="dash-banner-overlay"></div>
+  <div class="dash-banner-content">
+    <div id="banner-portrait"></div>
+    <div class="dash-banner-info">
+      <div class="dash-welcome">Welcome back, Legend</div>
+      <div class="dash-username" id="banner-username">—</div>
+      <div class="dash-hero-name" id="banner-hero-name">
+        <span>Select a hero to see them here</span>
+      </div>
+      <div class="dash-quote" id="banner-quote"></div>
+    </div>
+  </div>
+  <div class="dash-banner-right">
+    <div class="dash-score-box">
+      <div class="dash-score-val" id="banner-score">0</div>
+      <div class="dash-score-lbl">Total Score</div>
+    </div>
+    <div class="dash-rank-badge" id="banner-rank-badge" style="color:var(--gold);">— Unranked —</div>
+  </div>
+</div>
+
+<!-- ══════════════ DASHBOARD GRID ══════════════ -->
+<div class="dash-grid">
+
+  <!-- ── CARD 1: My Stats ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">📊 MY STATS</div>
+      <button class="dash-card-action" onclick="location.href='leaderboard.html'">View Full →</button>
+    </div>
+    <div class="dash-card-body">
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-box-val" id="stat-wins" style="color:#44ff99;">0</div>
+          <div class="stat-box-lbl">Wins</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val" id="stat-losses" style="color:#ff8888;">0</div>
+          <div class="stat-box-lbl">Losses</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val" id="stat-rank" style="color:var(--gold);">—</div>
+          <div class="stat-box-lbl">Global Rank</div>
+        </div>
+      </div>
+      <div class="wr-bar-wrap">
+        <div class="wr-bar-label">
+          <span>Win Rate</span>
+          <span id="wr-pct">0%</span>
+        </div>
+        <div class="wr-bar" style="display:flex;">
+          <div class="wr-fill-w" id="wr-fill-w" style="width:0%"></div>
+          <div class="wr-fill-l" id="wr-fill-l" style="width:0%"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <div style="flex:1;text-align:center;padding:7px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:var(--gold);" id="stat-score">0</div>
+          <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:1px;">TOTAL SCORE</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:7px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:900;" id="stat-tier-val">—</div>
+          <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:1px;">RANK TIER</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:7px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:var(--gold);" id="stat-unlocked">2</div>
+          <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:1px;">HEROES</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 2: Selected Hero ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">⚔ SELECTED HERO</div>
+      <button class="dash-card-action" onclick="location.href='characters.html'">Change →</button>
+    </div>
+    <div class="dash-card-body" id="hero-card-body">
+      <div style="text-align:center;padding:20px;color:var(--subtext);font-style:italic;font-size:0.85rem;">
+        No hero selected.<br>
+        <a href="characters.html" style="color:var(--gold);">Choose your legend →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 3: Quick Actions ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🎮 QUICK ACTIONS</div>
+    </div>
+    <div class="dash-card-body">
+      <div class="quick-actions">
+        <a class="qa-btn highlight" href="battle.html" onclick="safeSessionStorage.setItem('tenfold_battle_mode','arena');safeSessionStorage.removeItem('tenfold_battle_enemy');safeSessionStorage.removeItem('tenfold_battle_enemy_lv');safeSessionStorage.removeItem('tenfold_battle_chapter');safeSessionStorage.removeItem('tenfold_battle_stage');safeSessionStorage.removeItem('tenfold_battle_name');safeSessionStorage.removeItem('tenfold_battle_is_boss');">
+          <span class="qa-icon">⚔</span>
+          <div class="qa-text">
+            <div class="qa-title">Enter Arena</div>
+            <div class="qa-sub">1v1 Battle · Random Enemy · Random Map</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+        <a class="qa-btn" href="story.html">
+          <span class="qa-icon">📖</span>
+          <div class="qa-text">
+            <div class="qa-title">Story Mode</div>
+            <div class="qa-sub" id="qa-story-sub">5 Chapters · 25 Stages</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+        <a class="qa-btn" href="characters.html">
+          <span class="qa-icon">🦸</span>
+          <div class="qa-text">
+            <div class="qa-title">My Heroes</div>
+            <div class="qa-sub" id="qa-heroes-sub">View all 10 legends</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+        <a class="qa-btn" href="leaderboard.html">
+          <span class="qa-icon">🏆</span>
+          <div class="qa-text">
+            <div class="qa-title">Leaderboard</div>
+            <div class="qa-sub">Check your global ranking</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 4: Story Progress ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">📖 STORY PROGRESS</div>
+      <button class="dash-card-action" onclick="location.href='story.html'">Continue →</button>
+    </div>
+    <div class="dash-card-body" id="story-card-body">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- ── CARD 5: My Heroes Grid ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🦸 HEROES ROSTER</div>
+      <button class="dash-card-action" onclick="location.href='characters.html'">View All →</button>
+    </div>
+    <div class="dash-card-body">
+      <div class="heroes-unlock-grid" id="heroes-unlock-grid">
+        <!-- JS populated -->
+      </div>
+      <div style="margin-top:10px;text-align:center;font-size:0.72rem;color:var(--subtext);">
+        <span id="unlocked-count">2</span> / 10 Unlocked
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 6: Next Unlock ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🔓 NEXT UNLOCK</div>
+    </div>
+    <div class="next-unlock-body" id="next-unlock-body">
+      <div style="color:var(--subtext);font-size:0.82rem;">Loading…</div>
+    </div>
+  </div>
+
+  <!-- ── CARD 7: Recent Battles (span 2) ── -->
+  <div class="dash-card col-span-2">
+    <div class="dash-card-header">
+      <div class="dash-card-title">⚔ RECENT BATTLES</div>
+      <button class="dash-card-action" onclick="location.href='battle.html'">Play Now →</button>
+    </div>
+    <div class="dash-card-body">
+      <div class="battle-log-list" id="battle-log-list">
+        <div class="no-battles">No battles yet — enter the arena and write your legend!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 8: Leaderboard Mini ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🏆 TOP LEGENDS</div>
+      <button class="dash-card-action" onclick="location.href='leaderboard.html'">Full Board →</button>
+    </div>
+    <div class="dash-card-body" id="lb-mini-body">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- ── CARD 9: Daily Tip ── -->
+  <div class="dash-card tip-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">💡 BATTLE TIP</div>
+    </div>
+    <div class="tip-body">
+      <div class="tip-icon" id="tip-icon">💡</div>
+      <div class="tip-text" id="tip-text">Loading tip…</div>
+    </div>
+  </div>
+
+</div><!-- /dash-grid -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="game.js"></script>
+<script>
+// ── GUARD ─────────────────────────────────────────────────────
+if (!Game.requireLogin()) { /* redirected */ }
+
+const user           = Game.user;
+const selectedHeroId = Game.getSelectedHero();
+
+document.getElementById('nav-username').textContent = user.username;
+document.getElementById('nav-score').textContent    = user.totalScore || 0;
+document.getElementById('banner-username').textContent = user.username;
+document.getElementById('banner-score').textContent    = formatNumber(user.totalScore || 0);
+document.getElementById('stat-score').textContent      = formatNumber(user.totalScore || 0);
+
+// ── MOBILE NAV SYNC ───────────────────────────────────────────
+const _mobileUn = document.getElementById('nav-username-mobile');
+const _mobileSc = document.getElementById('nav-score-mobile');
+if (_mobileUn) _mobileUn.textContent = user.username;
+if (_mobileSc) _mobileSc.textContent = user.totalScore || 0;
+
+// ── HAMBURGER ─────────────────────────────────────────────────
+(function() {
+  const btn    = document.getElementById('nav-hamburger');
+  const drawer = document.getElementById('nav-mobile-drawer');
+  if (!btn || !drawer) return;
+  btn.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+  // Close drawer when any nav button inside it is clicked
+  drawer.querySelectorAll('.nav-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      btn.classList.remove('open');
+    });
+  });
+})();
+
+
+
+// ── ROTATE TOAST (soft, shows once per session) ───────────────
+(function() {
+  const toast = document.getElementById('rotate-toast');
+  if (!toast) return;
+  if (safeSessionStorage.getItem('tenfold_rotate_shown')) return;
+
+  function isMobile()  { return window.innerWidth <= 900 || 'ontouchstart' in window; }
+  function isPortrait() {
+    if (screen.orientation && screen.orientation.type)
+      return screen.orientation.type.startsWith('portrait');
+    return window.innerHeight > window.innerWidth;
+  }
+  function check() {
+    if (isMobile() && isPortrait()) {
+      toast.classList.add('show');
+      safeSessionStorage.setItem('tenfold_rotate_shown', '1');
+      setTimeout(() => toast.classList.remove('show'), 5000);
+    }
+  }
+  // Slight delay so page layout is done first
+  setTimeout(check, 300);
+  window.addEventListener('orientationchange', () => setTimeout(check, 200));
+})();
+
+// ── LOCAL DATA ────────────────────────────────────────────────
+const unlocked = JSON.parse(safeLocalStorage.getItem('tenfold_unlocked_' + user.userID) || '["aeron","lyra"]');
+const levels   = JSON.parse(safeLocalStorage.getItem('tenfold_levels_'   + user.userID) || '{}');
+const progress = JSON.parse(safeLocalStorage.getItem('tenfold_story_'    + user.userID) || '{}');
+
+// ── RANK TIERS ────────────────────────────────────────────────
+const RANK_TIERS = [
+  { name:'Bronze',   min:0,    max:499,    color:'#cd7f32', icon:'🥉' },
+  { name:'Silver',   min:500,  max:999,    color:'#c0c0c0', icon:'🥈' },
+  { name:'Gold',     min:1000, max:1999,   color:'#ffd700', icon:'🥇' },
+  { name:'Platinum', min:2000, max:3499,   color:'#00cfff', icon:'💎' },
+  { name:'Diamond',  min:3500, max:5999,   color:'#c8a8ff', icon:'♦'  },
+  { name:'Legend',   min:6000, max:999999, color:'#ff4500', icon:'👑' },
+];
+function getTier(score) {
+  return RANK_TIERS.find(t => score >= t.min && score <= t.max) || RANK_TIERS[0];
+}
+
+// ── UNLOCK THRESHOLDS ─────────────────────────────────────────
+const UNLOCK_PTS = [
+  { id:'kael',   pts:200  }, { id:'riven',  pts:400  },
+  { id:'selene', pts:600  }, { id:'draven', pts:800  },
+  { id:'mira',   pts:1000 }, { id:'brutus', pts:1400 },
+  { id:'elysia', pts:1800 }, { id:'zephyr', pts:2400 },
+];
+
+// ── BATTLE TIPS ───────────────────────────────────────────────
+const TIPS = [
+  { icon:'⚡', text: '<strong>Use Ultimate wisely</strong> — it costs 80 MP. Build up mana with basic attacks before unleashing it.' },
+  { icon:'❄️', text: '<strong>Lyra\'s Frozen Prison</strong> skips the enemy\'s next turn. Use it right before their ultimate to waste it.' },
+  { icon:'🔥', text: '<strong>Aeron\'s burn</strong> deals 5% max HP per turn. Stack it with Inferno Burst for massive damage over time.' },
+  { icon:'🛡', text: '<strong>Brutus\'s Steel Guard</strong> reduces incoming damage by 60%. Use it when the enemy is about to use their ultimate.' },
+  { icon:'💧', text: '<strong>Mira\'s Healing Tide</strong> restores 150 HP. Use it when HP drops below 35% to turn the fight around.' },
+  { icon:'🎯', text: '<strong>Draven\'s Dark Step</strong> has a higher crit chance. Combine it with a basic attack follow-up for maximum burst.' },
+  { icon:'🌙', text: '<strong>Selene\'s Moonfall</strong> always crits. Save your 80 MP for the decisive final blow.' },
+  { icon:'🔮', text: '<strong>Elysia\'s Mana Surge</strong> boosts ATK for 2 turns. Activate it before using Celestial Judgment for maximum damage.' },
+  { icon:'⚔', text: '<strong>Keyboard shortcuts:</strong> Q = Basic Skill, W = Special Skill, E = Ultimate Skill. React faster in battle!' },
+  { icon:'🏆', text: '<strong>Win battles</strong> to earn 100 pts each. Reach 200 pts to unlock Kael — the Storm Hunter!' },
+];
+
+// ── BANNER ────────────────────────────────────────────────────
+function renderBanner() {
+  if (selectedHeroId && HEROES[selectedHeroId]) {
+    const h  = HEROES[selectedHeroId];
+    const bg = (h.sprites.backgrounds && h.sprites.backgrounds[0]) || '';
+    if (bg) document.getElementById('banner-bg').style.backgroundImage = `url('${bg}')`;
+
+    // Portrait
+    const pWrap = document.getElementById('banner-portrait');
+    if (h.sprites.portrait) {
+      pWrap.innerHTML = `<img src="${h.sprites.portrait}" class="dash-hero-portrait" alt="${h.name}"
+        onerror="this.outerHTML='<div class=\\"dash-hero-portrait-fb\\">${ELEMENT_ICONS[h.element]}</div>'">`;
+    } else {
+      pWrap.innerHTML = `<div class="dash-hero-portrait-fb">${ELEMENT_ICONS[h.element]}</div>`;
+    }
+
+    document.getElementById('banner-hero-name').innerHTML =
+      `${h.name} <span>· ${h.title} · ${ELEMENT_ICONS[h.element]} ${h.element}</span>`;
+    document.getElementById('banner-quote').textContent = h.quote;
+  }
+
+  // Rank badge
+  const score = user.totalScore || 0;
+  const tier  = getTier(score);
+  const badge = document.getElementById('banner-rank-badge');
+  badge.textContent = `${tier.icon} ${tier.name}`;
+  badge.style.color = tier.color;
+  badge.style.borderColor = tier.color;
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function renderStats(wins, losses, globalRank) {
+  const total = wins + losses;
+  const wr    = total ? Math.round(wins / total * 100) : 0;
+  const wrW   = total ? Math.round(wins   / total * 100) : 0;
+  const wrL   = total ? Math.round(losses / total * 100) : 0;
+
+  document.getElementById('stat-wins').textContent    = wins;
+  document.getElementById('stat-losses').textContent  = losses;
+  document.getElementById('stat-rank').textContent    = globalRank ? '#' + globalRank : '—';
+  document.getElementById('wr-pct').textContent       = wr + '%';
+  document.getElementById('wr-fill-w').style.width    = wrW + '%';
+  document.getElementById('wr-fill-l').style.width    = wrL + '%';
+
+  const tier = getTier(user.totalScore || 0);
+  document.getElementById('stat-tier-val').textContent   = tier.icon + ' ' + tier.name;
+  document.getElementById('stat-tier-val').style.color   = tier.color;
+  document.getElementById('stat-unlocked').textContent   = unlocked.length;
+  document.getElementById('unlocked-count').textContent  = unlocked.length;
+}
+
+// ── HERO CARD ─────────────────────────────────────────────────
+function renderHeroCard() {
+  const body = document.getElementById('hero-card-body');
+  if (!selectedHeroId || !HEROES[selectedHeroId]) return;
+  const h  = HEROES[selectedHeroId];
+  const lv = levels[selectedHeroId] || 1;
+  const xp = levels[selectedHeroId + '_xp'] || 0;
+  const xpNeeded = lv * 100;
+  const xpPct = Math.min(100, Math.round(xp / xpNeeded * 100));
+  const st = getScaledStats(selectedHeroId, lv);
+  const maxSt = { hp:1500, atk:200, def:160, spd:160, crit:50 };
+
+  const portraitHtml = h.sprites.portrait
+    ? `<img src="${h.sprites.portrait}" class="my-hero-portrait" alt="${h.name}"
+          onerror="this.outerHTML='<div class=\\"my-hero-portrait-fb\\">${ELEMENT_ICONS[h.element]}</div>'">`
+    : `<div class="my-hero-portrait-fb">${ELEMENT_ICONS[h.element]}</div>`;
+
+  function miniBar(lbl, val, max, color) {
+    const pct = Math.min(100, Math.round(val / max * 100));
+    return `
+      <div class="mini-stat-bar">
+        <span class="mini-stat-bar-lbl">${lbl}</span>
+        <div class="mini-stat-bar-track"><div class="mini-stat-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+        <span class="mini-stat-bar-val" style="color:${color};">${val}</span>
+      </div>`;
+  }
+
+  // Skill icons
+  let skillsHtml = '';
+  ['basic','special','ultimate'].forEach(t => {
+    const sk = h.skills[t];
+    const iconHtml = sk.icon
+      ? `<img src="${sk.icon}" alt="${sk.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`
+      : ELEMENT_ICONS[h.element];
+    skillsHtml += `
+      <div class="skill-mini" title="${sk.name}: ${sk.desc}"
+           style="border-color:${t==='ultimate'?'rgba(240,192,64,0.5)':t==='special'?'rgba(60,130,255,0.4)':'rgba(160,160,160,0.3)'};">
+        ${iconHtml}
+      </div>`;
+  });
+
+  body.innerHTML = `
+    <div class="my-hero-body">
+      ${portraitHtml}
+      <div class="my-hero-details">
+        <div class="my-hero-title-row">
+          <span class="my-hero-name">${h.name}</span>
+          <span class="my-hero-elem" style="color:${h.color};border-color:${h.color};">
+            ${ELEMENT_ICONS[h.element]} ${h.element}
+          </span>
+        </div>
+        <div class="my-hero-level">Level ${lv} · ${h.fightingStyle}</div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar-header">
+            <span class="xp-bar-label">EXP</span>
+            <span class="xp-bar-val">${xp} / ${xpNeeded}</span>
+          </div>
+          <div class="xp-bar-track">
+            <div class="xp-bar-fill" style="width:${xpPct}%;"></div>
+          </div>
+        </div>
+        ${miniBar('HP',  st.hp,   maxSt.hp,   '#ff5555')}
+        ${miniBar('ATK', st.atk,  maxSt.atk,  '#ffaa44')}
+        ${miniBar('SPD', st.spd,  maxSt.spd,  '#44ffaa')}
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:2px;margin-bottom:6px;">SKILLS</div>
+      <div class="hero-skills-mini">${skillsHtml}</div>
+    </div>
+  `;
+}
+
+// ── STORY PROGRESS ────────────────────────────────────────────
+const CHAPTER_DATA = [
+  { id:1, title:'The Awakening',        icon:'🔥', stages:5 },
+  { id:2, title:'The Shattered Realm',  icon:'⚡', stages:5 },
+  { id:3, title:'Shadows and Stars',    icon:'🌑', stages:5 },
+  { id:4, title:'Rise of the Iron Legion',icon:'⚙️',stages:5 },
+  { id:5, title:'The Final Reckoning',  icon:'👑', stages:5 },
+];
+
+function renderStoryProgress() {
+  const body = document.getElementById('story-card-body');
+  let html   = '';
+  let totalDone = 0, totalStars = 0;
+  let nextChapter = null, nextStage = null;
+
+  CHAPTER_DATA.forEach((ch, ci) => {
+    const done  = Array.from({length: ch.stages}, (_,i) =>
+      progress[`${ch.id}_${i+1}`]?.completed).filter(Boolean).length;
+    const stars = Array.from({length: ch.stages}, (_,i) =>
+      progress[`${ch.id}_${i+1}`]?.stars || 0).reduce((a,b) => a+b, 0);
+    const locked = ci > 0 && CHAPTER_DATA[ci-1] &&
+      Array.from({length:CHAPTER_DATA[ci-1].stages},(_,i) =>
+        progress[`${ci}_${i+1}`]?.completed).filter(Boolean).length < CHAPTER_DATA[ci-1].stages;
+
+    totalDone  += done;
+    totalStars += stars;
+
+    if (!nextChapter && done < ch.stages && !locked) {
+      nextChapter = ch.id;
+      nextStage   = done + 1;
+    }
+
+    const pct = Math.round(done / ch.stages * 100);
+    const starsHtml = Array.from({length:3}, (_,i) =>
+      `<span class="sp-star ${i < Math.floor(stars / ch.stages) ? 'on' : 'off'}">★</span>`).join('');
+
+    html += `
+      <div class="story-prog-item ${locked ? 'sp-locked' : ''}">
+        <span class="sp-chapter-icon">${ch.icon}</span>
+        <div class="sp-info">
+          <div class="sp-chapter-name">${ch.title}</div>
+          <div class="sp-stage-text">${done}/${ch.stages} stages · ${stars}★</div>
+          <div class="sp-prog-bar-wrap">
+            <div class="sp-prog-bar"><div class="sp-prog-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>
+        <div class="sp-stars">${starsHtml}</div>
+      </div>`;
+  });
+
+  // Update story quick action text
+  if (nextChapter) {
+    document.getElementById('qa-story-sub').textContent =
+      `Continue: Chapter ${nextChapter}, Stage ${nextStage}`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ── HEROES ROSTER GRID ────────────────────────────────────────
+function renderHeroesGrid() {
+  const grid = document.getElementById('heroes-unlock-grid');
+  grid.innerHTML = '';
+  HERO_ORDER.forEach(id => {
+    const h       = HEROES[id];
+    const isUnlck = unlocked.includes(id);
+    const lv      = levels[id] || 1;
+    const isSel   = id === selectedHeroId;
+
+    const slot = document.createElement('div');
+    slot.className = `hu-slot ${isUnlck ? '' : 'locked'} ${isSel ? 'active' : ''}`;
+    slot.title     = `${h.name} — ${h.title}${!isUnlck ? ' (Locked)' : ' Lv ' + lv}`;
+    slot.onclick   = () => isUnlck && (location.href='characters.html');
+
+    if (h.sprites.portrait && isUnlck) {
+      slot.innerHTML = `
+        <img src="${h.sprites.portrait}" alt="${h.name}"
+          onerror="this.outerHTML='<div class=\\"hu-slot-fb\\">${ELEMENT_ICONS[h.element]}</div>'">
+        <div class="hu-slot-lv">Lv${lv}</div>`;
+    } else {
+      slot.innerHTML = `
+        <div class="hu-slot-fb">${ELEMENT_ICONS[h.element]}</div>
+        ${!isUnlck ? '<div class="hu-slot-lock">🔒</div>' : `<div class="hu-slot-lv">Lv${lv}</div>`}`;
+    }
+    grid.appendChild(slot);
+  });
+
+  document.getElementById('qa-heroes-sub').textContent =
+    `${unlocked.length} unlocked · ${10 - unlocked.length} locked`;
+}
+
+// ── NEXT UNLOCK ───────────────────────────────────────────────
+function renderNextUnlock() {
+  const body  = document.getElementById('next-unlock-body');
+  const score = user.totalScore || 0;
+  const next  = UNLOCK_PTS.find(u => !unlocked.includes(u.id));
+
+  if (!next) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:2rem;margin-bottom:8px;">🎉</div>
+        <div style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.9rem;letter-spacing:2px;">ALL HEROES UNLOCKED!</div>
+        <div style="font-size:0.75rem;color:var(--subtext);margin-top:6px;">You have collected all 10 legends.</div>
+      </div>`;
+    return;
+  }
+
+  const h    = HEROES[next.id];
+  const pct  = Math.min(100, Math.round(score / next.pts * 100));
+  const need = Math.max(0, next.pts - score);
+
+  body.innerHTML = `
+    <div class="nu-progress-row">
+      <div class="nu-hero-icon">${ELEMENT_ICONS[h.element]}</div>
+      <div class="nu-info">
+        <div class="nu-hero-name">${h.name} <span style="font-size:0.72rem;color:var(--subtext);">· ${h.title}</span></div>
+        <div class="nu-sub">${h.element} · ${h.fightingStyle}</div>
+      </div>
+    </div>
+    <div class="nu-bar"><div class="nu-fill" style="width:${pct}%;"></div></div>
+    <div class="nu-pts-row">
+      <span>${formatNumber(score)} pts</span>
+      <span>${pct}% · ${formatNumber(need)} pts to unlock</span>
+    </div>
+    <div style="margin-top:12px;">
+      <a class="qa-btn" href="battle.html" style="padding:10px 12px;">
+        <span class="qa-icon" style="font-size:1.1rem;">⚔</span>
+        <div class="qa-text">
+          <div class="qa-title" style="font-size:0.82rem;">Win battles to unlock ${h.name}</div>
+          <div class="qa-sub">+100 pts per win</div>
+        </div>
+      </a>
+    </div>
+  `;
+}
+
+// ── RECENT BATTLES ────────────────────────────────────────────
+function renderRecentBattles(battles) {
+  const list = document.getElementById('battle-log-list');
+  if (!battles || battles.length === 0) {
+    list.innerHTML = `<div class="no-battles">No battles yet — enter the arena and write your legend!</div>`;
+    return;
+  }
+
+  list.innerHTML = battles.slice(0, 6).map(b => {
+    const won   = b.result === 'win';
+    const hero  = HEROES[b.heroID]  || { name: b.heroName  || '?' };
+    const enemy = HEROES[b.enemyHeroID] || { name: b.enemyHeroName || '?' };
+    const date  = b.battleDate ? new Date(b.battleDate).toLocaleDateString() : 'Recently';
+    return `
+      <div class="bl-item">
+        <div class="bl-result ${won ? 'win' : 'lose'}">${won ? 'WIN' : 'LOSE'}</div>
+        <div class="bl-info">
+          <div class="bl-matchup">${hero.name || b.heroName} vs ${enemy.name || b.enemyHeroName}</div>
+          <div class="bl-meta">${date}${b.storyChapter > 0 ? ' · Chapter ' + b.storyChapter : ' · Arena'}</div>
+        </div>
+        <div class="bl-pts ${won ? 'win' : 'lose'}">${won ? '+100' : '+10'}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── LEADERBOARD MINI ──────────────────────────────────────────
+function renderLbMini(entries) {
+  const body = document.getElementById('lb-mini-body');
+  if (!entries || entries.length === 0) {
+    body.innerHTML = `<div style="text-align:center;color:var(--subtext);font-size:0.82rem;padding:16px;">No rankings yet.</div>`;
+    return;
+  }
+
+  const myEntry = entries.find(e => e.userID === user.userID);
+  let html = '';
+
+  // Show top 5 + player's position if not in top 5
+  const top5 = entries.slice(0, 5);
+  const showMe = myEntry && myEntry.rank > 5;
+
+  top5.forEach(e => {
+    const isMe  = e.userID === user.userID;
+    const rcls  = e.rank <= 3 ? `r${e.rank}` : 'rn';
+    const medal = e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank;
+    html += `
+      <div class="lb-mini-row" ${isMe ? 'style="background:rgba(240,192,64,0.07);border-radius:6px;padding:8px 6px;"' : ''}>
+        <div class="lb-mini-rank ${rcls}">${medal}</div>
+        <div class="lb-mini-name ${isMe ? 'you' : ''}">${e.username}${isMe ? ' <span style="font-size:0.6rem;color:var(--gold);">(You)</span>' : ''}</div>
+        <div class="lb-mini-score">${formatNumber(e.totalScore)}</div>
+      </div>`;
+  });
+
+  if (showMe) {
+    html += `<div style="text-align:center;color:var(--subtext);font-size:0.7rem;padding:4px 0;">···</div>`;
+    const rcls = myEntry.rank <= 3 ? `r${myEntry.rank}` : 'rn';
+    html += `
+      <div class="lb-mini-row" style="background:rgba(240,192,64,0.07);border-radius:6px;padding:8px 6px;">
+        <div class="lb-mini-rank ${rcls}">#${myEntry.rank}</div>
+        <div class="lb-mini-name you">${myEntry.username} <span style="font-size:0.6rem;">(You)</span></div>
+        <div class="lb-mini-score">${formatNumber(myEntry.totalScore)}</div>
+      </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ── BATTLE TIP ────────────────────────────────────────────────
+function renderTip() {
+  const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+  document.getElementById('tip-icon').textContent  = tip.icon;
+  document.getElementById('tip-text').innerHTML    = tip.text;
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────────
+async function loadDashboard() {
+  // Render immediately with local data
+  renderBanner();
+  renderHeroCard();
+  renderStoryProgress();
+  renderHeroesGrid();
+  renderNextUnlock();
+  renderTip();
+  renderStats(0, 0, null);
+
+  // Load leaderboard for stats + mini board
+  const lbRes = await apiCall({ action: 'leaderboard' });
+  let entries = [];
+  if (lbRes.success && lbRes.leaderboard) {
+    entries = lbRes.leaderboard;
+  } else {
+    // Offline fallback
+    const saved = safeLocalStorage.getItem('tenfold_users');
+    const users = saved ? JSON.parse(saved) : [];
+    if (!users.find(u => u.id === user.userID)) {
+      users.push({ id: user.userID, username: user.username, score: user.totalScore || 0 });
+    }
+    entries = users.map((u,i) => ({
+      rank: i+1, userID: u.id, username: u.username,
+      totalScore: u.score || 0, wins: 0, losses: 0
+    })).sort((a,b) => b.totalScore - a.totalScore)
+      .map((e,i) => ({...e, rank: i+1}));
+  }
+
+  const me = entries.find(e => e.userID === user.userID);
+  renderStats(me?.wins || 0, me?.losses || 0, me?.rank || null);
+  renderLbMini(entries);
+
+  // Load recent battles from score sheet (offline: local battle log)
+  const battles = JSON.parse(safeLocalStorage.getItem('tenfold_battles_' + user.userID) || '[]');
+  renderRecentBattles(battles);
+
+  // Load story progress from API
+  const storyRes = await apiCall({ action: 'getStory', userID: user.userID });
+  if (storyRes.success && storyRes.progress) {
+    storyRes.progress.forEach(p => {
+      progress[`${p.chapter}_${p.stage}`] = { completed: p.completed, stars: p.stars || 0 };
+    });
+    safeLocalStorage.setItem('tenfold_story_' + user.userID, JSON.stringify(progress));
+    renderStoryProgress(); // re-render with fresh data
+  }
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadDashboard();
+</script>
+</body>
+</html>
