@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>Story Mode — Tenfold Legends</title>
   <link rel="stylesheet" href="style.css"/>
   <style>
@@ -254,6 +254,11 @@
     .ch-prog-bar { height:4px; background:rgba(255,255,255,.07); border-radius:2px; overflow:hidden; margin-top:5px; }
     .ch-prog-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,#a06800,#f0c040); transition:width .6s; }
   </style>
+<script>
+(function(){
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); } catch(e) {}
+})();
+</script>
 </head>
 <body class="story-page">
 <div class="bg-particles"></div>
