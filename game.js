@@ -35,7 +35,7 @@
 
 // ── APPS SCRIPT WEB APP URL ───────────────────────────────────
 // After deploying Code.gs as a Web App, paste the URL here:
-const API_URL = 'https://script.google.com/macros/s/AKfycbw-K1YLD8GwDXfM5UZrQ2z1zuSf8_isy0D3VH75XotoKDJfRUX90keFz3QcNmOSD7en2Q/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwI6MAbP0igjlDDzlcB7EKvt1CHhHHQeluclVB-ft4KJ_I7yp5ZY3_oj7AHvSS1g_VY1w/exec';
 
 // ── HERO DATABASE ─────────────────────────────────────────────
 const HEROES = {
