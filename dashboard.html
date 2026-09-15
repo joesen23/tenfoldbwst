@@ -480,6 +480,75 @@
       .dash-card-title { font-size: 0.65rem; letter-spacing: 2px; }
       .heroes-unlock-grid { grid-template-columns: repeat(5,1fr); gap: 4px; }
     }
+    @media screen and (orientation: landscape) and (max-height: 600px) {
+
+  /* Keep logout visible on landscape phone */
+  .navbar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px !important;
+    gap: 8px;
+  }
+
+  .navbar-logo {
+    flex-shrink: 0;
+  }
+
+  .navbar-logo span {
+    font-size: 0.75rem !important;
+  }
+
+  .navbar-links {
+    display: flex !important;
+    flex: 1;
+    justify-content: center;
+    gap: 4px !important;
+  }
+
+  .navbar-links .nav-btn {
+    display: inline-flex !important;
+    padding: 6px 7px !important;
+    font-size: 0.62rem !important;
+  }
+
+  .nav-user {
+    display: flex !important;
+    align-items: center;
+    gap: 5px !important;
+    flex-shrink: 0;
+  }
+
+  .nav-user > span {
+    display: none;
+  }
+
+  .nav-score {
+    font-size: 0.65rem !important;
+    padding: 5px 7px !important;
+  }
+
+  /* LOGOUT ALWAYS VISIBLE */
+  .nav-user .danger,
+  .nav-user .btn-sm {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 6px 9px !important;
+    font-size: 0.62rem !important;
+    white-space: nowrap;
+  }
+
+  /* Hide hamburger because landscape uses full navigation */
+  .nav-hamburger {
+    display: none !important;
+  }
+
+  /* Hide mobile drawer */
+  .nav-mobile-drawer {
+    display: none !important;
+  }
+}
   </style>
 </head>
 <body class="dash-page">
