@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <title>Leaderboard — Tenfold Legends</title>
+
   <script>
   (function(){
     if (screen.orientation && screen.orientation.lock) {
@@ -15,943 +16,2688 @@
     }
   })();
   </script>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    .lb-page { min-height: 100vh; padding-bottom: 60px; }
 
-    /* ── BANNER ── */
+  <link rel="stylesheet" href="style.css"/>
+
+  <style>
+    .lb-page {
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* =========================================================
+       LEADERBOARD BANNER
+    ========================================================= */
     .lb-banner {
-      position: relative; overflow: hidden;
+      position: relative;
+      overflow: hidden;
       padding: 36px 40px 28px;
       text-align: center;
-      background: linear-gradient(135deg,
+      background: linear-gradient(
+        135deg,
         rgba(15,8,0,0.97) 0%,
         rgba(10,8,20,0.97) 50%,
-        rgba(5,10,20,0.97) 100%);
+        rgba(5,10,20,0.97) 100%
+      );
       border-bottom: 1px solid var(--border);
     }
+
     .lb-banner::before {
       content: '';
-      position: absolute; inset: 0;
+      position: absolute;
+      inset: 0;
       background:
-        radial-gradient(ellipse at 15% 50%, rgba(240,192,64,0.1) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 50%, rgba(233,69,96,0.07) 0%, transparent 55%);
+        radial-gradient(
+          ellipse at 15% 50%,
+          rgba(240,192,64,0.1) 0%,
+          transparent 55%
+        ),
+        radial-gradient(
+          ellipse at 85% 50%,
+          rgba(233,69,96,0.07) 0%,
+          transparent 55%
+        );
       pointer-events: none;
     }
+
     .lb-banner-title {
       font-family: 'Cinzel', serif;
-      font-size: 2.4rem; font-weight: 900;
-      color: var(--gold); letter-spacing: 7px;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 7px;
       filter: drop-shadow(0 0 24px rgba(240,192,64,0.45));
     }
+
     .lb-banner-sub {
-      font-size: 0.85rem; color: var(--subtext);
-      letter-spacing: 4px; margin-top: 6px;
-    }
-    .lb-stats-row {
-      display: flex; justify-content: center; gap: 28px;
-      margin-top: 20px; flex-wrap: wrap;
-    }
-    .lb-stat-box {
-      text-align: center; padding: 10px 22px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border); border-radius: 8px;
-      min-width: 110px;
-    }
-    .lb-stat-val {
-      font-family: 'Cinzel', serif;
-      font-size: 1.8rem; font-weight: 900; color: var(--gold);
-    }
-    .lb-stat-lbl {
-      font-size: 0.68rem; color: var(--subtext);
-      letter-spacing: 2px; text-transform: uppercase; margin-top: 2px;
+      font-size: 0.85rem;
+      color: var(--subtext);
+      letter-spacing: 4px;
+      margin-top: 6px;
     }
 
-    /* ── CONTENT LAYOUT ── */
+    .lb-stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .lb-stat-box {
+      text-align: center;
+      padding: 10px 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-width: 110px;
+    }
+
+    .lb-stat-val {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .lb-stat-lbl {
+      font-size: 0.68rem;
+      color: var(--subtext);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* =========================================================
+       CONTENT
+    ========================================================= */
     .lb-content {
-      max-width: 1000px; margin: 0 auto; padding: 28px 28px 0;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 28px 28px 0;
       display: grid;
       grid-template-columns: 1fr 320px;
       gap: 24px;
       align-items: start;
     }
-    @media (max-width: 820px) { .lb-content { grid-template-columns: 1fr; } }
 
-    /* ── TOP 3 PODIUM ── */
-    .podium-section { margin-bottom: 28px; }
+    @media (max-width: 820px) {
+      .lb-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* =========================================================
+       PODIUM
+    ========================================================= */
+    .podium-section {
+      margin-bottom: 28px;
+    }
+
     .podium-title {
       font-family: 'Cinzel', serif;
-      font-size: 0.75rem; color: var(--subtext);
-      letter-spacing: 3px; text-transform: uppercase;
+      font-size: 0.75rem;
+      color: var(--subtext);
+      letter-spacing: 3px;
+      text-transform: uppercase;
       margin-bottom: 16px;
     }
+
     .podium-row {
-      display: flex; gap: 14px; align-items: flex-end;
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
       justify-content: center;
     }
+
     .podium-card {
-      flex: 1; max-width: 200px;
+      flex: 1;
+      max-width: 200px;
       background: rgba(8,8,18,0.92);
-      border-radius: 10px; overflow: hidden;
+      border-radius: 10px;
+      overflow: hidden;
       text-align: center;
       border: 1px solid rgba(240,192,64,0.15);
       transition: transform 0.2s;
       position: relative;
     }
-    .podium-card:hover { transform: translateY(-4px); }
+
+    .podium-card:hover {
+      transform: translateY(-4px);
+    }
 
     .podium-card.rank-1 {
       border-color: rgba(255,215,0,0.5);
       box-shadow: 0 0 24px rgba(255,215,0,0.2);
       padding-bottom: 10px;
     }
+
     .podium-card.rank-2 {
       border-color: rgba(192,192,192,0.35);
       box-shadow: 0 0 14px rgba(192,192,192,0.1);
     }
+
     .podium-card.rank-3 {
       border-color: rgba(205,127,50,0.35);
       box-shadow: 0 0 14px rgba(205,127,50,0.1);
     }
 
-    .podium-height-1 { min-height: 180px; }
-    .podium-height-2 { min-height: 155px; }
-    .podium-height-3 { min-height: 135px; }
+    .podium-height-1 {
+      min-height: 180px;
+    }
+
+    .podium-height-2 {
+      min-height: 155px;
+    }
+
+    .podium-height-3 {
+      min-height: 135px;
+    }
 
     .podium-crown {
-      font-size: 1.8rem; padding: 10px 0 0;
+      font-size: 1.8rem;
+      padding: 10px 0 0;
       display: block;
     }
+
     .podium-rank-num {
-      font-family: 'Cinzel', serif; font-weight: 900;
-      font-size: 2rem; line-height: 1; padding: 4px 0;
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: 2rem;
+      line-height: 1;
+      padding: 4px 0;
     }
-    .podium-card.rank-1 .podium-rank-num { color: #ffd700; }
-    .podium-card.rank-2 .podium-rank-num { color: #c0c0c0; }
-    .podium-card.rank-3 .podium-rank-num { color: #cd7f32; }
+
+    .podium-card.rank-1 .podium-rank-num {
+      color: #ffd700;
+    }
+
+    .podium-card.rank-2 .podium-rank-num {
+      color: #c0c0c0;
+    }
+
+    .podium-card.rank-3 .podium-rank-num {
+      color: #cd7f32;
+    }
 
     .podium-username {
       font-family: 'Cinzel', serif;
-      font-size: 0.88rem; font-weight: 700;
-      color: var(--text); padding: 0 8px; line-height: 1.3;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      padding: 0 8px;
+      line-height: 1.3;
       word-break: break-word;
     }
+
     .podium-score {
-      font-size: 1.1rem; font-weight: 900;
-      color: var(--gold); padding: 5px 0 0;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--gold);
+      padding: 5px 0 0;
       font-family: 'Cinzel', serif;
     }
+
     .podium-wl {
-      font-size: 0.7rem; color: var(--subtext);
+      font-size: 0.7rem;
+      color: var(--subtext);
       padding-bottom: 6px;
     }
+
     .podium-you-badge {
-      position: absolute; top: 6px; right: 6px;
-      background: var(--gold); color: #000;
-      font-size: 0.58rem; font-weight: 900;
-      padding: 2px 5px; border-radius: 4px;
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--gold);
+      color: #000;
+      font-size: 0.58rem;
+      font-weight: 900;
+      padding: 2px 5px;
+      border-radius: 4px;
       letter-spacing: 0.5px;
     }
 
-    /* ── FULL TABLE ── */
-    .lb-table-section {}
+    /* =========================================================
+       TABLE
+    ========================================================= */
     .lb-table-header {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 12px;
     }
+
     .lb-table-title {
       font-family: 'Cinzel', serif;
-      font-size: 0.75rem; color: var(--subtext);
-      letter-spacing: 3px; text-transform: uppercase;
+      font-size: 0.75rem;
+      color: var(--subtext);
+      letter-spacing: 3px;
+      text-transform: uppercase;
     }
+
     .lb-refresh-btn {
       background: transparent;
       border: 1px solid var(--border);
-      color: var(--subtext); font-family: 'Rajdhani', sans-serif;
-      font-size: 0.8rem; font-weight: 600; letter-spacing: 1px;
-      padding: 5px 14px; border-radius: 4px; cursor: pointer;
+      color: var(--subtext);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      padding: 5px 14px;
+      border-radius: 4px;
+      cursor: pointer;
       transition: all 0.2s;
     }
-    .lb-refresh-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    .lb-refresh-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
 
     .lb-table-wrap {
       background: rgba(8,8,18,0.92);
       border: 1px solid rgba(240,192,64,0.15);
-      border-radius: 10px; overflow: hidden;
+      border-radius: 10px;
+      overflow: hidden;
     }
-    table.lb-table { width: 100%; border-collapse: collapse; }
+
+    table.lb-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
     .lb-table thead tr {
       background: rgba(240,192,64,0.06);
       border-bottom: 1px solid rgba(240,192,64,0.2);
     }
+
     .lb-table th {
       padding: 11px 14px;
       font-family: 'Cinzel', serif;
-      font-size: 0.7rem; color: var(--gold);
-      letter-spacing: 2px; text-transform: uppercase;
-      text-align: left; font-weight: 700;
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-align: left;
+      font-weight: 700;
     }
-    .lb-table th.right { text-align: right; }
+
+    .lb-table th.right {
+      text-align: right;
+    }
+
     .lb-table td {
       padding: 11px 14px;
       border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.9rem; color: var(--text);
+      font-size: 0.9rem;
+      color: var(--text);
       vertical-align: middle;
     }
-    .lb-table tbody tr { transition: background 0.15s; }
-    .lb-table tbody tr:hover td { background: rgba(240,192,64,0.04); }
-    .lb-table tbody tr:last-child td { border-bottom: none; }
 
-    /* You row highlight */
-    .lb-table tbody tr.you-row td { background: rgba(240,192,64,0.07); }
-    .lb-table tbody tr.you-row:hover td { background: rgba(240,192,64,0.11); }
+    .lb-table tbody tr {
+      transition: background 0.15s;
+    }
 
-    /* Rank badge cell */
-    .rank-cell { width: 52px; }
+    .lb-table tbody tr:hover td {
+      background: rgba(240,192,64,0.04);
+    }
+
+    .lb-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .lb-table tbody tr.you-row td {
+      background: rgba(240,192,64,0.07);
+    }
+
+    .lb-table tbody tr.you-row:hover td {
+      background: rgba(240,192,64,0.11);
+    }
+
+    .rank-cell {
+      width: 52px;
+    }
+
     .rank-badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 50%;
-      font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      font-weight: 900;
     }
-    .rb-1 { background:rgba(255,215,0,0.15);  border:2px solid #ffd700; color:#ffd700; }
-    .rb-2 { background:rgba(192,192,192,0.15); border:2px solid #c0c0c0; color:#c0c0c0; }
-    .rb-3 { background:rgba(205,127,50,0.15);  border:2px solid #cd7f32; color:#cd7f32; }
-    .rb-n { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); color:var(--subtext); }
 
-    .td-username { font-weight: 700; }
-    .td-username.you { color: var(--gold); }
+    .rb-1 {
+      background: rgba(255,215,0,0.15);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+    }
+
+    .rb-2 {
+      background: rgba(192,192,192,0.15);
+      border: 2px solid #c0c0c0;
+      color: #c0c0c0;
+    }
+
+    .rb-3 {
+      background: rgba(205,127,50,0.15);
+      border: 2px solid #cd7f32;
+      color: #cd7f32;
+    }
+
+    .rb-n {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--subtext);
+    }
+
+    .td-username {
+      font-weight: 700;
+    }
+
+    .td-username.you {
+      color: var(--gold);
+    }
+
     .you-tag {
-      display: inline-block; margin-left: 6px;
-      font-size: 0.62rem; font-weight: 900;
-      padding: 1px 5px; border-radius: 4px;
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 0.62rem;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 4px;
       background: rgba(240,192,64,0.18);
-      color: var(--gold); border: 1px solid rgba(240,192,64,0.35);
+      color: var(--gold);
+      border: 1px solid rgba(240,192,64,0.35);
       vertical-align: middle;
     }
-    .td-score { font-family:'Cinzel',serif; font-weight:900; color:var(--gold); text-align:right; }
-    .td-wins  { color:#44ff99; font-weight:700; text-align:right; }
-    .td-losses{ color:#ff8888; font-weight:700; text-align:right; }
-    .td-ratio { text-align:right; font-size:0.82rem; color:var(--subtext); }
 
-    /* Win rate bar */
-    .winrate-bar-wrap { display:flex; align-items:center; gap:6px; }
-    .winrate-bar { flex:1; height:5px; background:rgba(255,255,255,0.07); border-radius:3px; overflow:hidden; min-width:60px; }
-    .winrate-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,#006600,#44ff99); transition:width 0.5s; }
-    .winrate-val  { font-size:0.78rem; color:var(--subtext); min-width:34px; text-align:right; }
+    .td-score {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      color: var(--gold);
+      text-align: right;
+    }
 
-    /* empty/loading states */
+    .td-wins {
+      color: #44ff99;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .td-losses {
+      color: #ff8888;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .td-ratio {
+      text-align: right;
+      font-size: 0.82rem;
+      color: var(--subtext);
+    }
+
+    .winrate-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .winrate-bar {
+      flex: 1;
+      height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+
+    .winrate-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg,#006600,#44ff99);
+      transition: width 0.5s;
+    }
+
+    .winrate-val {
+      font-size: 0.78rem;
+      color: var(--subtext);
+      min-width: 34px;
+      text-align: right;
+    }
+
+    /* =========================================================
+       EMPTY / LOADING
+    ========================================================= */
     .lb-empty {
-      padding: 48px 24px; text-align: center;
-      color: var(--subtext); font-style: italic; font-size: 0.9rem;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--subtext);
+      font-style: italic;
+      font-size: 0.9rem;
     }
+
     .lb-loading {
-      padding: 36px 24px; text-align: center;
+      padding: 36px 24px;
+      text-align: center;
     }
 
-    /* ── SIDE PANEL ── */
-    .side-panel { display:flex; flex-direction:column; gap:16px; }
+    /* =========================================================
+       SIDE PANEL
+    ========================================================= */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-    /* My stats card */
     .my-stats-card {
       background: rgba(8,8,18,0.92);
       border: 1px solid rgba(240,192,64,0.2);
-      border-radius: 10px; overflow: hidden;
+      border-radius: 10px;
+      overflow: hidden;
     }
+
     .my-stats-header {
       padding: 12px 16px;
       background: rgba(240,192,64,0.06);
       border-bottom: 1px solid rgba(240,192,64,0.12);
       font-family: 'Cinzel', serif;
-      font-size: 0.75rem; color: var(--gold);
+      font-size: 0.75rem;
+      color: var(--gold);
       letter-spacing: 3px;
     }
-    .my-stats-body { padding: 16px; }
+
+    .my-stats-body {
+      padding: 16px;
+    }
+
     .my-stat-row {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 7px 0;
       border-bottom: 1px solid rgba(255,255,255,0.04);
       font-size: 0.88rem;
     }
-    .my-stat-row:last-child { border-bottom: none; }
-    .my-stat-key { color: var(--subtext); font-size: 0.8rem; }
-    .my-stat-val { font-weight: 700; }
 
-    /* Rank progress card */
+    .my-stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .my-stat-key {
+      color: var(--subtext);
+      font-size: 0.8rem;
+    }
+
+    .my-stat-val {
+      font-weight: 700;
+    }
+
     .rank-progress-card {
       background: rgba(8,8,18,0.92);
       border: 1px solid rgba(240,192,64,0.2);
-      border-radius: 10px; overflow: hidden;
+      border-radius: 10px;
+      overflow: hidden;
     }
+
     .rp-header {
       padding: 12px 16px;
       background: rgba(240,192,64,0.06);
       border-bottom: 1px solid rgba(240,192,64,0.12);
       font-family: 'Cinzel', serif;
-      font-size: 0.75rem; color: var(--gold);
+      font-size: 0.75rem;
+      color: var(--gold);
       letter-spacing: 3px;
     }
-    .rp-body { padding: 16px; }
+
+    .rp-body {
+      padding: 16px;
+    }
+
     .rp-rank-label {
       font-family: 'Cinzel', serif;
-      font-size: 1.4rem; font-weight: 900;
-      color: var(--gold); text-align: center; margin-bottom: 4px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 4px;
     }
+
     .rp-rank-sub {
-      text-align: center; font-size: 0.78rem;
-      color: var(--subtext); margin-bottom: 14px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--subtext);
+      margin-bottom: 14px;
     }
+
     .rp-progress-label {
-      display: flex; justify-content: space-between;
-      font-size: 0.75rem; color: var(--subtext);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--subtext);
       margin-bottom: 5px;
     }
-    .rp-bar { height: 8px; background: rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; }
-    .rp-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#a06800,#f0c040); transition:width 0.6s; }
-    .rp-next { font-size:0.75rem; color:var(--subtext); margin-top:6px; text-align:center; }
 
-    /* Hero stats card */
+    .rp-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .rp-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg,#a06800,#f0c040);
+      transition: width 0.6s;
+    }
+
+    .rp-next {
+      font-size: 0.75rem;
+      color: var(--subtext);
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    /* =========================================================
+       HERO STATS
+    ========================================================= */
     .hero-stats-card {
       background: rgba(8,8,18,0.92);
       border: 1px solid rgba(240,192,64,0.15);
-      border-radius: 10px; overflow: hidden;
+      border-radius: 10px;
+      overflow: hidden;
     }
+
     .hs-header {
       padding: 12px 16px;
       background: rgba(240,192,64,0.04);
       border-bottom: 1px solid rgba(240,192,64,0.1);
       font-family: 'Cinzel', serif;
-      font-size: 0.75rem; color: var(--gold);
+      font-size: 0.75rem;
+      color: var(--gold);
       letter-spacing: 3px;
     }
-    .hs-body { padding: 10px 14px; }
+
+    .hs-body {
+      padding: 10px 14px;
+    }
+
     .hs-hero-row {
-      display: flex; align-items: center; gap: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       padding: 8px 0;
       border-bottom: 1px solid rgba(255,255,255,0.04);
     }
-    .hs-hero-row:last-child { border-bottom:none; }
+
+    .hs-hero-row:last-child {
+      border-bottom: none;
+    }
+
     .hs-elem-dot {
-      width: 10px; height: 10px; border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
       flex-shrink: 0;
     }
-    .hs-hero-name { flex:1; font-size:0.85rem; font-weight:700; }
-    .hs-hero-lv   { font-size:0.75rem; color:var(--gold); flex-shrink:0; }
-    .hs-hero-status {
-      font-size:0.68rem; color:var(--subtext);
-      padding:2px 6px; border-radius:10px;
-      border:1px solid rgba(255,255,255,0.1);
-      background:rgba(255,255,255,0.03);
-      flex-shrink:0;
-    }
-    .hs-hero-status.unlocked { color:#44ff99; border-color:rgba(68,255,153,0.25); }
 
-    /* ── SCROLL TO ME BUTTON ── */
+    .hs-hero-name {
+      flex: 1;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .hs-hero-lv {
+      font-size: 0.75rem;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .hs-hero-status {
+      font-size: 0.68rem;
+      color: var(--subtext);
+      padding: 2px 6px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      flex-shrink: 0;
+    }
+
+    .hs-hero-status.unlocked {
+      color: #44ff99;
+      border-color: rgba(68,255,153,0.25);
+    }
+
+    /* =========================================================
+       SCROLL TO ME
+    ========================================================= */
     .scroll-to-me {
       display: none;
-      position: fixed; bottom: 24px; right: 24px;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
       z-index: 50;
     }
 
-    /* ══ MOBILE OVERRIDES ══════════════════════════════════════ */
+    /* =========================================================
+       MOBILE NAVBAR — NO HAMBURGER
+       Same style as Dashboard / Characters
+    ========================================================= */
+    @media (max-width: 900px) {
 
-    /* Banner: smaller text, tighter stats row */
-    @media (max-width: 700px) {
-      .lb-banner { padding: 24px 16px 20px; }
-      .lb-banner-title { font-size: 1.6rem; letter-spacing: 4px; }
-      .lb-banner-sub   { font-size: 0.72rem; letter-spacing: 2px; }
-      .lb-stats-row    { gap: 8px; margin-top: 14px; }
-      .lb-stat-box     { padding: 8px 12px; min-width: 72px; }
-      .lb-stat-val     { font-size: 1.3rem; }
-      .lb-stat-lbl     { font-size: 0.6rem; letter-spacing: 1px; }
+      .navbar {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+
+        padding: 8px 10px !important;
+
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important;
+
+        scrollbar-width: none !important;
+      }
+
+      .navbar::-webkit-scrollbar {
+        display: none !important;
+      }
+
+      .navbar-logo {
+        flex: 0 0 auto !important;
+      }
+
+      .navbar-logo span {
+        font-size: 0.72rem !important;
+        white-space: nowrap !important;
+      }
+
+      .navbar-links {
+        display: flex !important;
+        flex: 0 0 auto !important;
+        align-items: center !important;
+        gap: 4px !important;
+
+        overflow: visible !important;
+      }
+
+      .navbar-links .nav-btn {
+        display: inline-flex !important;
+        flex: 0 0 auto !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        padding: 7px 9px !important;
+        font-size: 0.68rem !important;
+
+        white-space: nowrap !important;
+      }
+
+      .nav-user {
+        display: flex !important;
+        flex: 0 0 auto !important;
+        align-items: center !important;
+        gap: 6px !important;
+      }
+
+      .nav-user > span {
+        display: none !important;
+      }
+
+      .nav-score {
+        display: inline-flex !important;
+        align-items: center !important;
+
+        font-size: 0.68rem !important;
+        white-space: nowrap !important;
+      }
+
+      .nav-user .nav-btn.danger {
+        display: inline-flex !important;
+        flex: 0 0 auto !important;
+
+        padding: 7px 9px !important;
+        font-size: 0.68rem !important;
+
+        white-space: nowrap !important;
+      }
+
+      /* HIDE HAMBURGER COMPLETELY */
+      .nav-hamburger {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+
+      /* HIDE MOBILE DRAWER COMPLETELY */
+      .nav-mobile-drawer {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
     }
 
-    /* Content: single column layout */
+    @media (max-width: 560px) {
+
+      .navbar {
+        padding: 7px 8px !important;
+        gap: 6px !important;
+      }
+
+      .navbar-logo span {
+        font-size: 0.62rem !important;
+        letter-spacing: 1px !important;
+      }
+
+      .navbar-links {
+        gap: 2px !important;
+      }
+
+      .navbar-links .nav-btn,
+      .nav-user .nav-btn.danger {
+        padding: 6px 7px !important;
+        font-size: 0.61rem !important;
+      }
+
+      .nav-score {
+        font-size: 0.61rem !important;
+      }
+    }
+
+    /* =========================================================
+       MOBILE LEADERBOARD
+    ========================================================= */
+    @media (max-width: 700px) {
+
+      .lb-banner {
+        padding: 24px 16px 20px;
+      }
+
+      .lb-banner-title {
+        font-size: 1.6rem;
+        letter-spacing: 4px;
+      }
+
+      .lb-banner-sub {
+        font-size: 0.72rem;
+        letter-spacing: 2px;
+      }
+
+      .lb-stats-row {
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .lb-stat-box {
+        padding: 8px 12px;
+        min-width: 72px;
+      }
+
+      .lb-stat-val {
+        font-size: 1.3rem;
+      }
+
+      .lb-stat-lbl {
+        font-size: 0.6rem;
+        letter-spacing: 1px;
+      }
+    }
+
     @media (max-width: 820px) {
-      .lb-content { grid-template-columns: 1fr; padding: 16px 16px 0; gap: 16px; }
-      .side-panel  { flex-direction: row; flex-wrap: wrap; }
-      .my-stats-card, .rank-progress-card { flex: 1; min-width: 260px; }
-      .hero-stats-card { width: 100%; }
+
+      .lb-content {
+        grid-template-columns: 1fr;
+        padding: 16px 16px 0;
+        gap: 16px;
+      }
+
+      .side-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .my-stats-card,
+      .rank-progress-card {
+        flex: 1;
+        min-width: 260px;
+      }
+
+      .hero-stats-card {
+        width: 100%;
+      }
     }
 
     @media (max-width: 600px) {
-      .lb-content { padding: 12px 10px 0; }
 
-      /* Podium: shrink cards */
-      .podium-row { gap: 6px; }
-      .podium-card { border-radius: 7px; }
-      .podium-height-1 { min-height: 155px; }
-      .podium-height-2 { min-height: 130px; }
-      .podium-height-3 { min-height: 115px; }
-      .podium-crown    { font-size: 1.3rem; padding-top: 7px; }
-      .podium-rank-num { font-size: 1.4rem; }
-      .podium-username { font-size: 0.75rem; }
-      .podium-score    { font-size: 0.9rem; }
-      .podium-wl       { font-size: 0.6rem; }
+      .lb-content {
+        padding: 12px 10px 0;
+      }
 
-      /* Table: enable horizontal scroll, hide less-important cols */
-      .lb-table-wrap   { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .lb-table        { min-width: 480px; }
-      .lb-table th, .lb-table td { padding: 9px 10px; font-size: 0.8rem; }
+      .podium-row {
+        gap: 6px;
+      }
 
-      /* Side panel: stack vertically */
-      .side-panel { flex-direction: column; }
-      .my-stats-card, .rank-progress-card { min-width: unset; width: 100%; }
+      .podium-card {
+        border-radius: 7px;
+      }
 
-      /* Scroll-to-me: move up from bottom on mobile (above potential browser chrome) */
-      .scroll-to-me { bottom: 16px; right: 12px; }
+      .podium-height-1 {
+        min-height: 155px;
+      }
+
+      .podium-height-2 {
+        min-height: 130px;
+      }
+
+      .podium-height-3 {
+        min-height: 115px;
+      }
+
+      .podium-crown {
+        font-size: 1.3rem;
+        padding-top: 7px;
+      }
+
+      .podium-rank-num {
+        font-size: 1.4rem;
+      }
+
+      .podium-username {
+        font-size: 0.75rem;
+      }
+
+      .podium-score {
+        font-size: 0.9rem;
+      }
+
+      .podium-wl {
+        font-size: 0.6rem;
+      }
+
+      .lb-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .lb-table {
+        min-width: 480px;
+      }
+
+      .lb-table th,
+      .lb-table td {
+        padding: 9px 10px;
+        font-size: 0.8rem;
+      }
+
+      .side-panel {
+        flex-direction: column;
+      }
+
+      .my-stats-card,
+      .rank-progress-card {
+        min-width: unset;
+        width: 100%;
+      }
+
+      .scroll-to-me {
+        bottom: 16px;
+        right: 12px;
+      }
     }
 
     @media (max-width: 400px) {
-      .lb-stats-row    { gap: 6px; }
-      .lb-stat-box     { padding: 6px 8px; min-width: 60px; }
-      .lb-stat-val     { font-size: 1.1rem; }
-      .lb-banner-title { font-size: 1.3rem; letter-spacing: 3px; }
-      .lb-table        { min-width: 380px; }
-      /* Hide win rate column on very small screens */
+
+      .lb-stats-row {
+        gap: 6px;
+      }
+
+      .lb-stat-box {
+        padding: 6px 8px;
+        min-width: 60px;
+      }
+
+      .lb-stat-val {
+        font-size: 1.1rem;
+      }
+
+      .lb-banner-title {
+        font-size: 1.3rem;
+        letter-spacing: 3px;
+      }
+
+      .lb-table {
+        min-width: 380px;
+      }
+
       .lb-table th:last-child,
-      .lb-table td:last-child { display: none; }
+      .lb-table td:last-child {
+        display: none;
+      }
     }
   </style>
 </head>
+
 <body class="lb-page">
+
 <div class="bg-particles"></div>
 
-<!-- NAVBAR -->
+<!-- =========================================================
+     NAVBAR
+     NO HAMBURGER
+========================================================= -->
 <nav class="navbar">
+
   <div class="navbar-logo">
     <span>TENFOLD LEGENDS</span>
   </div>
-  <div class="navbar-links">
-    <button class="nav-btn" onclick="location.href='dashboard.html'">Dashboard</button>
-    <button class="nav-btn" onclick="location.href='characters.html'">Heroes</button>
-    <button class="nav-btn" onclick="location.href='story.html'">Story Mode</button>
-    <button class="nav-btn" onclick="goArena()">Arena</button>
-    <button class="nav-btn active" onclick="location.href='leaderboard.html'">Leaderboard</button>
-  </div>
-  <div class="nav-user">
-    <span>Welcome, <span class="username" id="nav-username">—</span></span>
-    <div class="nav-score">🏆 <span id="nav-score">0</span> pts</div>
-    <button class="nav-btn danger btn-sm" onclick="Game.logout()">Logout</button>
-  </div>
-  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
-<!-- MOBILE DRAWER -->
-<div class="nav-mobile-drawer" id="nav-mobile-drawer">
-  <button class="nav-btn" onclick="location.href='dashboard.html'">🏠 Dashboard</button>
-  <button class="nav-btn" onclick="location.href='characters.html'">⚔ Heroes</button>
-  <button class="nav-btn" onclick="location.href='story.html'">📖 Story Mode</button>
-  <button class="nav-btn" onclick="goArena()">🏟 Arena</button>
-  <button class="nav-btn active" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>
-  <div class="nav-user-row">
-    <span class="nav-username-label">Welcome, <span id="nav-username-mobile">—</span></span>
-    <div class="nav-score">🏆 <span id="nav-score-mobile">0</span> pts</div>
-    <button class="nav-btn danger btn-sm" onclick="Game.logout()">Logout</button>
-  </div>
-</div>
 
-<!-- ROTATE TOAST -->
+  <div class="navbar-links">
+
+    <button
+      class="nav-btn"
+      onclick="location.href='dashboard.html'">
+      Dashboard
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="location.href='characters.html'">
+      Heroes
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="location.href='story.html'">
+      Story Mode
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="goArena()">
+      Arena
+    </button>
+
+    <button
+      class="nav-btn active"
+      onclick="location.href='leaderboard.html'">
+      Leaderboard
+    </button>
+
+  </div>
+
+  <div class="nav-user">
+
+    <span>
+      Welcome,
+      <span class="username" id="nav-username">—</span>
+    </span>
+
+    <div class="nav-score">
+      🏆
+      <span id="nav-score">0</span>
+      pts
+    </div>
+
+    <button
+      class="nav-btn danger btn-sm"
+      onclick="Game.logout()">
+      Logout
+    </button>
+
+  </div>
+
+</nav>
+
+<!-- =========================================================
+     ROTATE TOAST
+========================================================= -->
 <div class="rotate-toast" id="rotate-toast">
   <span class="rotate-toast-icon">📱</span>
   Rotate to landscape for the best experience
 </div>
 
-<!-- BANNER -->
+<!-- =========================================================
+     BANNER
+========================================================= -->
 <div class="lb-banner">
-  <div class="lb-banner-title">🏆 LEADERBOARD</div>
-  <div class="lb-banner-sub">✦ THE GREATEST LEGENDS OF ALL TIME ✦</div>
+
+  <div class="lb-banner-title">
+    🏆 LEADERBOARD
+  </div>
+
+  <div class="lb-banner-sub">
+    ✦ THE GREATEST LEGENDS OF ALL TIME ✦
+  </div>
+
   <div class="lb-stats-row">
+
     <div class="lb-stat-box">
       <div class="lb-stat-val" id="stat-players">—</div>
       <div class="lb-stat-lbl">Players</div>
     </div>
+
     <div class="lb-stat-box">
       <div class="lb-stat-val" id="stat-top-score">—</div>
       <div class="lb-stat-lbl">Top Score</div>
     </div>
+
     <div class="lb-stat-box">
       <div class="lb-stat-val" id="stat-your-rank">—</div>
       <div class="lb-stat-lbl">Your Rank</div>
     </div>
+
     <div class="lb-stat-box">
       <div class="lb-stat-val" id="stat-total-battles">—</div>
       <div class="lb-stat-lbl">Total Battles</div>
     </div>
+
   </div>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
 <div class="lb-content">
 
-  <!-- LEFT: Podium + Full Table -->
+  <!-- LEFT -->
   <div>
-    <!-- PODIUM TOP 3 -->
-    <div class="podium-section" id="podium-section" style="display:none;">
-      <div class="podium-title">TOP LEGENDS</div>
-      <div class="podium-row" id="podium-row">
-        <!-- JS populated -->
+
+    <!-- PODIUM -->
+    <div
+      class="podium-section"
+      id="podium-section"
+      style="display:none;">
+
+      <div class="podium-title">
+        TOP LEGENDS
       </div>
+
+      <div
+        class="podium-row"
+        id="podium-row">
+      </div>
+
     </div>
 
-    <!-- FULL RANKINGS TABLE -->
+    <!-- FULL RANKINGS -->
     <div class="lb-table-section">
+
       <div class="lb-table-header">
-        <div class="lb-table-title">ALL RANKINGS</div>
-        <button class="lb-refresh-btn" onclick="loadLeaderboard()">↻ Refresh</button>
+
+        <div class="lb-table-title">
+          ALL RANKINGS
+        </div>
+
+        <button
+          class="lb-refresh-btn"
+          onclick="loadLeaderboard()">
+          ↻ Refresh
+        </button>
+
       </div>
+
       <div class="lb-table-wrap">
-        <div class="lb-loading" id="lb-loading">
+
+        <div
+          class="lb-loading"
+          id="lb-loading">
+
           <div class="spinner"></div>
-          <p style="color:var(--subtext);font-size:0.85rem;">Loading rankings…</p>
+
+          <p
+            style="color:var(--subtext);font-size:0.85rem;">
+            Loading rankings…
+          </p>
+
         </div>
-        <div id="lb-empty" class="lb-empty" style="display:none;">
-          No legends on the board yet. Be the first to win a battle!
+
+        <div
+          id="lb-empty"
+          class="lb-empty"
+          style="display:none;">
+
+          No legends on the board yet.
+          Be the first to win a battle!
+
         </div>
-        <table class="lb-table" id="lb-table" style="display:none;">
+
+        <table
+          class="lb-table"
+          id="lb-table"
+          style="display:none;">
+
           <thead>
+
             <tr>
-              <th class="rank-cell">Rank</th>
-              <th>Legend</th>
-              <th class="right">Score</th>
-              <th class="right">Wins</th>
-              <th class="right">Losses</th>
-              <th class="right">Win Rate</th>
+
+              <th class="rank-cell">
+                Rank
+              </th>
+
+              <th>
+                Legend
+              </th>
+
+              <th class="right">
+                Score
+              </th>
+
+              <th class="right">
+                Wins
+              </th>
+
+              <th class="right">
+                Losses
+              </th>
+
+              <th class="right">
+                Win Rate
+              </th>
+
             </tr>
+
           </thead>
+
           <tbody id="lb-tbody">
           </tbody>
+
         </table>
+
       </div>
+
     </div>
+
   </div>
 
-  <!-- RIGHT: Side panels -->
+  <!-- RIGHT -->
   <div class="side-panel">
 
-    <!-- My Stats -->
+    <!-- MY STATS -->
     <div class="my-stats-card">
-      <div class="my-stats-header">MY STATS</div>
-      <div class="my-stats-body" id="my-stats-body">
-        <div style="color:var(--subtext);font-size:0.82rem;font-style:italic;">Loading…</div>
+
+      <div class="my-stats-header">
+        MY STATS
       </div>
+
+      <div
+        class="my-stats-body"
+        id="my-stats-body">
+
+        <div
+          style="
+            color:var(--subtext);
+            font-size:0.82rem;
+            font-style:italic;
+          ">
+          Loading…
+        </div>
+
+      </div>
+
     </div>
 
-    <!-- Rank Progress -->
+    <!-- RANK PROGRESS -->
     <div class="rank-progress-card">
-      <div class="rp-header">RANK PROGRESS</div>
-      <div class="rp-body" id="rp-body">
-        <div style="color:var(--subtext);font-size:0.82rem;font-style:italic;">Loading…</div>
+
+      <div class="rp-header">
+        RANK PROGRESS
       </div>
+
+      <div
+        class="rp-body"
+        id="rp-body">
+
+        <div
+          style="
+            color:var(--subtext);
+            font-size:0.82rem;
+            font-style:italic;
+          ">
+          Loading…
+        </div>
+
+      </div>
+
     </div>
 
-    <!-- Hero Levels -->
+    <!-- HERO LEVELS -->
     <div class="hero-stats-card">
-      <div class="hs-header">MY HEROES</div>
-      <div class="hs-body" id="hs-body">
-        <div style="color:var(--subtext);font-size:0.82rem;font-style:italic;">Loading…</div>
+
+      <div class="hs-header">
+        MY HEROES
       </div>
+
+      <div
+        class="hs-body"
+        id="hs-body">
+
+        <div
+          style="
+            color:var(--subtext);
+            font-size:0.82rem;
+            font-style:italic;
+          ">
+          Loading…
+        </div>
+
+      </div>
+
     </div>
 
-    <!-- Quick Actions -->
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <button class="btn btn-gold" style="width:100%;" onclick="goArena()">⚔ ENTER ARENA</button>
-      <button class="btn btn-ghost" style="width:100%;" onclick="location.href='story.html'">📖 Story Mode</button>
-      <button class="btn btn-ghost" style="width:100%;" onclick="location.href='characters.html'">🦸 My Heroes</button>
+    <!-- QUICK ACTIONS -->
+    <div
+      style="
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+      ">
+
+      <button
+        class="btn btn-gold"
+        style="width:100%;"
+        onclick="goArena()">
+        ⚔ ENTER ARENA
+      </button>
+
+      <button
+        class="btn btn-ghost"
+        style="width:100%;"
+        onclick="location.href='story.html'">
+        📖 Story Mode
+      </button>
+
+      <button
+        class="btn btn-ghost"
+        style="width:100%;"
+        onclick="location.href='characters.html'">
+        🦸 My Heroes
+      </button>
+
     </div>
 
   </div>
+
 </div>
 
-<!-- Scroll to me -->
-<button class="btn btn-outline btn-sm scroll-to-me" id="scroll-to-me" onclick="scrollToMe()">
+<!-- =========================================================
+     SCROLL TO MY RANK
+========================================================= -->
+<button
+  class="btn btn-outline btn-sm scroll-to-me"
+  id="scroll-to-me"
+  onclick="scrollToMe()">
+
   ↓ My Rank
+
 </button>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+<!-- TOAST -->
+<div
+  class="toast"
+  id="toast">
+</div>
 
 <script src="game.js"></script>
+
 <script>
-// ── GUARD ─────────────────────────────────────────────────────
-if (!Game.requireLogin()) { /* redirected */ }
 
-const user = Game.user;
-document.getElementById('nav-username').textContent = user.username;
-document.getElementById('nav-score').textContent    = user.totalScore || 0;
+  // ==========================================================
+  // GUARD
+  // ==========================================================
 
-// ── RANK TIERS ─────────────────────────────────────────────────
-const RANK_TIERS = [
-  { name: 'Bronze',   min: 0,    max: 499,   color: '#cd7f32', icon: '🥉' },
-  { name: 'Silver',   min: 500,  max: 999,   color: '#c0c0c0', icon: '🥈' },
-  { name: 'Gold',     min: 1000, max: 1999,  color: '#ffd700', icon: '🥇' },
-  { name: 'Platinum', min: 2000, max: 3499,  color: '#00cfff', icon: '💎' },
-  { name: 'Diamond',  min: 3500, max: 5999,  color: '#c8a8ff', icon: '♦'  },
-  { name: 'Legend',   min: 6000, max: 999999,color: '#ff4500', icon: '👑' },
-];
-
-function getTier(score) {
-  return RANK_TIERS.find(t => score >= t.min && score <= t.max) || RANK_TIERS[0];
-}
-
-// ── LOAD LEADERBOARD ──────────────────────────────────────────
-async function loadLeaderboard() {
-  document.getElementById('lb-loading').style.display = 'block';
-  document.getElementById('lb-table').style.display   = 'none';
-  document.getElementById('lb-empty').style.display   = 'none';
-
-  let entries = [];
-  const res = await apiCall({ action: 'leaderboard' });
-
-  if (res.success && res.leaderboard && res.leaderboard.length > 0) {
-    entries = res.leaderboard;
-  } else {
-    // Build from safeLocalStorage fallback
-    entries = buildLocalLeaderboard();
+  if (!Game.requireLogin()) {
+    /* redirected */
   }
 
-  // Ensure current user is in entries
-  if (!entries.find(e => e.userID === user.userID)) {
-    entries.push({
-      rank: entries.length + 1,
-      userID: user.userID,
-      username: user.username,
-      totalScore: user.totalScore || 0,
-      wins: 0, losses: 0
-    });
-    // Re-sort
-    entries.sort((a,b) => b.totalScore - a.totalScore);
-    entries.forEach((e,i) => e.rank = i + 1);
-  }
+  const user = Game.user;
 
-  renderLeaderboard(entries);
-}
+  document.getElementById('nav-username').textContent =
+    user.username;
 
-function buildLocalLeaderboard() {
-  // Build from safeLocalStorage (offline fallback)
-  const saved  = safeLocalStorage.getItem('tenfold_users');
-  const users  = saved ? JSON.parse(saved) : [];
-  const entries = users.map(u => ({
-    userID: u.id, username: u.username,
-    totalScore: u.score || 0, wins: 0, losses: 0
-  }));
+  document.getElementById('nav-score').textContent =
+    user.totalScore || 0;
 
-  // Add current user if not present
-  if (!entries.find(e => e.userID === user.userID)) {
-    entries.push({
-      userID: user.userID, username: user.username,
-      totalScore: user.totalScore || 0, wins: 0, losses: 0
-    });
-  } else {
-    // Update score for current user
-    const me = entries.find(e => e.userID === user.userID);
-    me.totalScore = Math.max(me.totalScore, user.totalScore || 0);
-  }
 
-  entries.sort((a,b) => b.totalScore - a.totalScore);
-  entries.forEach((e,i) => e.rank = i + 1);
-  return entries;
-}
+  // ==========================================================
+  // RANK TIERS
+  // ==========================================================
 
-// ── RENDER ────────────────────────────────────────────────────
-function renderLeaderboard(entries) {
-  document.getElementById('lb-loading').style.display = 'none';
+  const RANK_TIERS = [
 
-  // Banner stats
-  const myEntry   = entries.find(e => e.userID === user.userID);
-  const topScore  = entries.length ? entries[0].totalScore : 0;
-  const myRank    = myEntry ? myEntry.rank : '—';
-  const totalBattles = entries.reduce((s,e) => s + (e.wins||0) + (e.losses||0), 0);
+    {
+      name: 'Bronze',
+      min: 0,
+      max: 499,
+      color: '#cd7f32',
+      icon: '🥉'
+    },
 
-  document.getElementById('stat-players').textContent      = entries.length;
-  document.getElementById('stat-top-score').textContent    = formatNumber(topScore);
-  document.getElementById('stat-your-rank').textContent    = '#' + myRank;
-  document.getElementById('stat-total-battles').textContent= totalBattles;
+    {
+      name: 'Silver',
+      min: 500,
+      max: 999,
+      color: '#c0c0c0',
+      icon: '🥈'
+    },
 
-  if (entries.length === 0) {
-    document.getElementById('lb-empty').style.display = 'block';
-    return;
-  }
+    {
+      name: 'Gold',
+      min: 1000,
+      max: 1999,
+      color: '#ffd700',
+      icon: '🥇'
+    },
 
-  // Podium (top 3)
-  renderPodium(entries.slice(0, 3));
+    {
+      name: 'Platinum',
+      min: 2000,
+      max: 3499,
+      color: '#00cfff',
+      icon: '💎'
+    },
 
-  // Table
-  renderTable(entries);
+    {
+      name: 'Diamond',
+      min: 3500,
+      max: 5999,
+      color: '#c8a8ff',
+      icon: '♦'
+    },
 
-  // My stats panel
-  renderMyStats(myEntry);
-
-  // Rank progress
-  renderRankProgress(myEntry ? myEntry.totalScore : 0);
-
-  // Hero levels
-  renderHeroStats();
-
-  // Scroll-to-me button if off screen
-  if (myRank > 8) {
-    document.getElementById('scroll-to-me').style.display = 'block';
-  }
-}
-
-// ── PODIUM ────────────────────────────────────────────────────
-function renderPodium(top3) {
-  if (!top3.length) return;
-  document.getElementById('podium-section').style.display = 'block';
-
-  // Reorder: 2nd, 1st, 3rd
-  const order = [top3[1], top3[0], top3[2]].filter(Boolean);
-  const heights = top3[1] ? ['podium-height-2','podium-height-1','podium-height-3'] : ['podium-height-1'];
-  const rankClass = ['rank-2','rank-1','rank-3'];
-  const crowns    = ['🥈','🥇','🥉'];
-  const isMe      = e => e && e.userID === user.userID;
-
-  const row = document.getElementById('podium-row');
-  row.innerHTML = '';
-
-  order.forEach((entry, i) => {
-    if (!entry) return;
-    const wins   = entry.wins   || 0;
-    const losses = entry.losses || 0;
-    const total  = wins + losses;
-    const wr     = total ? Math.round(wins/total*100) : 0;
-    const tier   = getTier(entry.totalScore);
-
-    row.innerHTML += `
-      <div class="podium-card ${rankClass[i]} ${heights[i]}">
-        ${isMe(entry) ? '<div class="podium-you-badge">YOU</div>' : ''}
-        <span class="podium-crown">${crowns[i]}</span>
-        <div class="podium-rank-num">#${entry.rank}</div>
-        <div class="podium-username">${entry.username}</div>
-        <div class="podium-score">${formatNumber(entry.totalScore)}</div>
-        <div class="podium-wl" style="color:${tier.color};">${tier.icon} ${tier.name}</div>
-        <div class="podium-wl">${wins}W / ${losses}L · ${wr}% WR</div>
-      </div>`;
-  });
-}
-
-// ── TABLE ─────────────────────────────────────────────────────
-function renderTable(entries) {
-  const tbody = document.getElementById('lb-tbody');
-  const table = document.getElementById('lb-table');
-  tbody.innerHTML = '';
-
-  let myRow = null;
-  entries.forEach(entry => {
-    const wins   = entry.wins   || 0;
-    const losses = entry.losses || 0;
-    const total  = wins + losses;
-    const wr     = total ? Math.round(wins/total*100) : 0;
-    const isMe   = entry.userID === user.userID;
-    const tier   = getTier(entry.totalScore);
-
-    let rankBadgeClass = 'rb-n';
-    if (entry.rank === 1) rankBadgeClass = 'rb-1';
-    else if (entry.rank === 2) rankBadgeClass = 'rb-2';
-    else if (entry.rank === 3) rankBadgeClass = 'rb-3';
-
-    const rankLabel = entry.rank <= 3
-      ? ['🥇','🥈','🥉'][entry.rank - 1]
-      : entry.rank;
-
-    const tr = document.createElement('tr');
-    if (isMe) { tr.className = 'you-row'; tr.id = 'my-lb-row'; myRow = tr; }
-
-    tr.innerHTML = `
-      <td class="rank-cell">
-        <span class="rank-badge ${rankBadgeClass}">${rankLabel}</span>
-      </td>
-      <td>
-        <span class="td-username ${isMe ? 'you' : ''}">${entry.username}</span>
-        ${isMe ? '<span class="you-tag">YOU</span>' : ''}
-        <div style="font-size:0.68rem;color:${tier.color};margin-top:2px;">${tier.icon} ${tier.name}</div>
-      </td>
-      <td class="td-score">${formatNumber(entry.totalScore)}</td>
-      <td class="td-wins">${wins}</td>
-      <td class="td-losses">${losses}</td>
-      <td>
-        <div class="winrate-bar-wrap">
-          <div class="winrate-bar">
-            <div class="winrate-fill" style="width:${wr}%"></div>
-          </div>
-          <span class="winrate-val">${wr}%</span>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  table.style.display = 'table';
-}
-
-// ── MY STATS PANEL ────────────────────────────────────────────
-function renderMyStats(entry) {
-  const body = document.getElementById('my-stats-body');
-  if (!entry) {
-    body.innerHTML = `<div style="color:var(--subtext);font-size:0.82rem;">Play battles to appear here!</div>`;
-    return;
-  }
-  const wins   = entry.wins   || 0;
-  const losses = entry.losses || 0;
-  const total  = wins + losses;
-  const wr     = total ? Math.round(wins/total*100) : 0;
-  const tier   = getTier(entry.totalScore);
-
-  body.innerHTML = `
-    <div class="my-stat-row">
-      <span class="my-stat-key">Username</span>
-      <span class="my-stat-val text-gold">${entry.username}</span>
-    </div>
-    <div class="my-stat-row">
-      <span class="my-stat-key">Global Rank</span>
-      <span class="my-stat-val">#${entry.rank}</span>
-    </div>
-    <div class="my-stat-row">
-      <span class="my-stat-key">Total Score</span>
-      <span class="my-stat-val text-gold">${formatNumber(entry.totalScore)}</span>
-    </div>
-    <div class="my-stat-row">
-      <span class="my-stat-key">Wins</span>
-      <span class="my-stat-val" style="color:#44ff99;">${wins}</span>
-    </div>
-    <div class="my-stat-row">
-      <span class="my-stat-key">Losses</span>
-      <span class="my-stat-val" style="color:#ff8888;">${losses}</span>
-    </div>
-    <div class="my-stat-row">
-      <span class="my-stat-key">Win Rate</span>
-      <span class="my-stat-val">${wr}%</span>
-    </div>
-    <div class="my-stat-row">
-      <span class="my-stat-key">Rank Tier</span>
-      <span class="my-stat-val" style="color:${tier.color};">${tier.icon} ${tier.name}</span>
-    </div>
-  `;
-}
-
-// ── RANK PROGRESS ─────────────────────────────────────────────
-function renderRankProgress(score) {
-  const body  = document.getElementById('rp-body');
-  const tier  = getTier(score);
-  const nextI = RANK_TIERS.findIndex(t => t.name === tier.name) + 1;
-  const next  = RANK_TIERS[nextI];
-
-  let progressPct = 100;
-  let nextLabel   = 'MAX RANK';
-  if (next) {
-    const range  = tier.max - tier.min + 1;
-    const earned = score - tier.min;
-    progressPct  = Math.min(100, Math.floor(earned / range * 100));
-    nextLabel    = `${formatNumber(next.min - score)} pts to ${next.icon} ${next.name}`;
-  }
-
-  body.innerHTML = `
-    <div class="rp-rank-label" style="color:${tier.color};">${tier.icon} ${tier.name}</div>
-    <div class="rp-rank-sub">${score} / ${tier.max === 999999 ? '∞' : tier.max} pts</div>
-    <div class="rp-progress-label">
-      <span>${tier.name}</span>
-      ${next ? `<span style="color:${next.color}">${next.name}</span>` : '<span>MAX</span>'}
-    </div>
-    <div class="rp-bar"><div class="rp-fill" style="width:${progressPct}%;background:linear-gradient(90deg,${tier.color}88,${tier.color});"></div></div>
-    <div class="rp-next">${nextLabel}</div>
-  `;
-}
-
-// ── HERO STATS PANEL ──────────────────────────────────────────
-function renderHeroStats() {
-  const body     = document.getElementById('hs-body');
-  const unlocked = JSON.parse(safeLocalStorage.getItem('tenfold_unlocked_' + user.userID) || '["aeron","lyra"]');
-  const levels   = JSON.parse(safeLocalStorage.getItem('tenfold_levels_'   + user.userID) || '{}');
-
-  body.innerHTML = '';
-  HERO_ORDER.forEach(id => {
-    const h        = HEROES[id];
-    const isUnlock = unlocked.includes(id);
-    const lv       = levels[id] || 1;
-    body.innerHTML += `
-      <div class="hs-hero-row">
-        <div class="hs-elem-dot" style="background:${h.color};box-shadow:0 0 6px ${h.color};"></div>
-        <div class="hs-hero-name" style="${!isUnlock ? 'color:var(--subtext);opacity:0.5;' : ''}">${h.name}</div>
-        ${isUnlock ? `<div class="hs-hero-lv">Lv ${lv}</div>` : ''}
-        <div class="hs-hero-status ${isUnlock ? 'unlocked' : ''}">${isUnlock ? '✓ Unlocked' : '🔒 Locked'}</div>
-      </div>`;
-  });
-}
-
-// ── GO ARENA (clears story session) ──────────────────────────
-function goArena() {
-  safeSessionStorage.setItem('tenfold_battle_mode', 'arena');
-  safeSessionStorage.removeItem('tenfold_battle_enemy');
-  safeSessionStorage.removeItem('tenfold_battle_enemy_lv');
-  safeSessionStorage.removeItem('tenfold_battle_chapter');
-  safeSessionStorage.removeItem('tenfold_battle_stage');
-  safeSessionStorage.removeItem('tenfold_battle_name');
-  safeSessionStorage.removeItem('tenfold_battle_is_boss');
-  location.href = 'battle.html';
-}
-
-// ── SCROLL TO MY ROW ──────────────────────────────────────────
-function scrollToMe() {
-  const row = document.getElementById('my-lb-row');
-  if (row) row.scrollIntoView({ behavior:'smooth', block:'center' });
-}
-
-// ── TOAST ─────────────────────────────────────────────────────
-function showToast(msg, type = 'info') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => { t.className = 'toast'; }, 3000);
-}
-
-// ── MOBILE NAV SYNC + HAMBURGER ──────────────────────────────
-const _mobileUn = document.getElementById('nav-username-mobile');
-const _mobileSc = document.getElementById('nav-score-mobile');
-if (_mobileUn) _mobileUn.textContent = user.username;
-if (_mobileSc) _mobileSc.textContent = user.totalScore || 0;
-
-(function() {
-  const btn    = document.getElementById('nav-hamburger');
-  const drawer = document.getElementById('nav-mobile-drawer');
-  if (!btn || !drawer) return;
-  btn.addEventListener('click', () => {
-    const open = drawer.classList.toggle('open');
-    btn.classList.toggle('open', open);
-    btn.setAttribute('aria-expanded', open);
-  });
-  drawer.querySelectorAll('.nav-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      drawer.classList.remove('open');
-      btn.classList.remove('open');
-    });
-  });
-})();
-
-// ── ROTATE TOAST (soft, shows once per session) ───────────────
-(function() {
-  const toast = document.getElementById('rotate-toast');
-  if (!toast) return;
-  if (safeSessionStorage.getItem('tenfold_rotate_shown')) return;
-
-  function isMobile()  { return window.innerWidth <= 900 || 'ontouchstart' in window; }
-  function isPortrait() {
-    if (screen.orientation && screen.orientation.type)
-      return screen.orientation.type.startsWith('portrait');
-    return window.innerHeight > window.innerWidth;
-  }
-  function check() {
-    if (isMobile() && isPortrait()) {
-      toast.classList.add('show');
-      safeSessionStorage.setItem('tenfold_rotate_shown', '1');
-      setTimeout(() => toast.classList.remove('show'), 5000);
+    {
+      name: 'Legend',
+      min: 6000,
+      max: 999999,
+      color: '#ff4500',
+      icon: '👑'
     }
-  }
-  setTimeout(check, 300);
-  window.addEventListener('orientationchange', () => setTimeout(check, 200));
-})();
 
-// ── INIT ──────────────────────────────────────────────────────
-loadLeaderboard();
+  ];
+
+
+  function getTier(score) {
+
+    return RANK_TIERS.find(
+      t => score >= t.min && score <= t.max
+    ) || RANK_TIERS[0];
+
+  }
+
+
+  // ==========================================================
+  // LOAD LEADERBOARD
+  // ==========================================================
+
+  async function loadLeaderboard() {
+
+    document.getElementById('lb-loading').style.display =
+      'block';
+
+    document.getElementById('lb-table').style.display =
+      'none';
+
+    document.getElementById('lb-empty').style.display =
+      'none';
+
+
+    let entries = [];
+
+    const res = await apiCall({
+      action: 'leaderboard'
+    });
+
+
+    if (
+      res.success &&
+      res.leaderboard &&
+      res.leaderboard.length > 0
+    ) {
+
+      entries = res.leaderboard;
+
+    } else {
+
+      entries = buildLocalLeaderboard();
+
+    }
+
+
+    // Ensure current user exists
+
+    if (!entries.find(
+      e => e.userID === user.userID
+    )) {
+
+      entries.push({
+
+        rank: entries.length + 1,
+
+        userID: user.userID,
+
+        username: user.username,
+
+        totalScore: user.totalScore || 0,
+
+        wins: 0,
+
+        losses: 0
+
+      });
+
+
+      entries.sort(
+        (a,b) => b.totalScore - a.totalScore
+      );
+
+
+      entries.forEach(
+        (e,i) => e.rank = i + 1
+      );
+
+    }
+
+
+    renderLeaderboard(entries);
+
+  }
+
+
+  // ==========================================================
+  // LOCAL LEADERBOARD FALLBACK
+  // ==========================================================
+
+  function buildLocalLeaderboard() {
+
+    const saved =
+      safeLocalStorage.getItem('tenfold_users');
+
+    const users =
+      saved ? JSON.parse(saved) : [];
+
+
+    const entries = users.map(u => ({
+
+      userID: u.id,
+
+      username: u.username,
+
+      totalScore: u.score || 0,
+
+      wins: 0,
+
+      losses: 0
+
+    }));
+
+
+    if (!entries.find(
+      e => e.userID === user.userID
+    )) {
+
+      entries.push({
+
+        userID: user.userID,
+
+        username: user.username,
+
+        totalScore: user.totalScore || 0,
+
+        wins: 0,
+
+        losses: 0
+
+      });
+
+    } else {
+
+      const me =
+        entries.find(
+          e => e.userID === user.userID
+        );
+
+      me.totalScore =
+        Math.max(
+          me.totalScore,
+          user.totalScore || 0
+        );
+
+    }
+
+
+    entries.sort(
+      (a,b) => b.totalScore - a.totalScore
+    );
+
+
+    entries.forEach(
+      (e,i) => e.rank = i + 1
+    );
+
+
+    return entries;
+
+  }
+
+
+  // ==========================================================
+  // RENDER LEADERBOARD
+  // ==========================================================
+
+  function renderLeaderboard(entries) {
+
+    document.getElementById('lb-loading').style.display =
+      'none';
+
+
+    const myEntry =
+      entries.find(
+        e => e.userID === user.userID
+      );
+
+
+    const topScore =
+      entries.length
+        ? entries[0].totalScore
+        : 0;
+
+
+    const myRank =
+      myEntry
+        ? myEntry.rank
+        : '—';
+
+
+    const totalBattles =
+      entries.reduce(
+        (s,e) =>
+          s +
+          (e.wins || 0) +
+          (e.losses || 0),
+        0
+      );
+
+
+    document.getElementById(
+      'stat-players'
+    ).textContent =
+      entries.length;
+
+
+    document.getElementById(
+      'stat-top-score'
+    ).textContent =
+      formatNumber(topScore);
+
+
+    document.getElementById(
+      'stat-your-rank'
+    ).textContent =
+      '#' + myRank;
+
+
+    document.getElementById(
+      'stat-total-battles'
+    ).textContent =
+      totalBattles;
+
+
+    if (entries.length === 0) {
+
+      document.getElementById(
+        'lb-empty'
+      ).style.display = 'block';
+
+      return;
+
+    }
+
+
+    renderPodium(
+      entries.slice(0,3)
+    );
+
+    renderTable(entries);
+
+    renderMyStats(myEntry);
+
+    renderRankProgress(
+      myEntry
+        ? myEntry.totalScore
+        : 0
+    );
+
+    renderHeroStats();
+
+
+    if (myRank > 8) {
+
+      document.getElementById(
+        'scroll-to-me'
+      ).style.display =
+        'block';
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // PODIUM
+  // ==========================================================
+
+  function renderPodium(top3) {
+
+    if (!top3.length) return;
+
+
+    document.getElementById(
+      'podium-section'
+    ).style.display =
+      'block';
+
+
+    const order =
+      [
+        top3[1],
+        top3[0],
+        top3[2]
+      ].filter(Boolean);
+
+
+    const heights =
+      top3[1]
+
+        ? [
+            'podium-height-2',
+            'podium-height-1',
+            'podium-height-3'
+          ]
+
+        : [
+            'podium-height-1'
+          ];
+
+
+    const rankClass =
+      [
+        'rank-2',
+        'rank-1',
+        'rank-3'
+      ];
+
+
+    const crowns =
+      [
+        '🥈',
+        '🥇',
+        '🥉'
+      ];
+
+
+    const isMe =
+      e =>
+        e &&
+        e.userID === user.userID;
+
+
+    const row =
+      document.getElementById(
+        'podium-row'
+      );
+
+
+    row.innerHTML = '';
+
+
+    order.forEach(
+      (entry,i) => {
+
+        if (!entry) return;
+
+
+        const wins =
+          entry.wins || 0;
+
+        const losses =
+          entry.losses || 0;
+
+        const total =
+          wins + losses;
+
+        const wr =
+          total
+            ? Math.round(
+                wins / total * 100
+              )
+            : 0;
+
+        const tier =
+          getTier(
+            entry.totalScore
+          );
+
+
+        row.innerHTML += `
+
+          <div
+            class="podium-card
+                   ${rankClass[i]}
+                   ${heights[i]}">
+
+            ${
+              isMe(entry)
+                ? '<div class="podium-you-badge">YOU</div>'
+                : ''
+            }
+
+            <span class="podium-crown">
+              ${crowns[i]}
+            </span>
+
+            <div class="podium-rank-num">
+              #${entry.rank}
+            </div>
+
+            <div class="podium-username">
+              ${entry.username}
+            </div>
+
+            <div class="podium-score">
+              ${formatNumber(entry.totalScore)}
+            </div>
+
+            <div
+              class="podium-wl"
+              style="color:${tier.color};">
+
+              ${tier.icon}
+              ${tier.name}
+
+            </div>
+
+            <div class="podium-wl">
+
+              ${wins}W /
+              ${losses}L ·
+              ${wr}% WR
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // TABLE
+  // ==========================================================
+
+  function renderTable(entries) {
+
+    const tbody =
+      document.getElementById(
+        'lb-tbody'
+      );
+
+
+    const table =
+      document.getElementById(
+        'lb-table'
+      );
+
+
+    tbody.innerHTML = '';
+
+
+    entries.forEach(
+      entry => {
+
+        const wins =
+          entry.wins || 0;
+
+        const losses =
+          entry.losses || 0;
+
+        const total =
+          wins + losses;
+
+        const wr =
+          total
+            ? Math.round(
+                wins / total * 100
+              )
+            : 0;
+
+
+        const isMe =
+          entry.userID ===
+          user.userID;
+
+
+        const tier =
+          getTier(
+            entry.totalScore
+          );
+
+
+        let rankBadgeClass =
+          'rb-n';
+
+
+        if (entry.rank === 1)
+          rankBadgeClass =
+            'rb-1';
+
+        else if (entry.rank === 2)
+          rankBadgeClass =
+            'rb-2';
+
+        else if (entry.rank === 3)
+          rankBadgeClass =
+            'rb-3';
+
+
+        const rankLabel =
+          entry.rank <= 3
+
+            ? [
+                '🥇',
+                '🥈',
+                '🥉'
+              ][entry.rank - 1]
+
+            : entry.rank;
+
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+
+        if (isMe) {
+
+          tr.className =
+            'you-row';
+
+          tr.id =
+            'my-lb-row';
+
+        }
+
+
+        tr.innerHTML = `
+
+          <td class="rank-cell">
+
+            <span
+              class="rank-badge ${rankBadgeClass}">
+
+              ${rankLabel}
+
+            </span>
+
+          </td>
+
+
+          <td>
+
+            <span
+              class="td-username
+                     ${isMe ? 'you' : ''}">
+
+              ${entry.username}
+
+            </span>
+
+            ${
+              isMe
+                ? '<span class="you-tag">YOU</span>'
+                : ''
+            }
+
+
+            <div
+              style="
+                font-size:0.68rem;
+                color:${tier.color};
+                margin-top:2px;
+              ">
+
+              ${tier.icon}
+              ${tier.name}
+
+            </div>
+
+          </td>
+
+
+          <td class="td-score">
+
+            ${formatNumber(
+              entry.totalScore
+            )}
+
+          </td>
+
+
+          <td class="td-wins">
+
+            ${wins}
+
+          </td>
+
+
+          <td class="td-losses">
+
+            ${losses}
+
+          </td>
+
+
+          <td>
+
+            <div class="winrate-bar-wrap">
+
+              <div class="winrate-bar">
+
+                <div
+                  class="winrate-fill"
+                  style="width:${wr}%">
+                </div>
+
+              </div>
+
+              <span class="winrate-val">
+                ${wr}%
+              </span>
+
+            </div>
+
+          </td>
+
+        `;
+
+
+        tbody.appendChild(tr);
+
+      }
+    );
+
+
+    table.style.display =
+      'table';
+
+  }
+
+
+  // ==========================================================
+  // MY STATS
+  // ==========================================================
+
+  function renderMyStats(entry) {
+
+    const body =
+      document.getElementById(
+        'my-stats-body'
+      );
+
+
+    if (!entry) {
+
+      body.innerHTML = `
+
+        <div
+          style="
+            color:var(--subtext);
+            font-size:0.82rem;
+          ">
+
+          Play battles to appear here!
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    const wins =
+      entry.wins || 0;
+
+    const losses =
+      entry.losses || 0;
+
+    const total =
+      wins + losses;
+
+    const wr =
+      total
+        ? Math.round(
+            wins / total * 100
+          )
+        : 0;
+
+    const tier =
+      getTier(
+        entry.totalScore
+      );
+
+
+    body.innerHTML = `
+
+      <div class="my-stat-row">
+
+        <span class="my-stat-key">
+          Username
+        </span>
+
+        <span class="my-stat-val text-gold">
+          ${entry.username}
+        </span>
+
+      </div>
+
+
+      <div class="my-stat-row">
+
+        <span class="my-stat-key">
+          Global Rank
+        </span>
+
+        <span class="my-stat-val">
+          #${entry.rank}
+        </span>
+
+      </div>
+
+
+      <div class="my-stat-row">
+
+        <span class="my-stat-key">
+          Total Score
+        </span>
+
+        <span class="my-stat-val text-gold">
+          ${formatNumber(
+            entry.totalScore
+          )}
+        </span>
+
+      </div>
+
+
+      <div class="my-stat-row">
+
+        <span class="my-stat-key">
+          Wins
+        </span>
+
+        <span
+          class="my-stat-val"
+          style="color:#44ff99;">
+
+          ${wins}
+
+        </span>
+
+      </div>
+
+
+      <div class="my-stat-row">
+
+        <span class="my-stat-key">
+          Losses
+        </span>
+
+        <span
+          class="my-stat-val"
+          style="color:#ff8888;">
+
+          ${losses}
+
+        </span>
+
+      </div>
+
+
+      <div class="my-stat-row">
+
+        <span class="my-stat-key">
+          Win Rate
+        </span>
+
+        <span class="my-stat-val">
+          ${wr}%
+        </span>
+
+      </div>
+
+
+      <div class="my-stat-row">
+
+        <span class="my-stat-key">
+          Rank Tier
+        </span>
+
+        <span
+          class="my-stat-val"
+          style="color:${tier.color};">
+
+          ${tier.icon}
+          ${tier.name}
+
+        </span>
+
+      </div>
+
+    `;
+
+  }
+
+
+  // ==========================================================
+  // RANK PROGRESS
+  // ==========================================================
+
+  function renderRankProgress(score) {
+
+    const body =
+      document.getElementById(
+        'rp-body'
+      );
+
+
+    const tier =
+      getTier(score);
+
+
+    const nextI =
+      RANK_TIERS.findIndex(
+        t => t.name === tier.name
+      ) + 1;
+
+
+    const next =
+      RANK_TIERS[nextI];
+
+
+    let progressPct =
+      100;
+
+
+    let nextLabel =
+      'MAX RANK';
+
+
+    if (next) {
+
+      const range =
+        tier.max -
+        tier.min +
+        1;
+
+
+      const earned =
+        score -
+        tier.min;
+
+
+      progressPct =
+        Math.min(
+          100,
+          Math.floor(
+            earned / range * 100
+          )
+        );
+
+
+      nextLabel =
+        `${formatNumber(
+          next.min - score
+        )} pts to
+        ${next.icon}
+        ${next.name}`;
+
+    }
+
+
+    body.innerHTML = `
+
+      <div
+        class="rp-rank-label"
+        style="color:${tier.color};">
+
+        ${tier.icon}
+        ${tier.name}
+
+      </div>
+
+
+      <div class="rp-rank-sub">
+
+        ${score} /
+        ${
+          tier.max === 999999
+            ? '∞'
+            : tier.max
+        }
+        pts
+
+      </div>
+
+
+      <div class="rp-progress-label">
+
+        <span>
+          ${tier.name}
+        </span>
+
+
+        ${
+          next
+
+            ? `
+              <span
+                style="color:${next.color}">
+
+                ${next.name}
+
+              </span>
+            `
+
+            : `
+              <span>
+                MAX
+              </span>
+            `
+        }
+
+      </div>
+
+
+      <div class="rp-bar">
+
+        <div
+          class="rp-fill"
+          style="
+            width:${progressPct}%;
+            background:
+              linear-gradient(
+                90deg,
+                ${tier.color}88,
+                ${tier.color}
+              );
+          ">
+        </div>
+
+      </div>
+
+
+      <div class="rp-next">
+
+        ${nextLabel}
+
+      </div>
+
+    `;
+
+  }
+
+
+  // ==========================================================
+  // HERO STATS
+  // ==========================================================
+
+  function renderHeroStats() {
+
+    const body =
+      document.getElementById(
+        'hs-body'
+      );
+
+
+    const unlocked =
+      JSON.parse(
+        safeLocalStorage.getItem(
+          'tenfold_unlocked_' +
+          user.userID
+        ) ||
+        '["aeron","lyra"]'
+      );
+
+
+    const levels =
+      JSON.parse(
+        safeLocalStorage.getItem(
+          'tenfold_levels_' +
+          user.userID
+        ) ||
+        '{}'
+      );
+
+
+    body.innerHTML = '';
+
+
+    HERO_ORDER.forEach(
+      id => {
+
+        const h =
+          HEROES[id];
+
+
+        const isUnlock =
+          unlocked.includes(id);
+
+
+        const lv =
+          levels[id] || 1;
+
+
+        body.innerHTML += `
+
+          <div class="hs-hero-row">
+
+            <div
+              class="hs-elem-dot"
+              style="
+                background:${h.color};
+                box-shadow:
+                  0 0 6px ${h.color};
+              ">
+            </div>
+
+
+            <div
+              class="hs-hero-name"
+              style="${
+                !isUnlock
+                  ? 'color:var(--subtext);opacity:0.5;'
+                  : ''
+              }">
+
+              ${h.name}
+
+            </div>
+
+
+            ${
+              isUnlock
+
+                ? `
+                  <div class="hs-hero-lv">
+
+                    Lv ${lv}
+
+                  </div>
+                `
+
+                : ''
+            }
+
+
+            <div
+              class="
+                hs-hero-status
+                ${isUnlock ? 'unlocked' : ''}
+              ">
+
+              ${
+                isUnlock
+                  ? '✓ Unlocked'
+                  : '🔒 Locked'
+              }
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // GO ARENA
+  // ==========================================================
+
+  function goArena() {
+
+    safeSessionStorage.setItem(
+      'tenfold_battle_mode',
+      'arena'
+    );
+
+
+    safeSessionStorage.removeItem(
+      'tenfold_battle_enemy'
+    );
+
+    safeSessionStorage.removeItem(
+      'tenfold_battle_enemy_lv'
+    );
+
+    safeSessionStorage.removeItem(
+      'tenfold_battle_chapter'
+    );
+
+    safeSessionStorage.removeItem(
+      'tenfold_battle_stage'
+    );
+
+    safeSessionStorage.removeItem(
+      'tenfold_battle_name'
+    );
+
+    safeSessionStorage.removeItem(
+      'tenfold_battle_is_boss'
+    );
+
+
+    location.href =
+      'battle.html';
+
+  }
+
+
+  // ==========================================================
+  // SCROLL TO MY ROW
+  // ==========================================================
+
+  function scrollToMe() {
+
+    const row =
+      document.getElementById(
+        'my-lb-row'
+      );
+
+
+    if (row) {
+
+      row.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // TOAST
+  // ==========================================================
+
+  function showToast(
+    msg,
+    type = 'info'
+  ) {
+
+    const t =
+      document.getElementById(
+        'toast'
+      );
+
+
+    t.textContent =
+      msg;
+
+
+    t.className =
+      `toast ${type} show`;
+
+
+    setTimeout(
+      () => {
+        t.className =
+          'toast';
+      },
+      3000
+    );
+
+  }
+
+
+  // ==========================================================
+  // MOBILE NAV SYNC
+  // NO HAMBURGER
+  // ==========================================================
+
+  // Wala nay hamburger listener.
+  // Wala nay drawer logic.
+  // Navbar is directly visible sa mobile.
+
+
+  // ==========================================================
+  // ROTATE TOAST
+  // ==========================================================
+
+  (function() {
+
+    const toast =
+      document.getElementById(
+        'rotate-toast'
+      );
+
+
+    if (!toast) return;
+
+
+    if (
+      safeSessionStorage.getItem(
+        'tenfold_rotate_shown'
+      )
+    ) {
+      return;
+    }
+
+
+    function isMobile() {
+
+      return (
+        window.innerWidth <= 900 ||
+        'ontouchstart' in window
+      );
+
+    }
+
+
+    function isPortrait() {
+
+      if (
+        screen.orientation &&
+        screen.orientation.type
+      ) {
+
+        return screen.orientation.type
+          .startsWith('portrait');
+
+      }
+
+
+      return (
+        window.innerHeight >
+        window.innerWidth
+      );
+
+    }
+
+
+    function check() {
+
+      if (
+        isMobile() &&
+        isPortrait()
+      ) {
+
+        toast.classList.add(
+          'show'
+        );
+
+
+        safeSessionStorage.setItem(
+          'tenfold_rotate_shown',
+          '1'
+        );
+
+
+        setTimeout(
+          () => {
+            toast.classList.remove(
+              'show'
+            );
+          },
+          5000
+        );
+
+      }
+
+    }
+
+
+    setTimeout(
+      check,
+      300
+    );
+
+
+    window.addEventListener(
+      'orientationchange',
+      () =>
+        setTimeout(
+          check,
+          200
+        )
+    );
+
+  })();
+
+
+  // ==========================================================
+  // INIT
+  // ==========================================================
+
+  loadLeaderboard();
+
 </script>
+
 </body>
 </html>
