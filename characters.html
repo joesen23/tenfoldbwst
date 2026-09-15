@@ -8,7 +8,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <title>Choose Your Legend — Tenfold Legends</title>
-
   <script>
   (function(){
     if (screen.orientation && screen.orientation.lock) {
@@ -16,17 +15,11 @@
     }
   })();
   </script>
-
   <link rel="stylesheet" href="style.css"/>
-
   <style>
-    .chars-page {
-      min-height: 100vh;
-    }
+    .chars-page { min-height: 100vh; }
 
-    /* =========================================================
-       HERO GRID
-    ========================================================= */
+    /* ── HERO GRID ── */
     .heroes-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -35,28 +28,10 @@
       max-width: 1280px;
       margin: 0 auto;
     }
+    @media (max-width: 1100px) { .heroes-grid { grid-template-columns: repeat(4,1fr); } }
+    @media (max-width: 820px)  { .heroes-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width: 560px)  { .heroes-grid { grid-template-columns: repeat(2,1fr); } }
 
-    @media (max-width: 1100px) {
-      .heroes-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    @media (max-width: 820px) {
-      .heroes-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media (max-width: 560px) {
-      .heroes-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    /* =========================================================
-       HERO CARD
-    ========================================================= */
     .hero-card {
       position: relative;
       border-radius: 10px;
@@ -65,1149 +40,524 @@
       aspect-ratio: 3/4;
       border: 2px solid rgba(240,192,64,0.18);
       background: rgba(10,10,20,0.95);
-      transition:
-        transform 0.28s,
-        border-color 0.28s,
-        box-shadow 0.28s;
+      transition: transform 0.28s, border-color 0.28s, box-shadow 0.28s;
     }
-
-    .hero-card:hover {
-      transform: translateY(-7px) scale(1.025);
-    }
-
+    .hero-card:hover { transform: translateY(-7px) scale(1.025); }
     .hero-card.selected {
       border-color: var(--gold) !important;
-      box-shadow:
-        0 0 36px rgba(240,192,64,0.55),
-        inset 0 0 24px rgba(240,192,64,0.07);
+      box-shadow: 0 0 36px rgba(240,192,64,0.55), inset 0 0 24px rgba(240,192,64,0.07);
     }
-
-    .hero-card.locked {
-      cursor: not-allowed;
-      filter: grayscale(0.65) brightness(0.7);
-    }
-
-    .hero-card.locked:hover {
-      transform: none;
-      box-shadow: none;
-    }
+    .hero-card.locked { cursor: not-allowed; filter: grayscale(0.65) brightness(0.7); }
+    .hero-card.locked:hover { transform: none; box-shadow: none; }
 
     .hero-card-bg {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: top center;
+      position: absolute; inset: 0;
+      background-size: cover; background-position: top center;
       transition: transform 0.4s;
     }
-
-    .hero-card:not(.locked):hover .hero-card-bg {
-      transform: scale(1.06);
-    }
+    .hero-card:not(.locked):hover .hero-card-bg { transform: scale(1.06); }
 
     .hero-card-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        0deg,
+      position: absolute; inset: 0;
+      background: linear-gradient(0deg,
         rgba(4,4,12,0.97) 0%,
         rgba(4,4,12,0.55) 42%,
-        rgba(4,4,12,0.1) 70%,
-        transparent 100%
-      );
+        rgba(4,4,12,0.1)  70%,
+        transparent 100%);
     }
-
     .hero-card-top {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      left: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+      position: absolute; top: 10px; right: 10px; left: 10px;
+      display: flex; justify-content: space-between; align-items: flex-start;
     }
-
     .hero-card-elem {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: rgba(0,0,0,0.55);
-      border: 1px solid currentColor;
+      display: flex; align-items: center; gap: 4px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 1px;
+      padding: 3px 8px; border-radius: 20px;
+      background: rgba(0,0,0,0.55); border: 1px solid currentColor;
     }
-
     .hero-card-lv {
       background: rgba(0,0,0,0.65);
       border: 1px solid rgba(240,192,64,0.35);
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      color: var(--gold);
-      font-weight: 700;
+      padding: 3px 8px; border-radius: 20px;
+      font-size: 0.7rem; color: var(--gold); font-weight: 700;
     }
-
     .hero-card-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      position: absolute; bottom: 0; left: 0; right: 0;
       padding: 14px 14px 16px;
     }
-
     .hero-card-name {
       font-family: 'Cinzel', serif;
-      font-size: 1rem;
-      font-weight: 800;
-      color: var(--gold);
-      letter-spacing: 1px;
+      font-size: 1rem; font-weight: 800;
+      color: var(--gold); letter-spacing: 1px;
       text-shadow: 0 2px 8px rgba(0,0,0,0.8);
     }
-
     .hero-card-title {
-      font-size: 0.72rem;
-      color: var(--subtext);
-      letter-spacing: 1.5px;
-      margin-top: 1px;
+      font-size: 0.72rem; color: var(--subtext);
+      letter-spacing: 1.5px; margin-top: 1px;
     }
-
     .hero-card-role {
       display: inline-block;
       margin-top: 6px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      padding: 2px 8px;
-      border-radius: 20px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 1px;
+      padding: 2px 8px; border-radius: 20px;
       background: rgba(240,192,64,0.1);
       border: 1px solid rgba(240,192,64,0.25);
       color: rgba(240,192,64,0.8);
     }
-
     .hero-card-lock {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
       background: rgba(0,0,0,0.45);
-      padding: 0 10px;
-      text-align: center;
+      padding: 0 10px; text-align: center;
     }
-
-    .hero-card-lock span {
-      font-size: 2.2rem;
-    }
-
-    .hero-card-lock p {
-      font-size: 0.72rem;
-      color: var(--subtext);
-      letter-spacing: 1px;
-      margin: 0;
-    }
-
+    .hero-card-lock span { font-size: 2.2rem; }
+    .hero-card-lock p { font-size: 0.72rem; color: var(--subtext); letter-spacing: 1px; margin: 0; }
     .selected-check {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
+      position: absolute; top: 10px; left: 10px;
+      width: 24px; height: 24px; border-radius: 50%;
       background: var(--gold);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      color: #000;
-      font-weight: 900;
-      z-index: 5;
+      display: none; align-items: center; justify-content: center;
+      font-size: 0.75rem; color: #000; font-weight: 900; z-index: 5;
     }
+    .hero-card.selected .selected-check { display: flex; }
 
-    .hero-card.selected .selected-check {
-      display: flex;
-    }
-
-    /* =========================================================
-       DETAIL PANEL
-    ========================================================= */
+    /* ── DETAIL PANEL ── */
     .detail-section {
-      max-width: 1280px;
-      margin: 20px auto 40px;
+      max-width: 1280px; margin: 20px auto 40px;
       padding: 0 32px;
     }
-
     .detail-panel {
       background: rgba(8,8,18,0.92);
       border: 1px solid rgba(240,192,64,0.22);
-      border-radius: 12px;
-      overflow: hidden;
+      border-radius: 12px; overflow: hidden;
       backdrop-filter: blur(14px);
       display: none;
     }
-
-    .detail-panel.show {
-      display: block;
-    }
+    .detail-panel.show { display: block; }
 
     .detail-inner {
       display: grid;
       grid-template-columns: 240px 1fr 1fr;
       gap: 0;
     }
-
     @media (max-width: 860px) {
-      .detail-inner {
-        grid-template-columns: 1fr;
-      }
+      .detail-inner { grid-template-columns: 1fr; }
     }
 
+    /* portrait column */
     .detail-portrait-col {
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
       min-height: 320px;
     }
-
     .detail-portrait-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: top;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
       display: block;
     }
-
     .detail-portrait-fallback {
-      width: 100%;
-      height: 100%;
-      min-height: 320px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%; height: 100%; min-height: 320px;
+      display: flex; align-items: center; justify-content: center;
       font-size: 5rem;
     }
-
     .detail-portrait-gradient {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(
-          90deg,
-          transparent 60%,
-          rgba(8,8,18,0.95) 100%
-        ),
-        linear-gradient(
-          0deg,
-          rgba(8,8,18,0.6) 0%,
-          transparent 40%
-        );
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 60%, rgba(8,8,18,0.95) 100%),
+                  linear-gradient(0deg, rgba(8,8,18,0.6) 0%, transparent 40%);
     }
 
+    /* info column */
     .detail-info-col {
       padding: 24px 20px;
       border-right: 1px solid rgba(240,192,64,0.12);
     }
-
     .detail-hero-name {
       font-family: 'Cinzel', serif;
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--gold);
-      letter-spacing: 3px;
+      font-size: 2rem; font-weight: 900;
+      color: var(--gold); letter-spacing: 3px;
       line-height: 1;
     }
-
     .detail-hero-title {
       font-family: 'Cinzel', serif;
-      font-size: 0.85rem;
-      color: var(--subtext);
-      letter-spacing: 4px;
-      margin: 4px 0 12px;
+      font-size: 0.85rem; color: var(--subtext);
+      letter-spacing: 4px; margin: 4px 0 12px;
     }
-
     .detail-quote {
-      font-style: italic;
-      font-size: 0.85rem;
-      color: var(--subtext);
-      line-height: 1.6;
+      font-style: italic; font-size: 0.85rem;
+      color: var(--subtext); line-height: 1.6;
       padding: 10px 14px;
       border-left: 2px solid rgba(240,192,64,0.3);
       background: rgba(240,192,64,0.03);
       border-radius: 0 4px 4px 0;
       margin-bottom: 16px;
     }
-
     .detail-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+      display: flex; flex-wrap: wrap; gap: 6px;
       margin-bottom: 16px;
     }
-
     .detail-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 1px;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.1);
       color: var(--subtext);
     }
-
-    .detail-stats {
-      margin-top: 4px;
-    }
-
+    .detail-stats { margin-top: 4px; }
     .dstat-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
       margin-bottom: 8px;
     }
-
     .dstat-lbl {
-      width: 36px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--subtext);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      flex-shrink: 0;
+      width: 36px; font-size: 0.72rem; font-weight: 700;
+      color: var(--subtext); letter-spacing: 1px;
+      text-transform: uppercase; flex-shrink: 0;
     }
-
     .dstat-bar {
-      flex: 1;
-      height: 7px;
-      background: rgba(255,255,255,0.07);
-      border-radius: 4px;
-      overflow: hidden;
+      flex: 1; height: 7px;
+      background: rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden;
     }
+    .dstat-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+    .dstat-val { width: 38px; text-align: right; font-size: 0.82rem; font-weight: 700; }
 
-    .dstat-fill {
-      height: 100%;
-      border-radius: 4px;
-      transition:
-        width 0.6s cubic-bezier(.4,0,.2,1);
-    }
-
-    .dstat-val {
-      width: 38px;
-      text-align: right;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    /* =========================================================
-       SKILLS
-    ========================================================= */
-    .detail-skills-col {
-      padding: 24px 20px;
-    }
-
+    /* skills column */
+    .detail-skills-col { padding: 24px 20px; }
     .col-label {
       font-family: 'Cinzel', serif;
-      font-size: 0.72rem;
-      color: var(--subtext);
-      letter-spacing: 3px;
-      text-transform: uppercase;
+      font-size: 0.72rem; color: var(--subtext);
+      letter-spacing: 3px; text-transform: uppercase;
       margin-bottom: 14px;
     }
-
-    .skill-cards-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
+    .skill-cards-stack { display: flex; flex-direction: column; gap: 10px; }
     .skill-item {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
+      display: flex; gap: 12px; align-items: flex-start;
       padding: 10px 12px;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 7px;
       transition: border-color 0.2s;
     }
-
-    .skill-item:hover {
-      border-color: rgba(240,192,64,0.3);
-    }
-
+    .skill-item:hover { border-color: rgba(240,192,64,0.3); }
     .skill-item-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 7px;
-      object-fit: cover;
-      border: 1px solid rgba(240,192,64,0.25);
+      width: 46px; height: 46px; border-radius: 7px;
+      object-fit: cover; border: 1px solid rgba(240,192,64,0.25);
       flex-shrink: 0;
     }
-
     .skill-item-icon-fb {
-      width: 46px;
-      height: 46px;
-      border-radius: 7px;
+      width: 46px; height: 46px; border-radius: 7px;
       border: 1px solid rgba(240,192,64,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      background: rgba(255,255,255,0.03);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; background: rgba(255,255,255,0.03);
       flex-shrink: 0;
     }
-
-    .skill-item-body {
-      flex: 1;
-      min-width: 0;
-    }
-
+    .skill-item-body { flex: 1; min-width: 0; }
     .skill-item-type {
-      font-size: 0.63rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 2px;
+      font-size: 0.63rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 2px;
     }
-
-    .skill-item-type.basic {
-      color: #aaa;
-    }
-
-    .skill-item-type.special {
-      color: #66aaff;
-    }
-
-    .skill-item-type.ultimate {
-      color: var(--gold);
-    }
-
+    .skill-item-type.basic   { color: #aaa; }
+    .skill-item-type.special { color: #66aaff; }
+    .skill-item-type.ultimate{ color: var(--gold); }
     .skill-item-name {
       font-family: 'Cinzel', serif;
-      font-size: 0.88rem;
-      color: var(--text);
-      font-weight: 700;
-      line-height: 1.2;
+      font-size: 0.88rem; color: var(--text);
+      font-weight: 700; line-height: 1.2;
     }
+    .skill-item-desc { font-size: 0.76rem; color: var(--subtext); margin-top: 2px; }
+    .skill-item-dmg  { font-size: 0.73rem; color: var(--red); font-weight: 700; margin-top: 4px; }
+    .skill-item-dmg.heal { color: #44ff99; }
 
-    .skill-item-desc {
-      font-size: 0.76rem;
-      color: var(--subtext);
-      margin-top: 2px;
-    }
-
-    .skill-item-dmg {
-      font-size: 0.73rem;
-      color: var(--red);
-      font-weight: 700;
-      margin-top: 4px;
-    }
-
-    .skill-item-dmg.heal {
-      color: #44ff99;
-    }
-
-    /* =========================================================
-       FOOTER
-    ========================================================= */
+    /* ── FOOTER BAR ── */
     .chars-footer {
-      position: sticky;
-      bottom: 0;
+      position: sticky; bottom: 0;
       background: rgba(5,5,15,0.97);
       border-top: 1px solid var(--border);
       padding: 14px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       gap: 16px;
       backdrop-filter: blur(10px);
       z-index: 50;
     }
-
     .selected-hero-mini {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      display: flex; align-items: center; gap: 12px;
     }
-
     .selected-mini-portrait {
-      width: 44px;
-      height: 44px;
-      border-radius: 6px;
-      object-fit: cover;
-      object-position: top;
+      width: 44px; height: 44px; border-radius: 6px;
+      object-fit: cover; object-position: top;
       border: 2px solid var(--gold);
     }
-
     .selected-mini-portrait-fb {
-      width: 44px;
-      height: 44px;
-      border-radius: 6px;
+      width: 44px; height: 44px; border-radius: 6px;
       border: 2px solid var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; background: rgba(255,255,255,0.05);
     }
-
-    .selected-mini-info {
-      line-height: 1.3;
-    }
-
+    .selected-mini-info { line-height: 1.3; }
     .selected-mini-name {
       font-family: 'Cinzel', serif;
-      font-size: 0.95rem;
-      color: var(--gold);
-      font-weight: 700;
+      font-size: 0.95rem; color: var(--gold); font-weight: 700;
     }
+    .selected-mini-sub { font-size: 0.75rem; color: var(--subtext); }
 
-    .selected-mini-sub {
-      font-size: 0.75rem;
-      color: var(--subtext);
-    }
-
-    .footer-btns {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
+    .footer-btns { display: flex; gap: 10px; flex-wrap: wrap; }
     .no-select-hint {
-      color: var(--subtext);
-      font-size: 0.88rem;
-      font-style: italic;
+      color: var(--subtext); font-size: 0.88rem; font-style: italic;
     }
 
-    /* =========================================================
-       IMPORTANT MOBILE NAV
-       NO HAMBURGER
-       SHOW DIRECT NAV + LOGOUT
-    ========================================================= */
-
+    /* ── MOBILE OVERRIDES ── */
     @media (max-width: 900px) {
+      /* Page header */
+      .page-header { padding: 20px 16px 12px !important; }
 
-      .page-header {
-        padding: 20px 16px 12px !important;
-      }
+      /* Hero grid: 3 cols on tablet */
+      .heroes-grid { grid-template-columns: repeat(3,1fr); gap: 10px; padding: 0 16px; }
 
-      .heroes-grid {
-        grid-template-columns: repeat(3,1fr);
-        gap: 10px;
-        padding: 0 16px;
-      }
+      /* Detail panel: 2-col (portrait + stacked info/skills) */
+      .detail-inner { grid-template-columns: 200px 1fr; }
+      .detail-skills-col { grid-column: 2; }
+      .detail-section { padding: 0 16px; }
 
-      .detail-inner {
-        grid-template-columns: 200px 1fr;
-      }
-
-      .detail-skills-col {
-        grid-column: 2;
-      }
-
-      .detail-section {
-        padding: 0 16px;
-      }
-
-      .chars-footer {
-        padding: 10px 16px;
-        gap: 10px;
-      }
-
-      /* ===============================
-         NAVBAR MOBILE - NO HAMBURGER
-      =============================== */
-
-      .navbar {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 6px !important;
-        padding: 8px 10px !important;
-      }
-
-      .navbar-logo {
-        width: 100% !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-      }
-
-      .navbar-links {
-        width: 100% !important;
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 4px !important;
-      }
-
-      .navbar-links .nav-btn {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.68rem !important;
-        padding: 6px 7px !important;
-        white-space: nowrap;
-      }
-
-      .nav-user {
-        width: 100% !important;
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 7px !important;
-      }
-
-      .nav-user .nav-btn {
-        display: inline-flex !important;
-      }
-
-      /* Hide hamburger completely */
-      .nav-hamburger {
-        display: none !important;
-      }
-
-      /* Hide mobile drawer completely */
-      .nav-mobile-drawer {
-        display: none !important;
-      }
+      /* Footer */
+      .chars-footer { padding: 10px 16px; gap: 10px; }
     }
 
     @media (max-width: 660px) {
+      /* Hero grid: 2 cols */
+      .heroes-grid { grid-template-columns: repeat(2,1fr); gap: 8px; padding: 0 12px; }
 
-      .heroes-grid {
-        grid-template-columns: repeat(2,1fr);
-        gap: 8px;
-        padding: 0 12px;
-      }
-
-      .detail-inner {
-        grid-template-columns: 1fr;
-      }
-
-      .detail-portrait-col {
-        min-height: 220px;
-        max-height: 260px;
-      }
-
-      .detail-portrait-img {
-        object-position: top center;
-      }
-
+      /* Detail panel: single column */
+      .detail-inner { grid-template-columns: 1fr; }
+      .detail-portrait-col { min-height: 220px; max-height: 260px; }
+      .detail-portrait-img  { object-position: top center; }
       .detail-portrait-gradient {
-        background:
-          linear-gradient(
-            0deg,
-            rgba(8,8,18,0.95) 0%,
-            transparent 50%
-          ),
-          linear-gradient(
-            180deg,
-            rgba(8,8,18,0.5) 0%,
-            transparent 30%
-          );
+        background: linear-gradient(0deg, rgba(8,8,18,0.95) 0%, transparent 50%),
+                    linear-gradient(180deg, rgba(8,8,18,0.5) 0%, transparent 30%);
       }
+      .detail-info-col { border-right: none; border-bottom: 1px solid rgba(240,192,64,0.12); padding: 16px; }
+      .detail-hero-name  { font-size: 1.5rem; letter-spacing: 2px; }
+      .detail-hero-title { font-size: 0.78rem; letter-spacing: 3px; }
+      .detail-skills-col { padding: 14px 16px; }
+      .detail-section { padding: 0 10px; }
 
-      .detail-info-col {
-        border-right: none;
-        border-bottom: 1px solid rgba(240,192,64,0.12);
-        padding: 16px;
-      }
-
-      .detail-hero-name {
-        font-size: 1.5rem;
-        letter-spacing: 2px;
-      }
-
-      .detail-hero-title {
-        font-size: 0.78rem;
-        letter-spacing: 3px;
-      }
-
-      .detail-skills-col {
-        padding: 14px 16px;
-      }
-
-      .detail-section {
-        padding: 0 10px;
-      }
-
-      .chars-footer {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 10px 12px;
-        gap: 8px;
-      }
-
-      .footer-btns {
-        justify-content: stretch;
-      }
-
-      .footer-btns .btn {
-        flex: 1;
-        font-size: 0.82rem;
-        padding: 10px 8px;
-      }
-
-      .selected-hero-mini {
-        gap: 8px;
-      }
-
-      .selected-mini-name {
-        font-size: 0.88rem;
-      }
-
-      .selected-mini-portrait,
-      .selected-mini-portrait-fb {
-        width: 36px;
-        height: 36px;
-      }
-
-      /* MOBILE NAV SMALL SCREEN */
-      .navbar {
-        padding: 6px 6px !important;
-        gap: 4px !important;
-      }
-
-      .navbar-logo span {
-        font-size: 0.85rem !important;
-      }
-
-      .navbar-links {
-        gap: 3px !important;
-      }
-
-      .navbar-links .nav-btn {
-        font-size: 0.62rem !important;
-        padding: 5px 5px !important;
-      }
-
-      .nav-user {
-        font-size: 0.65rem !important;
-        gap: 5px !important;
-      }
-
-      .nav-user .nav-btn {
-        font-size: 0.62rem !important;
-        padding: 5px 7px !important;
-      }
-
-      .nav-score {
-        font-size: 0.65rem !important;
-      }
+      /* Footer: stacked on very small screens */
+      .chars-footer { flex-direction: column; align-items: stretch; padding: 10px 12px; gap: 8px; }
+      .footer-btns  { justify-content: stretch; }
+      .footer-btns .btn { flex: 1; font-size: 0.82rem; padding: 10px 8px; }
+      .selected-hero-mini { gap: 8px; }
+      .selected-mini-name { font-size: 0.88rem; }
+      .selected-mini-portrait, .selected-mini-portrait-fb { width: 36px; height: 36px; }
     }
 
     @media (max-width: 400px) {
+      .heroes-grid { gap: 6px; padding: 0 8px; }
+      .hero-card-name  { font-size: 0.88rem; }
+      .hero-card-title { font-size: 0.65rem; }
+      .hero-card-role  { display: none; }
+    }
 
-      .heroes-grid {
-        gap: 6px;
-        padding: 0 8px;
+    /* ============================================================
+       MOBILE NAV — NO HAMBURGER
+       Keep the same direct navigation as desktop.
+       Dashboard | Heroes | Story Mode | Arena | Leaderboard | Logout
+       ============================================================ */
+    @media (max-width: 900px) {
+      .navbar {
+        display:flex !important;
+        align-items:center !important;
+        gap:8px !important;
+        padding:8px 10px !important;
+        overflow-x:auto !important;
+        white-space:nowrap !important;
+        -webkit-overflow-scrolling:touch !important;
+        scrollbar-width:none !important;
       }
-
-      .hero-card-name {
-        font-size: 0.88rem;
+      .navbar::-webkit-scrollbar { display:none !important; }
+      .navbar-logo { flex:0 0 auto !important; }
+      .navbar-logo span { font-size:0.72rem !important; white-space:nowrap !important; }
+      .navbar-links {
+        display:flex !important;
+        flex:0 0 auto !important;
+        align-items:center !important;
+        gap:4px !important;
+        overflow:visible !important;
       }
-
-      .hero-card-title {
-        font-size: 0.65rem;
-      }
-
-      .hero-card-role {
-        display: none;
-      }
-
       .navbar-links .nav-btn {
-        font-size: 0.58rem !important;
-        padding: 5px 4px !important;
+        display:inline-flex !important;
+        flex:0 0 auto !important;
+        padding:7px 9px !important;
+        font-size:0.68rem !important;
+        white-space:nowrap !important;
       }
-
       .nav-user {
-        font-size: 0.6rem !important;
+        display:flex !important;
+        flex:0 0 auto !important;
+        align-items:center !important;
+        gap:6px !important;
       }
+      .nav-user > span { display:none !important; }
+      .nav-score {
+        display:inline-flex !important;
+        font-size:0.68rem !important;
+        white-space:nowrap !important;
+      }
+      .nav-user .nav-btn.danger {
+        display:inline-flex !important;
+        flex:0 0 auto !important;
+        padding:7px 9px !important;
+        font-size:0.68rem !important;
+      }
+      .nav-hamburger { display:none !important; }
+      .nav-mobile-drawer { display:none !important; }
+    }
+
+    @media (max-width: 560px) {
+      .navbar { padding:7px 8px !important; gap:6px !important; }
+      .navbar-logo span { font-size:0.62rem !important; letter-spacing:1px !important; }
+      .navbar-links { gap:2px !important; }
+      .navbar-links .nav-btn,
+      .nav-user .nav-btn.danger {
+        padding:6px 7px !important;
+        font-size:0.61rem !important;
+      }
+      .nav-score { font-size:0.61rem !important; }
     }
   </style>
 </head>
-
 <body class="chars-page">
-
 <div class="bg-particles"></div>
 
-<!-- =========================================================
-     NAVBAR
-========================================================= -->
+<!-- NAVBAR -->
 <nav class="navbar">
-
   <div class="navbar-logo">
     <span>TENFOLD LEGENDS</span>
   </div>
-
   <div class="navbar-links">
-
-    <button
-      class="nav-btn"
-      onclick="location.href='dashboard.html'">
-      Dashboard
-    </button>
-
-    <button
-      class="nav-btn active"
-      onclick="location.href='characters.html'">
-      Heroes
-    </button>
-
-    <button
-      class="nav-btn"
-      onclick="location.href='story.html'">
-      Story Mode
-    </button>
-
-    <button
-      class="nav-btn"
-      onclick="location.href='battle.html'">
-      Arena
-    </button>
-
-    <button
-      class="nav-btn"
-      onclick="location.href='leaderboard.html'">
-      Leaderboard
-    </button>
-
+    <button class="nav-btn" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="nav-btn active" onclick="location.href='characters.html'">Heroes</button>
+    <button class="nav-btn" onclick="location.href='story.html'">Story Mode</button>
+    <button class="nav-btn" onclick="location.href='battle.html'">Arena</button>
+    <button class="nav-btn" onclick="location.href='leaderboard.html'">Leaderboard</button>
   </div>
-
   <div class="nav-user">
-
-    <span>
-      Welcome,
-      <span
-        class="username"
-        id="nav-username">
-        —
-      </span>
-    </span>
-
-    <div class="nav-score">
-      🏆
-      <span id="nav-score">0</span>
-      pts
-    </div>
-
-    <button
-      class="nav-btn danger btn-sm"
-      onclick="Game.logout()">
-      Logout
-    </button>
-
+    <span>Welcome, <span class="username" id="nav-username">—</span></span>
+    <div class="nav-score">🏆 <span id="nav-score">0</span> pts</div>
+    <button class="nav-btn danger btn-sm" onclick="Game.logout()">Logout</button>
   </div>
-
-  <!-- Hamburger kept in HTML but HIDDEN on mobile -->
-  <button
-    class="nav-hamburger"
-    id="nav-hamburger"
-    aria-label="Menu">
-    <span></span>
-    <span></span>
-    <span></span>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
   </button>
-
 </nav>
-
-<!-- =========================================================
-     MOBILE DRAWER
-     Hidden because mobile now uses direct navigation
-========================================================= -->
-<div
-  class="nav-mobile-drawer"
-  id="nav-mobile-drawer">
-
-  <button
-    class="nav-btn"
-    onclick="location.href='dashboard.html'">
-    🏠 Dashboard
-  </button>
-
-  <button
-    class="nav-btn active"
-    onclick="location.href='characters.html'">
-    ⚔ Heroes
-  </button>
-
-  <button
-    class="nav-btn"
-    onclick="location.href='story.html'">
-    📖 Story Mode
-  </button>
-
-  <button
-    class="nav-btn"
-    onclick="location.href='battle.html'">
-    🏟 Arena
-  </button>
-
-  <button
-    class="nav-btn"
-    onclick="location.href='leaderboard.html'">
-    🏆 Leaderboard
-  </button>
-
+<!-- MOBILE DRAWER -->
+<div class="nav-mobile-drawer" id="nav-mobile-drawer">
+  <button class="nav-btn" onclick="location.href='dashboard.html'">🏠 Dashboard</button>
+  <button class="nav-btn active" onclick="location.href='characters.html'">⚔ Heroes</button>
+  <button class="nav-btn" onclick="location.href='story.html'">📖 Story Mode</button>
+  <button class="nav-btn" onclick="location.href='battle.html'">🏟 Arena</button>
+  <button class="nav-btn" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>
   <div class="nav-user-row">
-
-    <span class="nav-username-label">
-      Welcome,
-      <span id="nav-username-mobile">—</span>
-    </span>
-
-    <div class="nav-score">
-      🏆
-      <span id="nav-score-mobile">0</span>
-      pts
-    </div>
-
-    <button
-      class="nav-btn danger btn-sm"
-      onclick="Game.logout()">
-      Logout
-    </button>
-
+    <span class="nav-username-label">Welcome, <span id="nav-username-mobile">—</span></span>
+    <div class="nav-score">🏆 <span id="nav-score-mobile">0</span> pts</div>
+    <button class="nav-btn danger btn-sm" onclick="Game.logout()">Logout</button>
   </div>
 </div>
 
-<!-- =========================================================
-     ROTATE TOAST
-========================================================= -->
-<div
-  class="rotate-toast"
-  id="rotate-toast">
-
+<!-- ROTATE TOAST -->
+<div class="rotate-toast" id="rotate-toast">
   <span class="rotate-toast-icon">📱</span>
   Rotate to landscape for the best experience
-
 </div>
 
-<!-- =========================================================
-     PAGE HEADER
-========================================================= -->
-<div
-  class="page-header"
-  style="padding:28px 32px 16px;">
-
-  <div class="page-title">
-    ⚔ CHOOSE YOUR LEGEND
-  </div>
-
-  <div class="page-subtitle">
-    Select a hero to view details — choose wisely before entering the arena
-  </div>
-
+<!-- PAGE HEADER -->
+<div class="page-header" style="padding:28px 32px 16px;">
+  <div class="page-title">⚔ CHOOSE YOUR LEGEND</div>
+  <div class="page-subtitle">Select a hero to view details — choose wisely before entering the arena</div>
 </div>
 
-<!-- =========================================================
-     HERO GRID
-========================================================= -->
-<div
-  class="heroes-grid"
-  id="heroes-grid">
-
+<!-- HERO GRID -->
+<div class="heroes-grid" id="heroes-grid">
   <!-- Populated by JS -->
-
 </div>
 
-<!-- =========================================================
-     DETAIL PANEL
-========================================================= -->
+<!-- DETAIL PANEL -->
 <div class="detail-section">
-
-  <div
-    class="detail-panel panel"
-    id="detail-panel">
-
-    <div
-      class="detail-inner"
-      id="detail-inner">
-
+  <div class="detail-panel panel" id="detail-panel">
+    <div class="detail-inner" id="detail-inner">
       <!-- Populated by JS -->
-
     </div>
-
   </div>
-
 </div>
 
-<!-- =========================================================
-     STICKY FOOTER
-========================================================= -->
-<div
-  class="chars-footer"
-  id="chars-footer">
-
-  <div
-    class="selected-hero-mini"
-    id="footer-selected">
-
-    <div
-      style="font-size:0.88rem;color:var(--subtext);font-style:italic;"
-      class="no-select-hint">
-
+<!-- STICKY FOOTER -->
+<div class="chars-footer" id="chars-footer">
+  <div class="selected-hero-mini" id="footer-selected">
+    <div style="font-size:0.88rem;color:var(--subtext);font-style:italic;" class="no-select-hint">
       No hero selected — click a card above
-
     </div>
-
   </div>
-
   <div class="footer-btns">
-
-    <button
-      class="btn btn-ghost btn-sm"
-      onclick="location.href='story.html'"
-      id="btn-story"
-      disabled>
-
+    <button class="btn btn-ghost btn-sm" onclick="location.href='story.html'" id="btn-story" disabled>
       📖 Story Mode
-
     </button>
-
-    <button
-      class="btn btn-gold"
-      onclick="goToBattle()"
-      id="btn-battle"
-      disabled>
-
+    <button class="btn btn-gold" onclick="goToBattle()" id="btn-battle" disabled>
       ⚔ ENTER ARENA
-
     </button>
-
   </div>
-
 </div>
 
-<!-- =========================================================
-     TOAST
-========================================================= -->
-<div
-  class="toast"
-  id="toast">
-</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script src="game.js"></script>
-
 <script>
-
-/* =========================================================
-   GUARD
-========================================================= */
-
-if (!Game.requireLogin()) {
-  /* redirected */
-}
+// ── GUARD ─────────────────────────────────────────────────────
+if (!Game.requireLogin()) { /* redirected */ }
 
 const user = Game.user;
+document.getElementById('nav-username').textContent = user.username;
+document.getElementById('nav-score').textContent    = user.totalScore || 0;
 
-document.getElementById('nav-username').textContent =
-  user.username;
+// ── UNLOCKED HEROES ───────────────────────────────────────────
+// Aeron is always free. Every other hero unlocks ONLY by clearing
+// the required chapter boss in Story Mode.
+// unlockedHeroes (from API/safeLocalStorage) is used ONLY for hero level data,
+// NOT as an unlock authority — story progress is the sole authority.
+let unlockedHeroes = JSON.parse(safeLocalStorage.getItem('tenfold_unlocked_' + user.userID) || '["aeron"]');
+let heroLevels     = JSON.parse(safeLocalStorage.getItem('tenfold_levels_'   + user.userID) || '{}');
+let storyProgress  = JSON.parse(safeLocalStorage.getItem('tenfold_story_'    + user.userID) || '{}');
 
-document.getElementById('nav-score').textContent =
-  user.totalScore || 0;
-
-
-/* =========================================================
-   UNLOCKED HEROES
-========================================================= */
-
-let unlockedHeroes = JSON.parse(
-  safeLocalStorage.getItem(
-    'tenfold_unlocked_' + user.userID
-  ) || '["aeron"]'
-);
-
-let heroLevels = JSON.parse(
-  safeLocalStorage.getItem(
-    'tenfold_levels_' + user.userID
-  ) || '{}'
-);
-
-let storyProgress = JSON.parse(
-  safeLocalStorage.getItem(
-    'tenfold_story_' + user.userID
-  ) || '{}'
-);
-
-
-/* =========================================================
-   REBUILD UNLOCKS FROM STORY
-========================================================= */
-
+// Wipe any stale unlock data so safeLocalStorage can never bypass story locks.
+// The only valid unlocks are aeron (free) + heroes whose chapter boss is cleared.
 function rebuildUnlockedFromStory() {
-
   const rebuilt = ['aeron'];
-
-  for (
-    const [id, afterCh]
-    of Object.entries(HERO_UNLOCK_AFTER_CH)
-  ) {
-
+  for (const [id, afterCh] of Object.entries(HERO_UNLOCK_AFTER_CH)) {
     if (afterCh === 0) continue;
-
     const key = `ch${afterCh}_st5`;
-
-    if (
-      storyProgress[key] &&
-      storyProgress[key].completed
-    ) {
-
-      if (!rebuilt.includes(id)) {
-        rebuilt.push(id);
-      }
-
+    if (storyProgress[key] && storyProgress[key].completed) {
+      if (!rebuilt.includes(id)) rebuilt.push(id);
     }
-
   }
-
   unlockedHeroes = rebuilt;
-
-  safeLocalStorage.setItem(
-    'tenfold_unlocked_' + user.userID,
-    JSON.stringify(unlockedHeroes)
-  );
-
+  safeLocalStorage.setItem('tenfold_unlocked_' + user.userID, JSON.stringify(unlockedHeroes));
 }
 
-
-/* =========================================================
-   HERO CHAPTER ORDER
-========================================================= */
-
+// ── CHAPTER ORDER (mirrors story.html CHAPTERS array) ─────────
+// Used to determine which chapter boss must be cleared to unlock each hero.
 const HERO_CHAPTER = {
-
-  aeron:  1,
-  lyra:   2,
-  kael:   3,
+  aeron:  1,   // always unlocked
+  lyra:   2,   // unlock: clear ch1 boss  — LOCKED (ch1 not yet complete)
+  kael:   3,   // unlock: clear ch2 boss
   riven:  4,
   selene: 5,
   draven: 6,
   mira:   7,
   orion:  8,
   brutus: 9,
-  elysia: 10
-
+  elysia: 10,  // last hero
 };
-
-
-/* =========================================================
-   HERO UNLOCK REQUIREMENTS
-========================================================= */
-
+// Precise chapter whose boss (stage 5) must be cleared to unlock each hero:
 const HERO_UNLOCK_AFTER_CH = {
-
-  aeron:  0,
-  lyra:   1,
+  aeron:  0,   // 0 = always free
+  lyra:   1,   // requires ch1 boss — locked until ch1 is cleared
   kael:   2,
   riven:  3,
   selene: 4,
@@ -1215,1152 +565,321 @@ const HERO_UNLOCK_AFTER_CH = {
   mira:   6,
   orion:  7,
   brutus: 8,
-  elysia: 9
-
+  elysia: 9,   // last hero, unlock after ch9 boss
 };
 
-
-/* =========================================================
-   CHECK HERO UNLOCK
-========================================================= */
-
+// Returns true if the hero is story-unlocked (chapter boss cleared or hero is aeron)
 function isHeroStoryUnlocked(id) {
-
-  const afterCh =
-    HERO_UNLOCK_AFTER_CH[id];
-
-  if (
-    afterCh === undefined ||
-    afterCh === 0
-  ) {
-    return true;
-  }
-
-  const key =
-    `ch${afterCh}_st5`;
-
-  return !!(
-    storyProgress[key] &&
-    storyProgress[key].completed
-  );
-
+  const afterCh = HERO_UNLOCK_AFTER_CH[id];
+  if (afterCh === undefined || afterCh === 0) return true; // aeron / unknown
+  // Check if ch{afterCh}_st5 is completed in storyProgress
+  const key = `ch${afterCh}_st5`;
+  return !!(storyProgress[key] && storyProgress[key].completed);
 }
 
-
-/* =========================================================
-   LOCK MESSAGE
-========================================================= */
-
+// Returns a short hint string for the locked toast message
 function getHeroLockHint(id) {
-
-  const afterCh =
-    HERO_UNLOCK_AFTER_CH[id];
-
-  if (!afterCh) {
-    return 'Complete Story Mode to unlock!';
-  }
-
+  const afterCh = HERO_UNLOCK_AFTER_CH[id];
+  if (!afterCh) return 'Complete Story Mode to unlock!';
   const chapterNames = {
-
-    1: "Aeron's Trial",
-    2: "Lyra's Blizzard",
-    3: "Kael's Storm",
-    4: "Riven's Fortress",
-    5: "Selene's Moon Hunt",
-    6: "Draven's Shadow",
-    7: "Mira's Deep",
-    8: "Orion's Tempest",
-    9: "Brutus's Iron Siege"
-
+    1: "Aeron's Trial",  2: "Lyra's Blizzard",   3: "Kael's Storm",
+    4: "Riven's Fortress", 5: "Selene's Moon Hunt", 6: "Draven's Shadow",
+    7: "Mira's Deep",    8: "Orion's Tempest",    9: "Brutus's Iron Siege",
   };
-
-  const chName =
-    chapterNames[afterCh] ||
-    `Chapter ${afterCh}`;
-
-  return `
-    Defeat the Chapter ${afterCh} Boss
-    (${chName}) in Story Mode!
-  `;
-
+  const chName = chapterNames[afterCh] || `Chapter ${afterCh}`;
+  return `Defeat the Chapter ${afterCh} Boss (${chName}) in Story Mode!`;
 }
 
+// ── SELECTED HERO ─────────────────────────────────────────────
+let currentSelected = Game.getSelectedHero() || '';
 
-/* =========================================================
-   SELECTED HERO
-========================================================= */
-
-let currentSelected =
-  Game.getSelectedHero() || '';
-
-
-/* =========================================================
-   BUILD HERO GRID
-========================================================= */
-
+// ── BUILD GRID ────────────────────────────────────────────────
 function buildGrid() {
-
-  const grid =
-    document.getElementById('heroes-grid');
-
+  const grid = document.getElementById('heroes-grid');
   grid.innerHTML = '';
 
   HERO_ORDER.forEach(id => {
+    const h       = HEROES[id];
+    // Story progress is the SOLE unlock authority.
+    // unlockedHeroes from safeLocalStorage/API is ignored for locking purposes
+    // to prevent stale data from showing heroes as unlocked.
+    const locked  = !isHeroStoryUnlocked(id);
+    const level   = heroLevels[id] || 1;
+    const sel     = currentSelected === id;
 
-    const h = HEROES[id];
-
-    const locked =
-      !isHeroStoryUnlocked(id);
-
-    const level =
-      heroLevels[id] || 1;
-
-    const sel =
-      currentSelected === id;
-
-    const card =
-      document.createElement('div');
-
-    card.className =
-      `hero-card${locked ? ' locked' : ''}${sel ? ' selected' : ''}`;
-
+    const card = document.createElement('div');
+    card.className = `hero-card${locked ? ' locked' : ''}${sel ? ' selected' : ''}`;
     card.dataset.id = id;
+    card.onclick = () => locked ? showLockedMsg(id) : selectHero(id);
 
-    card.onclick = () =>
-      locked
-        ? showLockedMsg(id)
-        : selectHero(id);
-
-
-    /* =====================================================
-       HERO IMAGE
-    ===================================================== */
-
-    const bgSrc =
-      h.sprites.portrait ||
-      (
-        h.sprites.backgrounds &&
-        h.sprites.backgrounds[0]
-      ) ||
-      '';
-
-    const bgStyle =
-      bgSrc
-        ? `background-image:url('${bgSrc}');`
-        : `background:${h.bgColor};`;
-
-
-    /* =====================================================
-       CARD HTML
-    ===================================================== */
+    // Background — use portrait or first background as card art
+    const bgSrc = h.sprites.portrait || (h.sprites.backgrounds && h.sprites.backgrounds[0]) || '';
+    const bgStyle = bgSrc ? `background-image:url('${bgSrc}');` : `background:${h.bgColor};`;
 
     card.innerHTML = `
-
-      <div
-        class="hero-card-bg"
-        style="${bgStyle}">
-      </div>
-
+      <div class="hero-card-bg" style="${bgStyle}"></div>
       <div class="hero-card-overlay"></div>
-
-      <div class="selected-check">
-        ✓
-      </div>
-
+      <div class="selected-check">✓</div>
       <div class="hero-card-top">
-
-        <div
-          class="hero-card-elem"
-          style="
-            color:${h.color};
-            border-color:${h.color};
-          ">
-
-          ${ELEMENT_ICONS[h.element] || ''}
-          ${h.element}
-
+        <div class="hero-card-elem" style="color:${h.color};border-color:${h.color};">
+          ${ELEMENT_ICONS[h.element] || ''} ${h.element}
         </div>
-
-        <div class="hero-card-lv">
-          Lv ${level}
-        </div>
-
+        <div class="hero-card-lv">Lv ${level}</div>
       </div>
-
       <div class="hero-card-info">
-
-        <div class="hero-card-name">
-          ${h.name}
-        </div>
-
-        <div class="hero-card-title">
-          ${h.title}
-        </div>
-
-        <div class="hero-card-role">
-          ${h.role}
-        </div>
-
+        <div class="hero-card-name">${h.name}</div>
+        <div class="hero-card-title">${h.title}</div>
+        <div class="hero-card-role">${h.role}</div>
       </div>
-
-      ${
-        locked
-        ? `
-          <div class="hero-card-lock">
-
-            <span>🔒</span>
-
-            <p>
-              LOCKED
-            </p>
-
-            <p
-              style="
-                font-size:.6rem;
-                color:rgba(255,255,255,.4);
-                margin-top:4px;
-                letter-spacing:.5px;
-                line-height:1.4;
-              ">
-
-              ${getHeroLockHint(id)}
-
-            </p>
-
-          </div>
-        `
-        : ''
-      }
-
+      ${locked ? `<div class="hero-card-lock"><span>🔒</span><p>LOCKED</p><p style="font-size:.6rem;color:rgba(255,255,255,.4);margin-top:4px;letter-spacing:.5px;line-height:1.4;">${getHeroLockHint(id)}</p></div>` : ''}
     `;
-
     grid.appendChild(card);
-
   });
-
 }
 
-
-/* =========================================================
-   SELECT HERO
-========================================================= */
-
+// ── SELECT HERO ───────────────────────────────────────────────
 function selectHero(id) {
-
   currentSelected = id;
-
   Game.selectHero(id);
 
-
-  document
-    .querySelectorAll('.hero-card')
-    .forEach(c => {
-
-      c.classList.toggle(
-        'selected',
-        c.dataset.id === id
-      );
-
-    });
-
+  // Update grid selection
+  document.querySelectorAll('.hero-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.id === id);
+  });
 
   renderDetailPanel(id);
-
   updateFooter(id);
 
+  document.getElementById('btn-battle').disabled = false;
+  document.getElementById('btn-story').disabled  = false;
 
-  document.getElementById(
-    'btn-battle'
-  ).disabled = false;
-
-  document.getElementById(
-    'btn-story'
-  ).disabled = false;
-
-
-  document
-    .getElementById('detail-panel')
-    .scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest'
-    });
-
+  // Smooth scroll to detail
+  document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-
-/* =========================================================
-   DETAIL PANEL
-========================================================= */
-
+// ── DETAIL PANEL ──────────────────────────────────────────────
 function renderDetailPanel(id) {
+  const h     = HEROES[id];
+  const level = heroLevels[id] || 1;
+  const stats = getScaledStats(id, level);
+  const panel = document.getElementById('detail-panel');
+  const inner = document.getElementById('detail-inner');
 
-  const h = HEROES[id];
+  const maxStats = { hp: 1500, atk: 200, def: 160, spd: 160, crit: 50 };
 
-  const level =
-    heroLevels[id] || 1;
-
-  const stats =
-    getScaledStats(id, level);
-
-  const panel =
-    document.getElementById('detail-panel');
-
-  const inner =
-    document.getElementById('detail-inner');
-
-
-  const maxStats = {
-
-    hp: 1500,
-    atk: 200,
-    def: 160,
-    spd: 160,
-    crit: 50
-
-  };
-
-
-  /* =====================================================
-     PORTRAIT
-  ===================================================== */
-
+  // Portrait column
   let portraitHTML = '';
-
   if (h.sprites.portrait) {
-
-    portraitHTML = `
-
-      <img
-        src="${h.sprites.portrait}"
-        class="detail-portrait-img"
-        alt="${h.name}"
-        onerror="
-          this.style.display='none';
-          this.nextElementSibling.style.display='flex'
-        "
-      />
-
-      <div
-        class="detail-portrait-fallback"
-        style="display:none;">
-
-        ${ELEMENT_ICONS[h.element]}
-
-      </div>
-
-    `;
-
+    portraitHTML = `<img src="${h.sprites.portrait}" class="detail-portrait-img" alt="${h.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="detail-portrait-fallback" style="display:none;">${ELEMENT_ICONS[h.element]}</div>`;
   } else {
-
-    portraitHTML = `
-
-      <div class="detail-portrait-fallback">
-
-        ${ELEMENT_ICONS[h.element]}
-
-      </div>
-
-    `;
-
+    portraitHTML = `<div class="detail-portrait-fallback">${ELEMENT_ICONS[h.element]}</div>`;
   }
 
-
-  /* =====================================================
-     STAT BAR
-  ===================================================== */
-
-  function statBar(
-    lbl,
-    val,
-    max,
-    color
-  ) {
-
-    const pct =
-      Math.min(
-        100,
-        Math.round(
-          val / max * 100
-        )
-      );
-
+  // Stat bars
+  function statBar(lbl, val, max, color) {
+    const pct = Math.min(100, Math.round(val / max * 100));
     return `
-
       <div class="dstat-row">
-
-        <div class="dstat-lbl">
-          ${lbl}
-        </div>
-
+        <div class="dstat-lbl">${lbl}</div>
         <div class="dstat-bar">
-
-          <div
-            class="dstat-fill"
-            style="
-              width:${pct}%;
-              background:${color};
-            ">
-          </div>
-
+          <div class="dstat-fill" style="width:${pct}%;background:${color};"></div>
         </div>
-
-        <div
-          class="dstat-val"
-          style="color:${color};">
-
-          ${val}
-
-        </div>
-
-      </div>
-
-    `;
-
+        <div class="dstat-val" style="color:${color};">${val}</div>
+      </div>`;
   }
 
-
-  /* =====================================================
-     SKILL ITEM
-  ===================================================== */
-
-  function skillItem(
-    sk,
-    typeClass,
-    icon
-  ) {
-
+  // Skills
+  function skillItem(sk, typeClass, icon) {
     const iconHtml = sk.icon
-
-      ? `
-
-        <img
-          src="${sk.icon}"
-          class="skill-item-icon"
-          alt="${sk.name}"
-          onerror="
-            this.outerHTML=
-            '<div class=\\'skill-item-icon-fb\\'>${icon}</div>'
-          "
-        />
-
-      `
-
-      : `
-
-        <div class="skill-item-icon-fb">
-          ${icon}
-        </div>
-
-      `;
-
-
-    const dmgColor =
-      sk.damage < 0
-        ? 'heal'
-        : '';
-
-
-    const dmgLabel =
-      sk.damage < 0
-
-        ? `+${Math.abs(sk.damage)} HP Heal`
-
-        : sk.damage === 0
-
-          ? 'Defensive'
-
-          : `${sk.damage} DMG`;
-
-
+      ? `<img src="${sk.icon}" class="skill-item-icon" alt="${sk.name}" onerror="this.outerHTML='<div class=\\"skill-item-icon-fb\\">${icon}</div>'"/>`
+      : `<div class="skill-item-icon-fb">${icon}</div>`;
+    const dmgColor = sk.damage < 0 ? 'heal' : '';
+    const dmgLabel = sk.damage < 0
+      ? `+${Math.abs(sk.damage)} HP Heal`
+      : sk.damage === 0 ? 'Defensive'
+      : `${sk.damage} DMG`;
     return `
-
       <div class="skill-item">
-
         ${iconHtml}
-
         <div class="skill-item-body">
-
-          <div
-            class="skill-item-type ${typeClass}">
-
-            ${sk.type}
-
-          </div>
-
-          <div class="skill-item-name">
-            ${sk.name}
-          </div>
-
-          <div class="skill-item-desc">
-            ${sk.desc}
-          </div>
-
-          <div
-            class="skill-item-dmg ${dmgColor}">
-
-            ⚔ ${dmgLabel}
-
-            ${
-              sk.manaCost > 0
-              ? ` · 💧 ${sk.manaCost} MP`
-              : ''
-            }
-
-          </div>
-
+          <div class="skill-item-type ${typeClass}">${sk.type}</div>
+          <div class="skill-item-name">${sk.name}</div>
+          <div class="skill-item-desc">${sk.desc}</div>
+          <div class="skill-item-dmg ${dmgColor}">⚔ ${dmgLabel}${sk.manaCost > 0 ? ` · 💧 ${sk.manaCost} MP` : ''}</div>
         </div>
-
-      </div>
-
-    `;
-
+      </div>`;
   }
-
-
-  /* =====================================================
-     DETAIL HTML
-  ===================================================== */
 
   inner.innerHTML = `
-
-    <!-- PORTRAIT -->
-
+    <!-- Portrait -->
     <div class="detail-portrait-col">
-
       ${portraitHTML}
-
-      <div
-        class="detail-portrait-gradient">
-      </div>
-
+      <div class="detail-portrait-gradient"></div>
     </div>
 
-
-    <!-- INFO -->
-
+    <!-- Info -->
     <div class="detail-info-col">
-
-      <div class="detail-hero-name">
-        ${h.name}
-      </div>
-
-      <div class="detail-hero-title">
-        — ${h.title} —
-      </div>
-
-      <div class="detail-quote">
-        ${h.quote}
-      </div>
-
-
+      <div class="detail-hero-name">${h.name}</div>
+      <div class="detail-hero-title">— ${h.title} —</div>
+      <div class="detail-quote">${h.quote}</div>
       <div class="detail-tags">
-
-        <div
-          class="detail-tag"
-          style="
-            color:${h.color};
-            border-color:${h.color}40;
-          ">
-
-          ${ELEMENT_ICONS[h.element]}
-          ${h.element}
-
+        <div class="detail-tag" style="color:${h.color};border-color:${h.color}40;">
+          ${ELEMENT_ICONS[h.element]} ${h.element}
         </div>
-
-        <div class="detail-tag">
-          ⚔ ${h.weapon}
-        </div>
-
-        <div class="detail-tag">
-          🥊 ${h.fightingStyle}
-        </div>
-
-        <div
-          class="detail-tag"
-          style="
-            color:var(--gold);
-            border-color:rgba(240,192,64,0.25);
-          ">
-
-          ✦ ${h.role}
-
-        </div>
-
-        <div
-          class="detail-tag"
-          style="color:var(--gold);">
-
-          Lv ${level}
-
-        </div>
-
+        <div class="detail-tag">⚔ ${h.weapon}</div>
+        <div class="detail-tag">🥊 ${h.fightingStyle}</div>
+        <div class="detail-tag" style="color:var(--gold);border-color:rgba(240,192,64,0.25);">✦ ${h.role}</div>
+        <div class="detail-tag" style="color:var(--gold);">Lv ${level}</div>
       </div>
-
-
-      <div class="col-label">
-        BASE STATS
-      </div>
-
-
+      <div class="col-label">BASE STATS</div>
       <div class="detail-stats">
-
-        ${statBar(
-          'HP',
-          stats.hp,
-          maxStats.hp,
-          '#ff5555'
-        )}
-
-        ${statBar(
-          'ATK',
-          stats.atk,
-          maxStats.atk,
-          '#ffaa44'
-        )}
-
-        ${statBar(
-          'DEF',
-          stats.def,
-          maxStats.def,
-          '#44aaff'
-        )}
-
-        ${statBar(
-          'SPD',
-          stats.spd,
-          maxStats.spd,
-          '#44ffaa'
-        )}
-
-        ${statBar(
-          'CRIT',
-          stats.crit,
-          maxStats.crit,
-          '#ffdd44'
-        )}
-
+        ${statBar('HP',   stats.hp,   maxStats.hp,   '#ff5555')}
+        ${statBar('ATK',  stats.atk,  maxStats.atk,  '#ffaa44')}
+        ${statBar('DEF',  stats.def,  maxStats.def,  '#44aaff')}
+        ${statBar('SPD',  stats.spd,  maxStats.spd,  '#44ffaa')}
+        ${statBar('CRIT', stats.crit, maxStats.crit, '#ffdd44')}
       </div>
-
     </div>
 
-
-    <!-- SKILLS -->
-
+    <!-- Skills -->
     <div class="detail-skills-col">
-
-      <div class="col-label">
-        SKILLS
-      </div>
-
+      <div class="col-label">SKILLS</div>
       <div class="skill-cards-stack">
-
-        ${skillItem(
-          h.skills.basic,
-          'basic',
-          '⚔'
-        )}
-
-        ${skillItem(
-          h.skills.special,
-          'special',
-          '✨'
-        )}
-
-        ${skillItem(
-          h.skills.ultimate,
-          'ultimate',
-          '💥'
-        )}
-
+        ${skillItem(h.skills.basic,   'basic',   '⚔')}
+        ${skillItem(h.skills.special, 'special', '✨')}
+        ${skillItem(h.skills.ultimate,'ultimate','💥')}
       </div>
-
-
-      <button
-        class="btn btn-gold"
-        style="
-          width:100%;
-          margin-top:20px;
-        "
-        onclick="goToBattle()">
-
-        ⚔ ENTER ARENA WITH
-        ${h.name.toUpperCase()}
-
+      <button class="btn btn-gold" style="width:100%;margin-top:20px;" onclick="goToBattle()">
+        ⚔ ENTER ARENA WITH ${h.name.toUpperCase()}
       </button>
-
     </div>
-
   `;
-
 
   panel.classList.add('show');
-
 }
 
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
+// ── FOOTER ────────────────────────────────────────────────────
 function updateFooter(id) {
+  const h     = HEROES[id];
+  const level = heroLevels[id] || 1;
+  const footer = document.getElementById('footer-selected');
 
-  const h = HEROES[id];
-
-  const level =
-    heroLevels[id] || 1;
-
-  const footer =
-    document.getElementById(
-      'footer-selected'
-    );
-
-
-  const portraitHtml =
-    h.sprites.portrait
-
-      ? `
-
-        <img
-          src="${h.sprites.portrait}"
-          class="selected-mini-portrait"
-          alt="${h.name}"
-          onerror="
-            this.outerHTML=
-            '<div class=\\'selected-mini-portrait-fb\\'>${ELEMENT_ICONS[h.element]}</div>'
-          "
-        />
-
-      `
-
-      : `
-
-        <div class="selected-mini-portrait-fb">
-          ${ELEMENT_ICONS[h.element]}
-        </div>
-
-      `;
-
+  const portraitHtml = h.sprites.portrait
+    ? `<img src="${h.sprites.portrait}" class="selected-mini-portrait" alt="${h.name}"
+          onerror="this.outerHTML='<div class=\\"selected-mini-portrait-fb\\">${ELEMENT_ICONS[h.element]}</div>'">`
+    : `<div class="selected-mini-portrait-fb">${ELEMENT_ICONS[h.element]}</div>`;
 
   footer.innerHTML = `
-
     ${portraitHtml}
-
     <div class="selected-mini-info">
-
-      <div class="selected-mini-name">
-
-        ${h.name}
-
-        <span
-          style="
-            font-size:0.72rem;
-            font-family:'Rajdhani',sans-serif;
-            color:var(--subtext);
-          ">
-
-          · ${h.title}
-
-        </span>
-
-      </div>
-
-      <div class="selected-mini-sub">
-
-        ${ELEMENT_ICONS[h.element]}
-        ${h.element}
-        · ${h.fightingStyle}
-        · Lv ${level}
-
-      </div>
-
+      <div class="selected-mini-name">${h.name} <span style="font-size:0.72rem;font-family:'Rajdhani',sans-serif;color:var(--subtext);">· ${h.title}</span></div>
+      <div class="selected-mini-sub">${ELEMENT_ICONS[h.element]} ${h.element} · ${h.fightingStyle} · Lv ${level}</div>
     </div>
-
   `;
-
 }
 
-
-/* =========================================================
-   GO TO BATTLE
-========================================================= */
-
+// ── NAVIGATE ──────────────────────────────────────────────────
 function goToBattle() {
-
-  if (!currentSelected) {
-
-    showToast(
-      'Select a hero first!',
-      'error'
-    );
-
-    return;
-  }
-
-
-  safeSessionStorage.setItem(
-    'tenfold_battle_mode',
-    'arena'
-  );
-
-  safeSessionStorage.removeItem(
-    'tenfold_battle_enemy'
-  );
-
-  safeSessionStorage.removeItem(
-    'tenfold_battle_enemy_lv'
-  );
-
-  safeSessionStorage.removeItem(
-    'tenfold_battle_chapter'
-  );
-
-  safeSessionStorage.removeItem(
-    'tenfold_battle_stage'
-  );
-
-  safeSessionStorage.removeItem(
-    'tenfold_battle_name'
-  );
-
-  safeSessionStorage.removeItem(
-    'tenfold_battle_is_boss'
-  );
-
-
-  window.location.href =
-    'battle.html';
-
+  if (!currentSelected) { showToast('Select a hero first!', 'error'); return; }
+  // Clear any leftover story session data so Arena mode works cleanly
+  safeSessionStorage.setItem('tenfold_battle_mode', 'arena');
+  safeSessionStorage.removeItem('tenfold_battle_enemy');
+  safeSessionStorage.removeItem('tenfold_battle_enemy_lv');
+  safeSessionStorage.removeItem('tenfold_battle_chapter');
+  safeSessionStorage.removeItem('tenfold_battle_stage');
+  safeSessionStorage.removeItem('tenfold_battle_name');
+  safeSessionStorage.removeItem('tenfold_battle_is_boss');
+  window.location.href = 'battle.html';
 }
-
-
-/* =========================================================
-   LOCKED HERO MESSAGE
-========================================================= */
 
 function showLockedMsg(id) {
-
-  const h = HEROES[id];
-
-  const hint =
-    getHeroLockHint(id);
-
-  showToast(
-    `🔒 ${h.name} is locked! ${hint}`,
-    'info'
-  );
-
+  const h    = HEROES[id];
+  const hint = getHeroLockHint(id);
+  showToast(`🔒 ${h.name} is locked! ${hint}`, 'info');
 }
 
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function showToast(
-  msg,
-  type = 'info'
-) {
-
-  const t =
-    document.getElementById('toast');
-
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
   t.textContent = msg;
-
-  t.className =
-    `toast ${type} show`;
-
-  setTimeout(() => {
-
-    t.className = 'toast';
-
-  }, 3000);
-
+  t.className = `toast ${type} show`;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
 }
 
-
-/* =========================================================
-   LOAD HERO DATA
-========================================================= */
-
+// ── LOAD HERO DATA FROM API (or local) ────────────────────────
 async function loadHeroData() {
-
-  const res =
-    await apiCall({
-      action: 'getChars',
-      userID: user.userID
-    });
-
-
-  if (
-    res.success &&
-    res.characters
-  ) {
-
-    res.characters.forEach(c => {
-
-      heroLevels[c.heroID] =
-        c.level;
-
-    });
-
-
-    safeLocalStorage.setItem(
-      'tenfold_levels_' + user.userID,
-      JSON.stringify(heroLevels)
-    );
-
+  const res = await apiCall({ action: 'getChars', userID: user.userID });
+  if (res.success && res.characters) {
+    // Only pull level data from the API — do NOT use API unlock list.
+    // Story progress is the sole unlock authority.
+    res.characters.forEach(c => { heroLevels[c.heroID] = c.level; });
+    safeLocalStorage.setItem('tenfold_levels_' + user.userID, JSON.stringify(heroLevels));
   }
-
-
-  storyProgress =
-    JSON.parse(
-      safeLocalStorage.getItem(
-        'tenfold_story_' + user.userID
-      ) || '{}'
-    );
-
-
+  // Re-read story progress in case it was updated by a recent battle
+  storyProgress = JSON.parse(safeLocalStorage.getItem('tenfold_story_' + user.userID) || '{}');
+  // Always rebuild unlock list strictly from story progress — this wipes any
+  // stale safeLocalStorage data that would show locked heroes as unlocked.
   rebuildUnlockedFromStory();
-
   buildGrid();
-
-
-  const heroUsable =
-    currentSelected &&
-    isHeroStoryUnlocked(
-      currentSelected
-    );
-
-
+  // Restore previous selection (only if hero is actually story-unlocked)
+  const heroUsable = currentSelected && isHeroStoryUnlocked(currentSelected);
   if (heroUsable) {
-
-    renderDetailPanel(
-      currentSelected
-    );
-
-    updateFooter(
-      currentSelected
-    );
-
-    document.getElementById(
-      'btn-battle'
-    ).disabled = false;
-
-    document.getElementById(
-      'btn-story'
-    ).disabled = false;
-
+    renderDetailPanel(currentSelected);
+    updateFooter(currentSelected);
+    document.getElementById('btn-battle').disabled = false;
+    document.getElementById('btn-story').disabled  = false;
   }
-
 }
 
-
-/* =========================================================
-   MOBILE USER DATA
-========================================================= */
-
-const _mobileUn =
-  document.getElementById(
-    'nav-username-mobile'
-  );
-
-const _mobileSc =
-  document.getElementById(
-    'nav-score-mobile'
-  );
-
-if (_mobileUn) {
-
-  _mobileUn.textContent =
-    user.username;
-
-}
-
-if (_mobileSc) {
-
-  _mobileSc.textContent =
-    user.totalScore || 0;
-
-}
-
-
-/* =========================================================
-   HAMBURGER
-   Disabled on mobile by CSS.
-   Kept here so existing desktop behavior won't break.
-========================================================= */
+// ── MOBILE NAV SYNC + HAMBURGER ──────────────────────────────
+const _mobileUn = document.getElementById('nav-username-mobile');
+const _mobileSc = document.getElementById('nav-score-mobile');
+if (_mobileUn) _mobileUn.textContent = user.username;
+if (_mobileSc) _mobileSc.textContent = user.totalScore || 0;
 
 (function() {
-
-  const btn =
-    document.getElementById(
-      'nav-hamburger'
-    );
-
-  const drawer =
-    document.getElementById(
-      'nav-mobile-drawer'
-    );
-
-
-  if (!btn || !drawer) {
-    return;
-  }
-
-
-  btn.addEventListener(
-    'click',
-    () => {
-
-      const open =
-        drawer.classList.toggle(
-          'open'
-        );
-
-      btn.classList.toggle(
-        'open',
-        open
-      );
-
-      btn.setAttribute(
-        'aria-expanded',
-        open
-      );
-
-    }
-  );
-
-
-  drawer
-    .querySelectorAll('.nav-btn')
-    .forEach(b => {
-
-      b.addEventListener(
-        'click',
-        () => {
-
-          drawer.classList.remove(
-            'open'
-          );
-
-          btn.classList.remove(
-            'open'
-          );
-
-        }
-      );
-
+  const btn    = document.getElementById('nav-hamburger');
+  const drawer = document.getElementById('nav-mobile-drawer');
+  if (!btn || !drawer) return;
+  btn.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+  drawer.querySelectorAll('.nav-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      btn.classList.remove('open');
     });
-
+  });
 })();
 
-
-/* =========================================================
-   ROTATE TOAST
-========================================================= */
-
+// ── ROTATE TOAST (soft, shows once per session) ───────────────
 (function() {
+  const toast = document.getElementById('rotate-toast');
+  if (!toast) return;
+  if (safeSessionStorage.getItem('tenfold_rotate_shown')) return;
 
-  const toast =
-    document.getElementById(
-      'rotate-toast'
-    );
-
-  if (!toast) {
-    return;
-  }
-
-
-  if (
-    safeSessionStorage.getItem(
-      'tenfold_rotate_shown'
-    )
-  ) {
-    return;
-  }
-
-
-  function isMobile() {
-
-    return (
-      window.innerWidth <= 900 ||
-      'ontouchstart' in window
-    );
-
-  }
-
-
+  function isMobile()  { return window.innerWidth <= 900 || 'ontouchstart' in window; }
   function isPortrait() {
-
-    if (
-      screen.orientation &&
-      screen.orientation.type
-    ) {
-
-      return screen.orientation
-        .type
-        .startsWith('portrait');
-
-    }
-
-    return (
-      window.innerHeight >
-      window.innerWidth
-    );
-
+    if (screen.orientation && screen.orientation.type)
+      return screen.orientation.type.startsWith('portrait');
+    return window.innerHeight > window.innerWidth;
   }
-
-
   function check() {
-
-    if (
-      isMobile() &&
-      isPortrait()
-    ) {
-
-      toast.classList.add(
-        'show'
-      );
-
-      safeSessionStorage.setItem(
-        'tenfold_rotate_shown',
-        '1'
-      );
-
-      setTimeout(
-        () => toast.classList.remove('show'),
-        5000
-      );
-
+    if (isMobile() && isPortrait()) {
+      toast.classList.add('show');
+      safeSessionStorage.setItem('tenfold_rotate_shown', '1');
+      setTimeout(() => toast.classList.remove('show'), 5000);
     }
-
   }
-
-
-  setTimeout(
-    check,
-    300
-  );
-
-
-  window.addEventListener(
-    'orientationchange',
-    () => setTimeout(
-      check,
-      200
-    )
-  );
-
+  setTimeout(check, 300);
+  window.addEventListener('orientationchange', () => setTimeout(check, 200));
 })();
 
-
-/* =========================================================
-   INIT
-========================================================= */
-
+// ── INIT ──────────────────────────────────────────────────────
 loadHeroData();
-
 </script>
-
 </body>
 </html>
