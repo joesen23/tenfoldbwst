@@ -253,6 +253,132 @@
     /* progress bar in header */
     .ch-prog-bar { height:4px; background:rgba(255,255,255,.07); border-radius:2px; overflow:hidden; margin-top:5px; }
     .ch-prog-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,#a06800,#f0c040); transition:width .6s; }
+
+
+    /* ============================================================
+   MOBILE NAVBAR — NO HAMBURGER
+   Same layout as Dashboard / Characters / Leaderboard
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+  .navbar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .navbar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Logo */
+  .navbar-logo {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+  }
+
+  .navbar-logo span {
+    font-size: .72rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* DIRECT NAVIGATION */
+  .navbar-links {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    gap: 4px !important;
+    overflow: visible !important;
+  }
+
+  .navbar-links .nav-btn {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 7px 9px !important;
+    font-size: .68rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* USER / SCORE / LOGOUT */
+  .nav-user {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .nav-user > span {
+    display: none !important;
+  }
+
+  .nav-score {
+    display: inline-flex !important;
+    align-items: center !important;
+    font-size: .68rem !important;
+    white-space: nowrap !important;
+  }
+
+  .nav-user .nav-btn.danger {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+
+    padding: 7px 9px !important;
+    font-size: .68rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* COMPLETELY REMOVE HAMBURGER */
+  .nav-hamburger {
+    display: none !important;
+  }
+
+  /* COMPLETELY REMOVE MOBILE DRAWER */
+  .nav-mobile-drawer {
+    display: none !important;
+  }
+}
+
+
+/* SMALL PHONE */
+@media (max-width: 560px) {
+
+  .navbar {
+    padding: 7px 8px !important;
+    gap: 6px !important;
+  }
+
+  .navbar-logo span {
+    font-size: .62rem !important;
+    letter-spacing: 1px !important;
+  }
+
+  .navbar-links {
+    gap: 2px !important;
+  }
+
+  .navbar-links .nav-btn,
+  .nav-user .nav-btn.danger {
+    padding: 6px 7px !important;
+    font-size: .61rem !important;
+  }
+
+  .nav-score {
+    font-size: .61rem !important;
+  }
+}
   </style>
 <script>
 (function(){
