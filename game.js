@@ -1539,10 +1539,11 @@ const ELEMENT_ICONS = {
 
 // ── UTILITY ───────────────────────────────────────────────────
 function formatNumber(n) {
-  // Scores are authoritative integers from Google Sheets.
-  // Always display the exact value; never round 1670 to 1.7K.
+  // TotalScore is an exact integer from Google Sheets.
+  // NEVER abbreviate 1850 as 1.9K. Every score UI uses this formatter.
   const v = Number(n);
-  return Number.isFinite(v) ? Math.trunc(v) : 0;
+  if (!Number.isFinite(v)) return 0;
+  return String(Math.trunc(v));
 }
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
