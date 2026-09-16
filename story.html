@@ -452,6 +452,13 @@
 // ── GUARD ─────────────────────────────────────────────────────
 if (!Game.requireLogin()) { /* redirected */ }
 const user           = Game.user;
+
+Game.syncScore().then((score) => {
+  if (score === null) return;
+  user.totalScore = score;
+  const nav = document.getElementById('nav-score');
+  if (nav) nav.textContent = score;
+});
 const selectedHeroId = Game.getSelectedHero();
 document.getElementById('nav-username').textContent = user.username;
 document.getElementById('nav-score').textContent    = user.totalScore || 0;
@@ -973,5 +980,9 @@ loadProgress().then(() => {
   checkAutoNext();
 });
 </script>
+
+<style>#tfl-connection{position:fixed;right:10px;bottom:10px;z-index:99999;font:600 11px Arial,sans-serif;padding:5px 8px;border:1px solid rgba(240,192,64,.35);border-radius:12px;background:rgba(5,5,15,.82);color:#aaa;pointer-events:none;opacity:.8}</style>
+<div id="tfl-connection">● ONLINE</div>
+<script>(function(){function u(){var e=document.getElementById('tfl-connection');if(!e)return;e.textContent=navigator.onLine?'● ONLINE':'● OFFLINE';e.style.color=navigator.onLine?'#7ee787':'#ffcc66';}window.addEventListener('online',u);window.addEventListener('offline',u);u();})();</script>
 </body>
 </html>
