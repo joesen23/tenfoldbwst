@@ -9,7 +9,7 @@
   "theme_color": "#f0c040",
   "icons": [
     {
-      "src": "background.png",
+      "src": "background.webp",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"
