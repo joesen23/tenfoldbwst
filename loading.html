@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <link rel="manifest" href="manifest.json"/>
+<link rel="preload" href="https://res.cloudinary.com/jtrgd4x8/image/upload/f_auto,q_auto/background" as="image"/>
 <title>Tenfold Legends</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;700&display=swap');
@@ -14,7 +15,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;}
 /* ── BG ── */
 .bg{
   position:fixed;inset:0;z-index:0;
-  background:url('background.png') center center/cover no-repeat;
+  background:#05050f;
+}
+.bg img.bg-img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+  opacity:0;
+  transition:opacity 0.5s ease;
+}
+.bg img.bg-img.loaded{
+  opacity:1;
 }
 .bg-dark{
   position:fixed;inset:0;z-index:1;
@@ -177,7 +189,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;}
 </head>
 <body>
 
-<div class="bg"></div>
+<div class="bg">
+  <img class="bg-img" src="https://res.cloudinary.com/jtrgd4x8/image/upload/f_auto,q_auto/background" alt="" fetchpriority="high"
+       onload="this.classList.add('loaded')"/>
+</div>
 <div class="bg-dark"></div>
 <div class="ptc" id="ptc"></div>
 
@@ -228,6 +243,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;}
   }
 })();
 
+// ── PRELOAD BACKGROUND ─────────────────────────────────────
+// Force the background image to load immediately via JS
+(function(){
+  var img = new Image();
+  img.src = 'background.webp';
+})();
+
 // ── PROGRESS ───────────────────────────────────────────────
 const fill   = document.getElementById('fill');
 const pct    = document.getElementById('pct');
@@ -244,7 +266,7 @@ const MSGS = [
 
 let val   = 0;
 let mIdx  = 0;
-const DUR = 3000; // ms
+const DUR = 3000;
 const INT = 35;
 const INC = 100/(DUR/INT);
 
