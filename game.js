@@ -9,33 +9,61 @@
 // These wrappers silently fall back to an in-memory Map so the
 // game never crashes with "storage is unavailable".
 (function() {
-  function makeMemoryStore() {
-    const _m = {};
+  // Persistent fallback for MIT App Inventor WebViewer.
+  // Uses window.name only when browser storage is unavailable.
+  const FALLBACK_PREFIX = 'TENFOLD_PERSIST:';
+  let fallbackData = {};
+
+  function loadFallback() {
+    try {
+      const raw = String(window.name || '');
+      if (raw.startsWith(FALLBACK_PREFIX)) {
+        const parsed = JSON.parse(decodeURIComponent(raw.slice(FALLBACK_PREFIX.length)));
+        if (parsed && typeof parsed === 'object') fallbackData = parsed;
+      }
+    } catch (_) {}
+  }
+  function saveFallback() {
+    try {
+      window.name = FALLBACK_PREFIX + encodeURIComponent(JSON.stringify(fallbackData));
+    } catch (_) {}
+  }
+  loadFallback();
+
+  function makeFallbackStore(bucket) {
+    if (!fallbackData[bucket] || typeof fallbackData[bucket] !== 'object') fallbackData[bucket] = {};
+    const data = fallbackData[bucket];
     return {
-      getItem(k)      { return Object.prototype.hasOwnProperty.call(_m, k) ? _m[k] : null; },
-      setItem(k, v)   { _m[k] = String(v); },
-      removeItem(k)   { delete _m[k]; },
-      clear()         { Object.keys(_m).forEach(k => delete _m[k]); }
+      getItem(k) { return Object.prototype.hasOwnProperty.call(data, k) ? data[k] : null; },
+      setItem(k, v) { data[k] = String(v); saveFallback(); },
+      removeItem(k) { delete data[k]; saveFallback(); },
+      clear() { Object.keys(data).forEach(k => delete data[k]); saveFallback(); }
     };
   }
 
-  // Test whether real localStorage is accessible
+  function getNative(name) {
+    try { return window[name]; } catch (_) { return null; }
+  }
   function storageOk(store) {
     try {
       const TEST = '__tfl_test__';
       store.setItem(TEST, '1');
       store.removeItem(TEST);
       return true;
-    } catch(e) { return false; }
+    } catch (_) { return false; }
   }
 
-  window.safeLocalStorage   = storageOk(window.localStorage)   ? window.localStorage   : makeMemoryStore();
-  window.safeSessionStorage = storageOk(window.sessionStorage) ? window.sessionStorage : makeMemoryStore();
+  const nativeLocal = getNative('localStorage');
+  const nativeSession = getNative('sessionStorage');
+  window.safeLocalStorage = nativeLocal && storageOk(nativeLocal)
+    ? nativeLocal : makeFallbackStore('local');
+  window.safeSessionStorage = nativeSession && storageOk(nativeSession)
+    ? nativeSession : makeFallbackStore('session');
 })();
 
 // ── APPS SCRIPT WEB APP URL ───────────────────────────────────
 // After deploying Code.gs as a Web App, paste the URL here:
-const API_URL = 'https://script.google.com/macros/s/AKfycbwI6MAbP0igjlDDzlcB7EKvt1CHhHHQeluclVB-ft4KJ_I7yp5ZY3_oj7AHvSS1g_VY1w/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzsePzbkciToeJwjmIFOJH8glRUQnlc4p6Z5hQnouApgnDSO21ge5KCrpxp_q_TZKrP/exec';
 
 // ── HERO DATABASE ─────────────────────────────────────────────
 const HEROES = {
@@ -56,20 +84,20 @@ const HEROES = {
     stats: { hp: 1000, atk: 120, def: 80, spd: 90, crit: 15 },
     // Sprite paths
     sprites: {
-      idle:    'Sprite/Aeron/idle.png',
-      walk:    'Sprite/Aeron/walk.png',
-      run:     'Sprite/Aeron/run.png',
-      sprint:  'Sprite/Aeron/sprint.png',
-      attack:  'Sprite/Aeron/attack.png',
-      portrait:'Sprite/Aeron/aeron_hero_profile_portrait.png',
-      lifeBar: 'Sprite/Aeron/aeron_life_bar_ui.png',
-      manaBar: 'Sprite/Aeron/ManaEnergy Bar.png',
-      namePlate:'Sprite/Aeron/Level Badge  Nameplate.png',
+      idle:    'Sprite/Aeron/idle.webp',
+      walk:    'Sprite/Aeron/walk.webp',
+      run:     'Sprite/Aeron/run.webp',
+      sprint:  'Sprite/Aeron/sprint.webp',
+      attack:  'Sprite/Aeron/attack.webp',
+      portrait:'Sprite/Aeron/aeron_hero_profile_portrait.webp',
+      lifeBar: 'Sprite/Aeron/aeron_life_bar_ui.webp',
+      manaBar: 'Sprite/Aeron/ManaEnergy Bar.webp',
+      namePlate:'Sprite/Aeron/Level Badge  Nameplate.webp',
       backgrounds: [
-        'Sprite/Aeron/1background.png',
-        'Sprite/Aeron/2background.png',
-        'Sprite/Aeron/3background.png',
-        'Sprite/Aeron/4background.png'
+        'Sprite/Aeron/1background.webp',
+        'Sprite/Aeron/2background.webp',
+        'Sprite/Aeron/3background.webp',
+        'Sprite/Aeron/4background.webp'
       ]
     },
     skills: {
@@ -77,51 +105,51 @@ const HEROES = {
         name: 'Flame Slash',
         type: 'Basic Skill',
         desc: 'Fast sword slash that deals fire damage.',
-        icon: 'Sprite/Aeron/FlameSlash_basic_skill_icon.png',
-        manaCost: 0,
+        icon: 'Sprite/Aeron/FlameSlash_basic_skill_icon.webp',
+        manaCost: 15,
         damage: 80,
-        cooldown: 0,
+        cooldown: 3,
         frames: [
-          'Sprite/Aeron/flame_slash_frame_1_transparent.png',
-          'Sprite/Aeron/flame_slash_frame_2_transparent.png',
-          'Sprite/Aeron/flame_slash_frame_3_transparent.png',
-          'Sprite/Aeron/flame_slash_frame_4_transparent.png',
-          'Sprite/Aeron/flame_slash_frame_5_transparent.png',
-          'Sprite/Aeron/flame_slash_frame_6_transparent.png'
+          'Sprite/Aeron/flame_slash_frame_1_transparent.webp',
+          'Sprite/Aeron/flame_slash_frame_2_transparent.webp',
+          'Sprite/Aeron/flame_slash_frame_3_transparent.webp',
+          'Sprite/Aeron/flame_slash_frame_4_transparent.webp',
+          'Sprite/Aeron/flame_slash_frame_5_transparent.webp',
+          'Sprite/Aeron/flame_slash_frame_6_transparent.webp'
         ]
       },
       special: {
         name: 'Inferno Burst',
         type: 'Special Skill',
         desc: 'Releases a wave of fire toward the enemy.',
-        icon: 'Sprite/Aeron/infernoBurst_special_skill_icon.png',
+        icon: 'Sprite/Aeron/infernoBurst_special_skill_icon.webp',
         manaCost: 30,
         damage: 160,
         cooldown: 3,
         frames: [
-          'Sprite/Aeron/inferno_burst_frame_1_transparent.png',
-          'Sprite/Aeron/inferno_burst_frame_2_transparent.png',
-          'Sprite/Aeron/inferno_burst_frame_3_transparent.png',
-          'Sprite/Aeron/inferno_burst_frame_4_transparent.png',
-          'Sprite/Aeron/inferno_burst_frame_5_transparent.png',
-          'Sprite/Aeron/inferno_burst_frame_6_transparent.png'
+          'Sprite/Aeron/inferno_burst_frame_1_transparent.webp',
+          'Sprite/Aeron/inferno_burst_frame_2_transparent.webp',
+          'Sprite/Aeron/inferno_burst_frame_3_transparent.webp',
+          'Sprite/Aeron/inferno_burst_frame_4_transparent.webp',
+          'Sprite/Aeron/inferno_burst_frame_5_transparent.webp',
+          'Sprite/Aeron/inferno_burst_frame_6_transparent.webp'
         ]
       },
       ultimate: {
         name: 'Phoenix Reign',
         type: 'Ultimate Skill',
         desc: 'Surrounds himself with flames and performs a powerful burning attack.',
-        icon: 'Sprite/Aeron/PhoenixReign_ultimate_skill_icon.png',
+        icon: 'Sprite/Aeron/PhoenixReign_ultimate_skill_icon.webp',
         manaCost: 80,
         damage: 300,
         cooldown: 6,
         frames: [
-          'Sprite/Aeron/Phoenix_Reign_frame_1_transparent.png',
-          'Sprite/Aeron/Phoenix_Reign_frame_2_transparent.png',
-          'Sprite/Aeron/Phoenix_Reign_frame_3_transparent.png',
-          'Sprite/Aeron/Phoenix_Reign_frame_4_transparent.png',
-          'Sprite/Aeron/Phoenix_Reign_frame_5_transparent.png',
-          'Sprite/Aeron/Phoenix_Reign_frame_6_transparent.png'
+          'Sprite/Aeron/Phoenix_Reign_frame_1_transparent.webp',
+          'Sprite/Aeron/Phoenix_Reign_frame_2_transparent.webp',
+          'Sprite/Aeron/Phoenix_Reign_frame_3_transparent.webp',
+          'Sprite/Aeron/Phoenix_Reign_frame_4_transparent.webp',
+          'Sprite/Aeron/Phoenix_Reign_frame_5_transparent.webp',
+          'Sprite/Aeron/Phoenix_Reign_frame_6_transparent.webp'
         ]
       }
     }
@@ -142,19 +170,19 @@ const HEROES = {
     bgColor: '#00101a',
     stats: { hp: 1000, atk: 120, def: 89, spd: 100, crit: 15 },
     sprites: {
-      idle:    'Sprite/Lyra/Idle.png',
-      walk:    'Sprite/Lyra/walk.png',
-      run:     'Sprite/Lyra/Run.png',
-      sprint:  'Sprite/Lyra/Run.png',
-      attack:  'Sprite/Lyra/attack.png',
-      portrait:'Sprite/Lyra/Lyra_Frostblade_Profile.png',
-      lifeBar: 'Sprite/Lyra/Lyra_life_bar_ui.png',
-      manaBar: 'Sprite/Lyra/ManaEnergy Bar.png',
-      namePlate:'Sprite/Lyra/Level Badge  Nameplate.png',
+      idle:    'Sprite/Lyra/Idle.webp',
+      walk:    'Sprite/Lyra/walk.webp',
+      run:     'Sprite/Lyra/Run.webp',
+      sprint:  'Sprite/Lyra/Run.webp',
+      attack:  'Sprite/Lyra/attack.webp',
+      portrait:'Sprite/Lyra/Lyra_Frostblade_Profile.webp',
+      lifeBar: 'Sprite/Lyra/Lyra_life_bar_ui.webp',
+      manaBar: 'Sprite/Lyra/ManaEnergy Bar.webp',
+      namePlate:'Sprite/Lyra/Level Badge  Nameplate.webp',
       backgrounds: [
-        'Sprite/Lyra/background1.png',
-        'Sprite/Lyra/background2.png',
-        'Sprite/Lyra/background3.png'
+        'Sprite/Lyra/background1.webp',
+        'Sprite/Lyra/background2.webp',
+        'Sprite/Lyra/background3.webp'
       ]
     },
     skills: {
@@ -162,51 +190,51 @@ const HEROES = {
         name: 'Frost Cut',
         type: 'Basic Skill',
         desc: 'Two quick ice-infused strikes.',
-        icon: 'Sprite/Lyra/Frost_Cut_Skill_Icon.png',
-        manaCost: 0,
+        icon: 'Sprite/Lyra/Frost_Cut_Skill_Icon.webp',
+        manaCost: 15,
         damage: 80,
-        cooldown: 0,
+        cooldown: 3,
         frames: [
-          'Sprite/Lyra/frost_cut_frame_1_transparent.png',
-          'Sprite/Lyra/frost_cut_frame_2_transparent.png',
-          'Sprite/Lyra/frost_cut_frame_3_transparent.png',
-          'Sprite/Lyra/frost_cut_frame_4_transparent.png',
-          'Sprite/Lyra/frost_cut_frame_5_transparent.png',
-          'Sprite/Lyra/frost_cut_frame_6_transparent.png'
+          'Sprite/Lyra/frost_cut_frame_1_transparent.webp',
+          'Sprite/Lyra/frost_cut_frame_2_transparent.webp',
+          'Sprite/Lyra/frost_cut_frame_3_transparent.webp',
+          'Sprite/Lyra/frost_cut_frame_4_transparent.webp',
+          'Sprite/Lyra/frost_cut_frame_5_transparent.webp',
+          'Sprite/Lyra/frost_cut_frame_6_transparent.webp'
         ]
       },
       special: {
         name: 'Frozen Prison',
         type: 'Special Skill',
         desc: 'Freezes the enemy temporarily.',
-        icon: 'Sprite/Lyra/Frozen_Prison_Skill_Icon.png',
+        icon: 'Sprite/Lyra/Frozen_Prison_Skill_Icon.webp',
         manaCost: 30,
         damage: 120,
         cooldown: 3,
         frames: [
-          'Sprite/Lyra/frozen_prison_frame_1_transparent.png',
-          'Sprite/Lyra/frozen_prison_frame_2_transparent.png',
-          'Sprite/Lyra/frozen_prison_frame_3_transparent.png',
-          'Sprite/Lyra/frozen_prison_frame_4_transparent.png',
-          'Sprite/Lyra/frozen_prison_frame_5_transparent.png',
-          'Sprite/Lyra/frozen_prison_frame_6_transparent.png'
+          'Sprite/Lyra/frozen_prison_frame_1_transparent.webp',
+          'Sprite/Lyra/frozen_prison_frame_2_transparent.webp',
+          'Sprite/Lyra/frozen_prison_frame_3_transparent.webp',
+          'Sprite/Lyra/frozen_prison_frame_4_transparent.webp',
+          'Sprite/Lyra/frozen_prison_frame_5_transparent.webp',
+          'Sprite/Lyra/frozen_prison_frame_6_transparent.webp'
         ]
       },
       ultimate: {
         name: 'Absolute Zero',
         type: 'Ultimate Skill',
         desc: 'Creates a massive ice explosion that heavily damages the enemy.',
-        icon: 'Sprite/Lyra/Absolute_Zero.png',
+        icon: 'Sprite/Lyra/Absolute_Zero.webp',
         manaCost: 80,
         damage: 300,
         cooldown: 6,
         frames: [
-          'Sprite/Lyra/absolute_zero_frame_1_transparent.png',
-          'Sprite/Lyra/absolute_zero_frame_2_transparent.png',
-          'Sprite/Lyra/absolute_zero_frame_3_transparent.png',
-          'Sprite/Lyra/absolute_zero_frame_4_transparent.png',
-          'Sprite/Lyra/absolute_zero_frame_5_transparent.png',
-          'Sprite/Lyra/absolute_zero_frame_6_transparent.png'
+          'Sprite/Lyra/absolute_zero_frame_1_transparent.webp',
+          'Sprite/Lyra/absolute_zero_frame_2_transparent.webp',
+          'Sprite/Lyra/absolute_zero_frame_3_transparent.webp',
+          'Sprite/Lyra/absolute_zero_frame_4_transparent.webp',
+          'Sprite/Lyra/absolute_zero_frame_5_transparent.webp',
+          'Sprite/Lyra/absolute_zero_frame_6_transparent.webp'
         ]
       }
     }
@@ -220,58 +248,58 @@ const HEROES = {
     color: '#ffe600', glowColor: 'rgba(255,230,0,0.6)', bgColor: '#0d0d00',
     stats: { hp: 950, atk: 130, def: 70, spd: 120, crit: 20 },
     sprites: {
-      idle:     'Sprite/Kael/idle.png',
-      walk:     'Sprite/Kael/walk.png',
-      run:      'Sprite/Kael/run.png',
-      sprint:   'Sprite/Kael/Sprint.png',
-      attack:   'Sprite/Kael/attack.png',
-      portrait: 'Sprite/Kael/Kael_Portfait_Profile.png',
-      lifeBar:  'Sprite/Kael/kael_life_bar_ui.png',
-      manaBar:  'Sprite/Kael/ManaEnergy Bar.png',
-      namePlate:'Sprite/Kael/Level Badge Nameplate.png',
+      idle:     'Sprite/Kael/idle.webp',
+      walk:     'Sprite/Kael/walk.webp',
+      run:      'Sprite/Kael/run.webp',
+      sprint:   'Sprite/Kael/Sprint.webp',
+      attack:   'Sprite/Kael/attack.webp',
+      portrait: 'Sprite/Kael/Kael_Portfait_Profile.webp',
+      lifeBar:  'Sprite/Kael/kael_life_bar_ui.webp',
+      manaBar:  'Sprite/Kael/ManaEnergy Bar.webp',
+      namePlate:'Sprite/Kael/Level Badge Nameplate.webp',
       backgrounds: [
-        'Sprite/Kael/background1.png',
-        'Sprite/Kael/background2.png'
+        'Sprite/Kael/background1.webp',
+        'Sprite/Kael/background2.webp'
       ]
     },
     skills: {
       basic: {
         name:'Thunder Thrust', type:'Basic Skill', desc:'Lightning-powered spear attack.',
-        icon:'Sprite/Kael/Thunder_Thrust_Skill_Icon.png',
-        manaCost:0, damage:90, cooldown:0,
+        icon:'Sprite/Kael/Thunder_Thrust_Skill_Icon.webp',
+        manaCost:15, damage:90, cooldown:3,
         frames:[
-          'Sprite/Kael/kael_thunder_thrust_effect_frame_1.png',
-          'Sprite/Kael/kael_thunder_thrust_effect_frame_2.png',
-          'Sprite/Kael/kael_thunder_thrust_effect_frame_3.png',
-          'Sprite/Kael/kael_thunder_thrust_effect_frame_4.png',
-          'Sprite/Kael/kael_thunder_thrust_effect_frame_5.png',
-          'Sprite/Kael/kael_thunder_thrust_effect_frame_6.png'
+          'Sprite/Kael/kael_thunder_thrust_effect_frame_1.webp',
+          'Sprite/Kael/kael_thunder_thrust_effect_frame_2.webp',
+          'Sprite/Kael/kael_thunder_thrust_effect_frame_3.webp',
+          'Sprite/Kael/kael_thunder_thrust_effect_frame_4.webp',
+          'Sprite/Kael/kael_thunder_thrust_effect_frame_5.webp',
+          'Sprite/Kael/kael_thunder_thrust_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Lightning Rush', type:'Special Skill', desc:'Dashes through the enemy with multiple strikes.',
-        icon:'Sprite/Kael/Lighting_Rush_Skill_Icon.png',
+        icon:'Sprite/Kael/Lighting_Rush_Skill_Icon.webp',
         manaCost:30, damage:180, cooldown:3,
         frames:[
-          'Sprite/Kael/lightning_rush_effect_only_frame_1.png',
-          'Sprite/Kael/lightning_rush_effect_only_frame_2.png',
-          'Sprite/Kael/lightning_rush_effect_only_frame_3.png',
-          'Sprite/Kael/lightning_rush_effect_only_frame_4.png',
-          'Sprite/Kael/lightning_rush_effect_only_frame_5.png',
-          'Sprite/Kael/lightning_rush_effect_only_frame_6.png'
+          'Sprite/Kael/lightning_rush_effect_only_frame_1.webp',
+          'Sprite/Kael/lightning_rush_effect_only_frame_2.webp',
+          'Sprite/Kael/lightning_rush_effect_only_frame_3.webp',
+          'Sprite/Kael/lightning_rush_effect_only_frame_4.webp',
+          'Sprite/Kael/lightning_rush_effect_only_frame_5.webp',
+          'Sprite/Kael/lightning_rush_effect_only_frame_6.webp'
         ]
       },
       ultimate: {
         name:'Storm Judgment', type:'Ultimate Skill', desc:'Summons several lightning strikes from the sky.',
-        icon:'Sprite/Kael/Storm_Judgment_Skill_Icon.png',
+        icon:'Sprite/Kael/Storm_Judgment_Skill_Icon.webp',
         manaCost:80, damage:320, cooldown:6,
         frames:[
-          'Sprite/Kael/storm_judgment_transparent_frame_1.png',
-          'Sprite/Kael/storm_judgment_transparent_frame_2.png',
-          'Sprite/Kael/storm_judgment_transparent_frame_3.png',
-          'Sprite/Kael/storm_judgment_transparent_frame_4.png',
-          'Sprite/Kael/storm_judgment_transparent_frame_5.png',
-          'Sprite/Kael/storm_judgment_transparent_frame_6.png'
+          'Sprite/Kael/storm_judgment_transparent_frame_1.webp',
+          'Sprite/Kael/storm_judgment_transparent_frame_2.webp',
+          'Sprite/Kael/storm_judgment_transparent_frame_3.webp',
+          'Sprite/Kael/storm_judgment_transparent_frame_4.webp',
+          'Sprite/Kael/storm_judgment_transparent_frame_5.webp',
+          'Sprite/Kael/storm_judgment_transparent_frame_6.webp'
         ]
       }
     }
@@ -283,57 +311,57 @@ const HEROES = {
     color: '#a0522d', glowColor: 'rgba(160,82,45,0.6)', bgColor: '#0d0800',
     stats: { hp: 1200, atk: 110, def: 100, spd: 60, crit: 10 },
     sprites: {
-      idle:     'Sprite/Riven/idle.png',
-      walk:     'Sprite/Riven/walk.png',
-      run:      'Sprite/Riven/run.png',
-      sprint:   'Sprite/Riven/sprint.png',
-      attack:   'Sprite/Riven/attack.png',
-      portrait: 'Sprite/Riven/Riven_Portfait_Profile.png',
-      lifeBar:  'Sprite/Riven/Riven_life_bar_ui.png',
-      manaBar:  'Sprite/Riven/ManaEnergy Bar.png',
-      namePlate:'Sprite/Riven/Level Badge Template.png',
+      idle:     'Sprite/Riven/idle.webp',
+      walk:     'Sprite/Riven/walk.webp',
+      run:      'Sprite/Riven/run.webp',
+      sprint:   'Sprite/Riven/sprint.webp',
+      attack:   'Sprite/Riven/attack.webp',
+      portrait: 'Sprite/Riven/Riven_Portfait_Profile.webp',
+      lifeBar:  'Sprite/Riven/Riven_life_bar_ui.webp',
+      manaBar:  'Sprite/Riven/ManaEnergy Bar.webp',
+      namePlate:'Sprite/Riven/Level Badge Template.webp',
       backgrounds: [
-        'Sprite/Riven/background1.png',
-        'Sprite/Riven/background2.png'
+        'Sprite/Riven/background1.webp',
+        'Sprite/Riven/background2.webp'
       ]
     },
     skills: {
       basic: {
         name:'Stone Smash', type:'Basic Skill', desc:'Heavy hammer attack.',
-        icon:'Sprite/Riven/Stone_Smash_Basic_Skill_Icon.png',
-        manaCost:0, damage:100, cooldown:0,
+        icon:'Sprite/Riven/Stone_Smash_Basic_Skill_Icon.webp',
+        manaCost:15, damage:100, cooldown:3,
         frames:[
-          'Sprite/Riven/Riven_Stone_Smash_effect_frame_1.png',
-          'Sprite/Riven/Riven_Stone_Smash_effect_frame_2.png',
-          'Sprite/Riven/Riven_Stone_Smash_effect_frame_3.png',
-          'Sprite/Riven/Riven_Stone_Smash_effect_frame_5.png',
-          'Sprite/Riven/Riven_Stone_Smash_effect_frame_6.png'
+          'Sprite/Riven/Riven_Stone_Smash_effect_frame_1.webp',
+          'Sprite/Riven/Riven_Stone_Smash_effect_frame_2.webp',
+          'Sprite/Riven/Riven_Stone_Smash_effect_frame_3.webp',
+          'Sprite/Riven/Riven_Stone_Smash_effect_frame_5.webp',
+          'Sprite/Riven/Riven_Stone_Smash_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Earth Wall', type:'Special Skill', desc:'Creates a barrier that reduces incoming damage.',
-        icon:'Sprite/Riven/Earth_Wall_Special_Skill_Icon.png',
+        icon:'Sprite/Riven/Earth_Wall_Special_Skill_Icon.webp',
         manaCost:30, damage:0, cooldown:3,
         frames:[
-          'Sprite/Riven/Riven_Earth_Wall_effect_frame_1.png',
-          'Sprite/Riven/Riven_Earth_Wall_effect_frame_2.png',
-          'Sprite/Riven/Riven_Earth_Wall_effect_frame_3.png',
-          'Sprite/Riven/Riven_Earth_Wall_effect_frame_4.png',
-          'Sprite/Riven/Riven_Earth_Wall_effect_frame_5.png',
-          'Sprite/Riven/Riven_Earth_Wall_effect_frame_6.png'
+          'Sprite/Riven/Riven_Earth_Wall_effect_frame_1.webp',
+          'Sprite/Riven/Riven_Earth_Wall_effect_frame_2.webp',
+          'Sprite/Riven/Riven_Earth_Wall_effect_frame_3.webp',
+          'Sprite/Riven/Riven_Earth_Wall_effect_frame_4.webp',
+          'Sprite/Riven/Riven_Earth_Wall_effect_frame_5.webp',
+          'Sprite/Riven/Riven_Earth_Wall_effect_frame_6.webp'
         ]
       },
       ultimate: {
         name:'Mountain Collapse', type:'Ultimate Skill', desc:'Smashes the ground, creating a massive shockwave.',
-        icon:'Sprite/Riven/Mountain_Collapse_Ultimate_Skill_Icon.png',
+        icon:'Sprite/Riven/Mountain_Collapse_Ultimate_Skill_Icon.webp',
         manaCost:80, damage:350, cooldown:6,
         frames:[
-          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_1.png',
-          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_2.png',
-          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_3.png',
-          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_4.png',
-          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_5.png',
-          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_6.png'
+          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_1.webp',
+          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_2.webp',
+          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_3.webp',
+          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_4.webp',
+          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_5.webp',
+          'Sprite/Riven/Riven_Mountain_Collapse_effect_frame_6.webp'
         ]
       }
     }
@@ -345,59 +373,59 @@ const HEROES = {
     color: '#c8a8ff', glowColor: 'rgba(200,168,255,0.6)', bgColor: '#0a0014',
     stats: { hp: 900, atk: 140, def: 60, spd: 110, crit: 25 },
     sprites: {
-      idle:     'Sprite/Selene/idle.png',
-      walk:     'Sprite/Selene/walk.png',
-      run:      'Sprite/Selene/run.png',
-      sprint:   'Sprite/Selene/sprint.png',
-      attack:   'Sprite/Selene/attack.png',
-      portrait: 'Sprite/Selene/Selene_Portfait_Profile.png',
-      lifeBar:  'Sprite/Selene/selene_life_bar_ui.png',
-      manaBar:  'Sprite/Selene/ManaEnergy Bar.png',
-      namePlate:'Sprite/Selene/Level Badge  Nameplate.png',
+      idle:     'Sprite/Selene/idle.webp',
+      walk:     'Sprite/Selene/walk.webp',
+      run:      'Sprite/Selene/run.webp',
+      sprint:   'Sprite/Selene/sprint.webp',
+      attack:   'Sprite/Selene/attack.webp',
+      portrait: 'Sprite/Selene/Selene_Portfait_Profile.webp',
+      lifeBar:  'Sprite/Selene/selene_life_bar_ui.webp',
+      manaBar:  'Sprite/Selene/ManaEnergy Bar.webp',
+      namePlate:'Sprite/Selene/Level Badge  Nameplate.webp',
       backgrounds: [
-        'Sprite/Selene/background1.png',
-        'Sprite/Selene/background2.png',
-        'Sprite/Selene/background3.png'
+        'Sprite/Selene/background1.webp',
+        'Sprite/Selene/background2.webp',
+        'Sprite/Selene/background3.webp'
       ]
     },
     skills: {
       basic: {
         name:'Lunar Arrow', type:'Basic Skill', desc:'Shoots a fast energy arrow.',
-        icon:'Sprite/Selene/Lunar__Arrow_Basic_Skill_Icon.png',
-        manaCost:0, damage:95, cooldown:0,
+        icon:'Sprite/Selene/Lunar__Arrow_Basic_Skill_Icon.webp',
+        manaCost:15, damage:95, cooldown:3,
         frames:[
-          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_1.png',
-          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_2.png',
-          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_3.png',
-          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_4.png',
-          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_5.png',
-          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_6.png'
+          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_1.webp',
+          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_2.webp',
+          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_3.webp',
+          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_4.webp',
+          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_5.webp',
+          'Sprite/Selene/Selene_Lunar_Arrow_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Moon Rain', type:'Special Skill', desc:'Fires multiple arrows from above.',
-        icon:'Sprite/Selene/Moon_Rain_Special_Skill_Icon.png',
+        icon:'Sprite/Selene/Moon_Rain_Special_Skill_Icon.webp',
         manaCost:30, damage:190, cooldown:3,
         frames:[
-          'Sprite/Selene/Selene_Moon_Rain_effect_frame_1.png',
-          'Sprite/Selene/Selene_Moon_Rain_effect_frame_2.png',
-          'Sprite/Selene/Selene_Moon_Rain_effect_frame_3.png',
-          'Sprite/Selene/Selene_Moon_Rain_effect_frame_4.png',
-          'Sprite/Selene/Selene_Moon_Rain_effect_frame_5.png',
-          'Sprite/Selene/Selene_Moon_Rain_effect_frame_6.png'
+          'Sprite/Selene/Selene_Moon_Rain_effect_frame_1.webp',
+          'Sprite/Selene/Selene_Moon_Rain_effect_frame_2.webp',
+          'Sprite/Selene/Selene_Moon_Rain_effect_frame_3.webp',
+          'Sprite/Selene/Selene_Moon_Rain_effect_frame_4.webp',
+          'Sprite/Selene/Selene_Moon_Rain_effect_frame_5.webp',
+          'Sprite/Selene/Selene_Moon_Rain_effect_frame_6.webp'
         ]
       },
       ultimate: {
         name:'Moonfall', type:'Ultimate Skill', desc:'Launches a giant light arrow that deals massive damage.',
-        icon:'Sprite/Selene/Moon_Fall_Ultimate_Skill_Icon.png',
+        icon:'Sprite/Selene/Moon_Fall_Ultimate_Skill_Icon.webp',
         manaCost:80, damage:330, cooldown:6,
         frames:[
-          'Sprite/Selene/Selene_Moon_Fall_effect_frame_1.png',
-          'Sprite/Selene/Selena_Moon_Fall_effect_frame_2.png',
-          'Sprite/Selene/Selena_Moon_Fall_effect_frame_3.png',
-          'Sprite/Selene/Selena_Moon_Fall_effect_frame_4.png',
-          'Sprite/Selene/Selena_Moon_Fall_effect_frame_5.png',
-          'Sprite/Selene/Selena_Moon_Fall_effect_frame_6.png'
+          'Sprite/Selene/Selene_Moon_Fall_effect_frame_1.webp',
+          'Sprite/Selene/Selena_Moon_Fall_effect_frame_2.webp',
+          'Sprite/Selene/Selena_Moon_Fall_effect_frame_3.webp',
+          'Sprite/Selene/Selena_Moon_Fall_effect_frame_4.webp',
+          'Sprite/Selene/Selena_Moon_Fall_effect_frame_5.webp',
+          'Sprite/Selene/Selena_Moon_Fall_effect_frame_6.webp'
         ]
       }
     }
@@ -409,61 +437,61 @@ const HEROES = {
     color: '#9932cc', glowColor: 'rgba(153,50,204,0.6)', bgColor: '#0a0010',
     stats: { hp: 850, atk: 160, def: 70, spd: 130, crit: 28 },
     sprites: {
-      idle:     'Sprite/Draven/idle.png',
-      walk:     'Sprite/Draven/walk.png',
-      run:      'Sprite/Draven/run.png',
-      sprint:   'Sprite/Draven/sprint.png',
-      attack:   'Sprite/Draven/attack.png',
-      portrait: 'Sprite/Draven/Draven_Portfait_Profile.png',
-      lifeBar:  'Sprite/Draven/Draven_life_bar_ui.png',
-      manaBar:  'Sprite/Draven/ManaEnergy Bar.png',
-      namePlate:'Sprite/Draven/Level Badge Template.png',
+      idle:     'Sprite/Draven/idle.webp',
+      walk:     'Sprite/Draven/walk.webp',
+      run:      'Sprite/Draven/run.webp',
+      sprint:   'Sprite/Draven/sprint.webp',
+      attack:   'Sprite/Draven/attack.webp',
+      portrait: 'Sprite/Draven/Draven_Portfait_Profile.webp',
+      lifeBar:  'Sprite/Draven/Draven_life_bar_ui.webp',
+      manaBar:  'Sprite/Draven/ManaEnergy Bar.webp',
+      namePlate:'Sprite/Draven/Level Badge Template.webp',
       backgrounds: [
-        'Sprite/Draven/background1.png',
-        'Sprite/Draven/background2.png',
-        'Sprite/Draven/background3.png',
-        'Sprite/Draven/background4.png',
-        'Sprite/Draven/background5.png'
+        'Sprite/Draven/background1.webp',
+        'Sprite/Draven/background2.webp',
+        'Sprite/Draven/background3.webp',
+        'Sprite/Draven/background4.webp',
+        'Sprite/Draven/background5.webp'
       ]
     },
     skills: {
       basic: {
         name:'Shadow Strike', type:'Basic Skill', desc:'Quick attack from behind the enemy.',
-        icon:'Sprite/Draven/Shadow_Strike_Basic_Skill_Icon.png',
-        manaCost:0, damage:105, cooldown:0,
+        icon:'Sprite/Draven/Shadow_Strike_Basic_Skill_Icon.webp',
+        manaCost:15, damage:105, cooldown:3,
         frames:[
-          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_1.png',
-          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_2.png',
-          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_3.png',
-          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_4.png',
-          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_5.png',
-          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_6.png'
+          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_1.webp',
+          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_2.webp',
+          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_3.webp',
+          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_4.webp',
+          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_5.webp',
+          'Sprite/Draven/Draven_Shadow_Strike_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Dark Step', type:'Special Skill', desc:'Becomes invisible briefly and performs a critical strike.',
-        icon:'Sprite/Draven/Dark_Step_Special_Skill_Icon.png',
+        icon:'Sprite/Draven/Dark_Step_Special_Skill_Icon.webp',
         manaCost:30, damage:200, cooldown:3,
         frames:[
-          'Sprite/Draven/Draven_Dark_Step_effect_frame_1.png',
-          'Sprite/Draven/Draven_Dark_Step_effect_frame_2.png',
-          'Sprite/Draven/Draven_Dark_Step_effect_frame_3.png',
-          'Sprite/Draven/Draven_Dark_Step_effect_frame_4.png',
-          'Sprite/Draven/Draven_Dark_Step_effect_frame_5.png',
-          'Sprite/Draven/Draven_Dark_Step_effect_frame_6.png'
+          'Sprite/Draven/Draven_Dark_Step_effect_frame_1.webp',
+          'Sprite/Draven/Draven_Dark_Step_effect_frame_2.webp',
+          'Sprite/Draven/Draven_Dark_Step_effect_frame_3.webp',
+          'Sprite/Draven/Draven_Dark_Step_effect_frame_4.webp',
+          'Sprite/Draven/Draven_Dark_Step_effect_frame_5.webp',
+          'Sprite/Draven/Draven_Dark_Step_effect_frame_6.webp'
         ]
       },
       ultimate: {
         name:'Nightmare Execution', type:'Ultimate Skill', desc:'Rapidly attacks the enemy from multiple directions.',
-        icon:'Sprite/Draven/Nightmare_Execution_ultimate_Skill_Icon.png',
+        icon:'Sprite/Draven/Nightmare_Execution_ultimate_Skill_Icon.webp',
         manaCost:80, damage:360, cooldown:6,
         frames:[
-          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_1.png',
-          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_2.png',
-          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_3.png',
-          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_4.png',
-          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_5.png',
-          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_6.png'
+          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_1.webp',
+          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_2.webp',
+          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_3.webp',
+          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_4.webp',
+          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_5.webp',
+          'Sprite/Draven/Draven_Nightmare_Execution_effect_frame_6.webp'
         ]
       }
     }
@@ -475,61 +503,61 @@ const HEROES = {
     color: '#00bfff', glowColor: 'rgba(0,191,255,0.6)', bgColor: '#000d1a',
     stats: { hp: 920, atk: 130, def: 85, spd: 95, crit: 15 },
     sprites: {
-      idle:     'Sprite/Mira/idle.png',
-      walk:     'Sprite/Mira/walk.png',
-      run:      'Sprite/Mira/run.png',
-      sprint:   'Sprite/Mira/sprint.png',
-      attack:   'Sprite/Mira/attack.png',
-      portrait: 'Sprite/Mira/Mira_Profile_Portfait.png',
-      lifeBar:  'Sprite/Mira/mira_hp_bar_ui.png',
-      manaBar:  'Sprite/Mira/ManaEnergy Bar.png',
-      namePlate:'Sprite/Mira/Level Badge Template.png',
+      idle:     'Sprite/Mira/idle.webp',
+      walk:     'Sprite/Mira/walk.webp',
+      run:      'Sprite/Mira/run.webp',
+      sprint:   'Sprite/Mira/sprint.webp',
+      attack:   'Sprite/Mira/attack.webp',
+      portrait: 'Sprite/Mira/Mira_Profile_Portfait.webp',
+      lifeBar:  'Sprite/Mira/mira_hp_bar_ui.webp',
+      manaBar:  'Sprite/Mira/ManaEnergy Bar.webp',
+      namePlate:'Sprite/Mira/Level Badge Template.webp',
       backgrounds: [
-        'Sprite/Mira/background1.png',
-        'Sprite/Mira/background2.png',
-        'Sprite/Mira/background3.png',
-        'Sprite/Mira/background4.png',
-        'Sprite/Mira/background5.png'
+        'Sprite/Mira/background1.webp',
+        'Sprite/Mira/background2.webp',
+        'Sprite/Mira/background3.webp',
+        'Sprite/Mira/background4.webp',
+        'Sprite/Mira/background5.webp'
       ]
     },
     skills: {
       basic: {
         name:'Water Pierce', type:'Basic Skill', desc:'Thrusts the trident with water energy.',
-        icon:'Sprite/Mira/WaterPierce_Basic_Skill_Icon.png',
-        manaCost:0, damage:85, cooldown:0,
+        icon:'Sprite/Mira/WaterPierce_Basic_Skill_Icon.webp',
+        manaCost:15, damage:85, cooldown:3,
         frames:[
-          'Sprite/Mira/Mira_Water_Pierce_effect_frame_1.png',
-          'Sprite/Mira/Mira_Water_Pierce_effect_frame2.png',
-          'Sprite/Mira/Mira_Water_Pierce_effect_frame_3.png',
-          'Sprite/Mira/Mira_Water_Pierce_effect_frame_4.png',
-          'Sprite/Mira/Mira_Water_Pierce_effect_frame_5.png',
-          'Sprite/Mira/Mira_Water_Pierce_effect_frame_6.png'
+          'Sprite/Mira/Mira_Water_Pierce_effect_frame_1.webp',
+          'Sprite/Mira/Mira_Water_Pierce_effect_frame2.webp',
+          'Sprite/Mira/Mira_Water_Pierce_effect_frame_3.webp',
+          'Sprite/Mira/Mira_Water_Pierce_effect_frame_4.webp',
+          'Sprite/Mira/Mira_Water_Pierce_effect_frame_5.webp',
+          'Sprite/Mira/Mira_Water_Pierce_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Healing Tide', type:'Special Skill', desc:'Restores a portion of own HP.',
-        icon:'Sprite/Mira/Healing_Tide_Special_Skill_Icon.png',
+        icon:'Sprite/Mira/Healing_Tide_Special_Skill_Icon.webp',
         manaCost:30, damage:-150, cooldown:3,
         frames:[
-          'Sprite/Mira/Mira_Healing_Tide_effect_frame_1.png',
-          'Sprite/Mira/Mira_Healing_Tide_effect_frame_2.png',
-          'Sprite/Mira/Mira_Healing_Tide_effect_frame_3.png',
-          'Sprite/Mira/Mira_Healing_Tide_effect_frame_4.png',
-          'Sprite/Mira/Mira_Healing_Tide_effect_frame_5.png',
-          'Sprite/Mira/Mira_Healing_Tide_effect_frame_6.png'
+          'Sprite/Mira/Mira_Healing_Tide_effect_frame_1.webp',
+          'Sprite/Mira/Mira_Healing_Tide_effect_frame_2.webp',
+          'Sprite/Mira/Mira_Healing_Tide_effect_frame_3.webp',
+          'Sprite/Mira/Mira_Healing_Tide_effect_frame_4.webp',
+          'Sprite/Mira/Mira_Healing_Tide_effect_frame_5.webp',
+          'Sprite/Mira/Mira_Healing_Tide_effect_frame_6.webp'
         ]
       },
       ultimate: {
         name:"Ocean's Wrath", type:'Ultimate Skill', desc:'Summons a huge wave that damages the opponent.',
-        icon:'Sprite/Mira/Ocean_Wrath_Ultimate_Skill_Icon.png',
+        icon:'Sprite/Mira/Ocean_Wrath_Ultimate_Skill_Icon.webp',
         manaCost:80, damage:310, cooldown:6,
         frames:[
-          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_1.png',
-          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_2.png',
-          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_3.png',
-          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_4.png',
-          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_5.png',
-          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_6.png'
+          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_1.webp',
+          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_2.webp',
+          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_3.webp',
+          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_4.webp',
+          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_5.webp',
+          'Sprite/Mira/Mira_Ocean_Wrath_s_effect_frame_6.webp'
         ]
       }
     }
@@ -541,59 +569,59 @@ const HEROES = {
     color: '#88ffcc', glowColor: 'rgba(136,255,204,0.6)', bgColor: '#001a0d',
     stats: { hp: 920, atk: 135, def: 75, spd: 130, crit: 22 },
     sprites: {
-      idle:     'Sprite/Orion/idle.png',
-      walk:     'Sprite/Orion/walk.png',
-      run:      'Sprite/Orion/run.png',
-      sprint:   'Sprite/Orion/sprint.png',
-      attack:   'Sprite/Orion/attack.png',
-      portrait: 'Sprite/Orion/Orion_Portfait_Profile.png',
-      lifeBar:  'Sprite/Orion/Orion_hp_bar_ui.png',
-      manaBar:  'Sprite/Orion/Manabar.png',
-      namePlate:'Sprite/Orion/Level Badge Template.png',
+      idle:     'Sprite/Orion/idle.webp',
+      walk:     'Sprite/Orion/walk.webp',
+      run:      'Sprite/Orion/run.webp',
+      sprint:   'Sprite/Orion/sprint.webp',
+      attack:   'Sprite/Orion/attack.webp',
+      portrait: 'Sprite/Orion/Orion_Portfait_Profile.webp',
+      lifeBar:  'Sprite/Orion/Orion_hp_bar_ui.webp',
+      manaBar:  'Sprite/Orion/Manabar.webp',
+      namePlate:'Sprite/Orion/Level Badge Template.webp',
       backgrounds: [
-        'Sprite/Orion/background1.png',
-        'Sprite/Orion/background2.png',
-        'Sprite/Orion/background3.png'
+        'Sprite/Orion/background1.webp',
+        'Sprite/Orion/background2.webp',
+        'Sprite/Orion/background3.webp'
       ]
     },
     skills: {
       basic: {
         name:'Wind Slash', type:'Basic Skill', desc:'A razor-fast dual-blade slash charged with wind.',
-        icon:'Sprite/Orion/Wind_Slash_Basic_Skill_Icon.png',
-        manaCost:0, damage:90, cooldown:0,
+        icon:'Sprite/Orion/Wind_Slash_Basic_Skill_Icon.webp',
+        manaCost:15, damage:90, cooldown:3,
         frames:[
-          'Sprite/Orion/Orion_Wind_Slash_effect_frame_1.png',
-          'Sprite/Orion/Orion_Wind_Slash_effect_frame_2.png',
-          'Sprite/Orion/Orion_Wind_Slash_effect_frame_3.png',
-          'Sprite/Orion/Orion_Wind_Slash_effect_frame_4.png',
-          'Sprite/Orion/Orion_Wind_Slash_effect_frame_5.png',
-          'Sprite/Orion/Orion_Wind_Slash_effect_frame_6.png'
+          'Sprite/Orion/Orion_Wind_Slash_effect_frame_1.webp',
+          'Sprite/Orion/Orion_Wind_Slash_effect_frame_2.webp',
+          'Sprite/Orion/Orion_Wind_Slash_effect_frame_3.webp',
+          'Sprite/Orion/Orion_Wind_Slash_effect_frame_4.webp',
+          'Sprite/Orion/Orion_Wind_Slash_effect_frame_5.webp',
+          'Sprite/Orion/Orion_Wind_Slash_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Gale Dash', type:'Special Skill', desc:'Dashes through the enemy at blinding speed, striking multiple times.',
-        icon:'Sprite/Orion/Gale_Dash_Special_Skill_Icon.png',
+        icon:'Sprite/Orion/Gale_Dash_Special_Skill_Icon.webp',
         manaCost:30, damage:175, cooldown:3,
         frames:[
-          'Sprite/Orion/Orion_Gale_Dash_effect_frame_1.png',
-          'Sprite/Orion/Orion_Gale_Dash_effect_frame_2.png',
-          'Sprite/Orion/Orion_Gale_Dash_effect_frame_3.png',
-          'Sprite/Orion/Orion_Gale_Dash_effect_frame_4.png',
-          'Sprite/Orion/Orion_Gale_Dash_effect_frame_5.png',
-          'Sprite/Orion/Orion_Gale_Dash_effect_frame_6.png'
+          'Sprite/Orion/Orion_Gale_Dash_effect_frame_1.webp',
+          'Sprite/Orion/Orion_Gale_Dash_effect_frame_2.webp',
+          'Sprite/Orion/Orion_Gale_Dash_effect_frame_3.webp',
+          'Sprite/Orion/Orion_Gale_Dash_effect_frame_4.webp',
+          'Sprite/Orion/Orion_Gale_Dash_effect_frame_5.webp',
+          'Sprite/Orion/Orion_Gale_Dash_effect_frame_6.webp'
         ]
       },
       ultimate: {
         name:'Tempest Dance', type:'Ultimate Skill', desc:'Launches a massive wind burst that launches the enemy skyward.',
-        icon:'Sprite/Orion/Tempest_Dance_Ultimate_Skill_Icon.png',
+        icon:'Sprite/Orion/Tempest_Dance_Ultimate_Skill_Icon.webp',
         manaCost:80, damage:340, cooldown:6,
         frames:[
-          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_1.png',
-          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_2.png',
-          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_3.png',
-          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_4.png',
-          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_5.png',
-          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_6.png'
+          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_1.webp',
+          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_2.webp',
+          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_3.webp',
+          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_4.webp',
+          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_5.webp',
+          'Sprite/Orion/Orion_Tempest_Dance_effect_frame_6.webp'
         ]
       }
     }
@@ -605,60 +633,60 @@ const HEROES = {
     color: '#c0c0c0', glowColor: 'rgba(192,192,192,0.6)', bgColor: '#111111',
     stats: { hp: 1300, atk: 120, def: 130, spd: 65, crit: 10 },
     sprites: {
-      idle:     'Sprite/Brutus/idle.png',
-      walk:     'Sprite/Brutus/walk.png',
-      run:      'Sprite/Brutus/run.png',
-      sprint:   'Sprite/Brutus/sprint.png',
-      attack:   'Sprite/Brutus/attack.png',
-      portrait: 'Sprite/Brutus/Brutus_Portfait_Profile.png',
-      lifeBar:  'Sprite/Brutus/brutus_hp_bar_ui.png',
-      manaBar:  'Sprite/Brutus/Manabar.png',
-      namePlate:'Sprite/Brutus/level badge template.png',
+      idle:     'Sprite/Brutus/idle.webp',
+      walk:     'Sprite/Brutus/walk.webp',
+      run:      'Sprite/Brutus/run.webp',
+      sprint:   'Sprite/Brutus/sprint.webp',
+      attack:   'Sprite/Brutus/attack.webp',
+      portrait: 'Sprite/Brutus/Brutus_Portfait_Profile.webp',
+      lifeBar:  'Sprite/Brutus/brutus_hp_bar_ui.webp',
+      manaBar:  'Sprite/Brutus/Manabar.webp',
+      namePlate:'Sprite/Brutus/level badge template.webp',
       backgrounds: [
-        'Sprite/Brutus/background1.png',
-        'Sprite/Brutus/background2.png',
-        'Sprite/Brutus/background3.png',
-        'Sprite/Brutus/background4.png'
+        'Sprite/Brutus/background1.webp',
+        'Sprite/Brutus/background2.webp',
+        'Sprite/Brutus/background3.webp',
+        'Sprite/Brutus/background4.webp'
       ]
     },
     skills: {
       basic: {
         name:'Iron Bash', type:'Basic Skill', desc:'Shield strike followed by an axe attack.',
-        icon:'Sprite/Brutus/Iron_Bash_Basic_Skill_Icon.png',
-        manaCost:0, damage:90, cooldown:0,
+        icon:'Sprite/Brutus/Iron_Bash_Basic_Skill_Icon.webp',
+        manaCost:15, damage:90, cooldown:3,
         frames:[
-          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_1.png',
-          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_2.png',
-          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_3.png',
-          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_4.png',
-          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_5.png',
-          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_6.png'
+          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_1.webp',
+          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_2.webp',
+          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_3.webp',
+          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_4.webp',
+          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_5.webp',
+          'Sprite/Brutus/Brutus_Iron_Bash_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Steel Guard', type:'Special Skill', desc:'Raises a steel guard, reducing incoming damage by 60% for this turn.',
-        icon:'Sprite/Brutus/Steel_Guard_Special_Skill_Icon.png',
+        icon:'Sprite/Brutus/Steel_Guard_Special_Skill_Icon.webp',
         manaCost:30, damage:0, cooldown:3,
         frames:[
-          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_1.png',
-          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_2.png',
-          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_3.png',
-          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_4.png',
-          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_5.png',
-          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_6.png'
+          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_1.webp',
+          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_2.webp',
+          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_3.webp',
+          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_4.webp',
+          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_5.webp',
+          'Sprite/Brutus/Brutus_Steel_Guard_effect_frame_6.webp'
         ]
       },
       ultimate: {
         name:'Titan Breaker', type:'Ultimate Skill', desc:'Charges forward and delivers a devastating strike.',
-        icon:'Sprite/Brutus/Titan_Breaker_Ultimate_Skill_Icon.png',
+        icon:'Sprite/Brutus/Titan_Breaker_Ultimate_Skill_Icon.webp',
         manaCost:80, damage:340, cooldown:6,
         frames:[
-          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_1.png',
-          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_2.png',
-          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_3.png',
-          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_4.png',
-          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_5.png',
-          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_6.png'
+          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_1.webp',
+          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_2.webp',
+          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_3.webp',
+          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_4.webp',
+          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_5.webp',
+          'Sprite/Brutus/Brutus_Titan_Breaker_effect_frame_6.webp'
         ]
       }
     }
@@ -670,59 +698,59 @@ const HEROES = {
     color: '#ff88ff', glowColor: 'rgba(255,136,255,0.6)', bgColor: '#100010',
     stats: { hp: 850, atk: 150, def: 60, spd: 100, crit: 28 },
     sprites: {
-      idle:     'Sprite/Elysia/idle.png',
-      walk:     'Sprite/Elysia/walk.png',
-      run:      'Sprite/Elysia/run.png',
-      sprint:   'Sprite/Elysia/sprint.png',
-      attack:   'Sprite/Elysia/attack.png',
-      portrait: 'Sprite/Elysia/Elysia_Portfait_Profile.png',
-      lifeBar:  'Sprite/Elysia/elysia_hp_bar_ui.png',
-      manaBar:  'Sprite/Elysia/Manabar Energy.png',
-      namePlate:'Sprite/Elysia/Level Badge Template.png',
+      idle:     'Sprite/Elysia/idle.webp',
+      walk:     'Sprite/Elysia/walk.webp',
+      run:      'Sprite/Elysia/run.webp',
+      sprint:   'Sprite/Elysia/sprint.webp',
+      attack:   'Sprite/Elysia/attack.webp',
+      portrait: 'Sprite/Elysia/Elysia_Portfait_Profile.webp',
+      lifeBar:  'Sprite/Elysia/elysia_hp_bar_ui.webp',
+      manaBar:  'Sprite/Elysia/Manabar Energy.webp',
+      namePlate:'Sprite/Elysia/Level Badge Template.webp',
       backgrounds: [
-        'Sprite/Elysia/background1.png',
-        'Sprite/Elysia/background2.png',
-        'Sprite/Elysia/background3.png'
+        'Sprite/Elysia/background1.webp',
+        'Sprite/Elysia/background2.webp',
+        'Sprite/Elysia/background3.webp'
       ]
     },
     skills: {
       basic: {
         name:'Arcane Bolt', type:'Basic Skill', desc:'Fires magical energy at the opponent.',
-        icon:'Sprite/Elysia/Arcane_Bolt_Basic_Skill_Icon.png',
-        manaCost:0, damage:100, cooldown:0,
+        icon:'Sprite/Elysia/Arcane_Bolt_Basic_Skill_Icon.webp',
+        manaCost:15, damage:100, cooldown:3,
         frames:[
-          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_1.png',
-          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_2.png',
-          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_3.png',
-          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_4.png',
-          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_5.png',
-          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_6.png'
+          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_1.webp',
+          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_2.webp',
+          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_3.webp',
+          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_4.webp',
+          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_5.webp',
+          'Sprite/Elysia/Elysia_Arcane_Bolt_effect_frame_6.webp'
         ]
       },
       special: {
         name:'Mana Surge', type:'Special Skill', desc:'Increases attack power and restores some HP.',
-        icon:'Sprite/Elysia/Mana_Surge_Special_Skill_Icon.png',
+        icon:'Sprite/Elysia/Mana_Surge_Special_Skill_Icon.webp',
         manaCost:30, damage:-100, cooldown:3,
         frames:[
-          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_1.png',
-          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_2.png',
-          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_3.png',
-          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_4.png',
-          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_5.png',
-          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_6.png'
+          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_1.webp',
+          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_2.webp',
+          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_3.webp',
+          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_4.webp',
+          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_5.webp',
+          'Sprite/Elysia/Elysia_Mana_Surge_effect_frame_6.webp'
         ]
       },
       ultimate: {
         name:'Celestial Judgment', type:'Ultimate Skill', desc:'Releases a powerful beam of cosmic energy.',
-        icon:'Sprite/Elysia/Celestial_Judgment_Ultimate_Skill_Icon.png',
+        icon:'Sprite/Elysia/Celestial_Judgment_Ultimate_Skill_Icon.webp',
         manaCost:80, damage:380, cooldown:6,
         frames:[
-          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_1.png',
-          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_2.png',
-          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_3.png',
-          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_4.png',
-          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_5.png',
-          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_6.png'
+          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_1.webp',
+          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_2.webp',
+          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_3.webp',
+          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_4.webp',
+          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_5.webp',
+          'Sprite/Elysia/Elysia_Celestial_Judgment_effect_frame_6.webp'
         ]
       }
     }
@@ -746,26 +774,26 @@ const STORY_ENEMIES = {
     color: '#ff4500', glowColor: 'rgba(255,69,0,0.6)', bgColor: '#1a0800',
     stats: { hp: 420, atk: 75, def: 40, spd: 85, crit: 10 },
     sprites: {
-      idle:   'StoryEnemies/Fire/Flame Imp/idle.png',
-      walk:   'StoryEnemies/Fire/Flame Imp/walk.png',
-      run:    'StoryEnemies/Fire/Flame Imp/run.png',
-      sprint: 'StoryEnemies/Fire/Flame Imp/sprint.png',
-      attack: 'StoryEnemies/Fire/Flame Imp/attack.png',
-      portrait: 'StoryEnemies/Fire/Flame Imp/idle.png',
+      idle:   'StoryEnemies/Fire/Flame Imp/idle.webp',
+      walk:   'StoryEnemies/Fire/Flame Imp/walk.webp',
+      run:    'StoryEnemies/Fire/Flame Imp/run.webp',
+      sprint: 'StoryEnemies/Fire/Flame Imp/sprint.webp',
+      attack: 'StoryEnemies/Fire/Flame Imp/attack.webp',
+      portrait: 'StoryEnemies/Fire/Flame Imp/idle.webp',
       lifeBar: '', manaBar: '', namePlate: '',
-      backgrounds: ['StoryEnemies/Fire/Flame Imp/1background.png']
+      backgrounds: ['StoryEnemies/Fire/Flame Imp/1background.webp']
     },
     skills: {
       basic: {
         name: 'Flame Claw', type: 'Basic Skill', desc: 'Slashes with burning claws.',
         icon: '', manaCost: 0, damage: 75, cooldown: 0,
         frames: [
-          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame1.png',
-          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame2.png',
-          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame3.png',
-          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame4.png',
-          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame5.png',
-          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame6.png'
+          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame1.webp',
+          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame2.webp',
+          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame3.webp',
+          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame4.webp',
+          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame5.webp',
+          'StoryEnemies/Fire/Flame Imp/Flame_Claw_Effect_Frame6.webp'
         ]
       },
       special:  { name: 'Ember Burst',  type: 'Special Skill',  desc: 'Releases a burst of embers.', icon: '', manaCost: 30, damage: 110, cooldown: 3, frames: [] },
@@ -781,24 +809,23 @@ const STORY_ENEMIES = {
     stats: { hp: 560, atk: 95, def: 55, spd: 100, crit: 12 },
 
     sprites: {
-      idle:   'StoryEnemies/Fire/Ash Wolf/idle.png',
-      walk:   'StoryEnemies/Fire/Ash Wolf/walk.png',
-      run:    'StoryEnemies/Fire/Ash Wolf/run.png',
-      sprint: 'StoryEnemies/Fire/Ash Wolf/sprint.png',
-      attack: 'StoryEnemies/Fire/Ash Wolf/attack.png',
-      portrait: 'StoryEnemies/Fire/Ash Wolf/idle.png',
+      idle:   'StoryEnemies/Fire/Ash Wolf/idle.webp',
+      walk:   'StoryEnemies/Fire/Ash Wolf/walk.webp',
+      sprint: 'StoryEnemies/Fire/Ash Wolf/sprint.webp',
+      attack: 'StoryEnemies/Fire/Ash Wolf/attack.webp',
+      portrait: 'StoryEnemies/Fire/Ash Wolf/idle.webp',
       lifeBar: '', manaBar: '', namePlate: '',
-      backgrounds: ['StoryEnemies/Fire/Ash Wolf/2background.png']
+      backgrounds: ['StoryEnemies/Fire/Ash Wolf/2background.webp']
     },
     skills: {
       basic: {
         name: 'Ash Bite', type: 'Basic Skill', desc: 'Lunges and bites with lava-infused jaws.',
         icon: '', manaCost: 0, damage: 95, cooldown: 0,
         frames: [
-          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 1.png',
-          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 2.png',
-          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 3.png',
-          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 4.png'
+          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 1.webp',
+          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 2.webp',
+          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 3.webp',
+          'StoryEnemies/Fire/Ash Wolf/Basic Skill Effect Frame 4.webp'
         ]
       },
       special:  { name: 'Lava Howl',   type: 'Special Skill',  desc: 'Releases a scorching howl that burns the enemy.', icon: '', manaCost: 30, damage: 130, cooldown: 3, frames: [] },
@@ -1360,24 +1387,17 @@ const Game = {
       const raw = safeLocalStorage.getItem('TENFOLD_SESSION');
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    // 2nd: legacy fallback — window.name (works in normal browsers)
-    try {
-      const raw = String(window.name || '');
-      if (raw.startsWith('TENFOLD_SESSION:'))
-        return JSON.parse(decodeURIComponent(raw.slice('TENFOLD_SESSION:'.length)));
-    } catch (e) {}
     return null;
   },
   _writeSession() {
     try {
       const data = JSON.stringify({user:this.user, selectedHero:this.selectedHero});
       safeLocalStorage.setItem('TENFOLD_SESSION', data);
-      // also write window.name for normal browsers
-      window.name = 'TENFOLD_SESSION:' + encodeURIComponent(data);
     } catch (e) {}
   },
   login(data) { this.user = data; this._writeSession(); },
-  logout() { this.user=null; this.selectedHero=null; safeLocalStorage.removeItem('TENFOLD_SESSION'); window.name=''; window.location.href='index.html'; },
+  isAdmin() { return !!(this.user && this.user.isAdmin); },
+  logout() { this.user=null; this.selectedHero=null; safeLocalStorage.removeItem('TENFOLD_SESSION'); window.location.href='index.html'; },
   loadUser() {
     if (this.user) return this.user;
     const saved=this._readSession();
@@ -1394,11 +1414,33 @@ const Game = {
     const saved=this._readSession();
     if (saved && saved.selectedHero) { this.selectedHero=saved.selectedHero; return this.selectedHero; }
     return null;
+  },
+
+  // Fetch the authoritative TotalScore directly from Google Sheets.
+  // This prevents a stale local/session score from remaining visible.
+  async syncScore() {
+    this.loadUser();
+    if (!this.user || !this.user.userID) return null;
+
+    try {
+      const res = await apiCall({ action: 'getScore', userID: this.user.userID }, 6500);
+      if (res && res.success && res.totalScore !== undefined) {
+        const score = Math.max(0, parseInt(res.totalScore, 10) || 0);
+        this.user.totalScore = score;
+        this._writeSession();
+        try {
+          safeLocalStorage.setItem('tenfold_score_cache_' + this.user.userID, String(score));
+          safeLocalStorage.setItem('tenfold_score_cache', String(score));
+        } catch (_) {}
+        return score;
+      }
+    } catch (_) {}
+    return null;
   }
 };
 
 // ── API HELPER ────────────────────────────────────────────────
-function apiCall(params) {
+function apiCall(params, timeoutMs = 6500) {
   return new Promise((resolve) => {
     if (!API_URL || API_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
       resolve({ success: false, message: 'API not configured.' });
@@ -1454,7 +1496,7 @@ function apiCall(params) {
         timeout: true,
         message: 'Connection timed out. Make sure the Apps Script Web App is deployed as Anyone.'
       });
-    }, 7000);
+    }, timeoutMs);
 
     document.head.appendChild(script);
   });
@@ -1497,7 +1539,10 @@ const ELEMENT_ICONS = {
 
 // ── UTILITY ───────────────────────────────────────────────────
 function formatNumber(n) {
-  return n >= 1000 ? (n / 1000).toFixed(1) + 'K' : n;
+  // Scores are authoritative integers from Google Sheets.
+  // Always display the exact value; never round 1670 to 1.7K.
+  const v = Number(n);
+  return Number.isFinite(v) ? Math.trunc(v) : 0;
 }
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
