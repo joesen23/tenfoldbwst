@@ -603,4 +603,987 @@
     <div id="banner-portrait"></div>
     <div class="dash-banner-info">
       <div class="dash-welcome">Welcome back, Legend</div>
-      <div class="dash-username" id="banner-
+      <div class="dash-username" id="banner-username">—</div>
+      <div class="dash-hero-name" id="banner-hero-name">
+        <span>Select a hero to see them here</span>
+      </div>
+      <div class="dash-quote" id="banner-quote"></div>
+    </div>
+  </div>
+  <div class="dash-banner-right">
+    <div class="dash-score-box">
+      <div class="dash-score-val" id="banner-score">0</div>
+      <div class="dash-score-lbl">Total Score</div>
+    </div>
+    <div class="dash-rank-badge" id="banner-rank-badge" style="color:var(--gold);">— Unranked —</div>
+  </div>
+</div>
+
+<!-- ══════════════ DASHBOARD GRID ══════════════ -->
+<div class="dash-grid">
+
+  <!-- ── CARD 1: My Stats ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">📊 MY STATS</div>
+      <button class="dash-card-action" onclick="location.href='leaderboard.html'">View Full →</button>
+    </div>
+    <div class="dash-card-body">
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-box-val" id="stat-wins" style="color:#44ff99;">0</div>
+          <div class="stat-box-lbl">Wins</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val" id="stat-losses" style="color:#ff8888;">0</div>
+          <div class="stat-box-lbl">Losses</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val" id="stat-rank" style="color:var(--gold);">—</div>
+          <div class="stat-box-lbl">Global Rank</div>
+        </div>
+      </div>
+      <div class="wr-bar-wrap">
+        <div class="wr-bar-label">
+          <span>Win Rate</span>
+          <span id="wr-pct">0%</span>
+        </div>
+        <div class="wr-bar" style="display:flex;">
+          <div class="wr-fill-w" id="wr-fill-w" style="width:0%"></div>
+          <div class="wr-fill-l" id="wr-fill-l" style="width:0%"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <div style="flex:1;text-align:center;padding:7px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:var(--gold);" id="stat-score">0</div>
+          <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:1px;">TOTAL SCORE</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:7px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:900;" id="stat-tier-val">—</div>
+          <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:1px;">RANK TIER</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:7px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:var(--gold);" id="stat-unlocked">2</div>
+          <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:1px;">HEROES</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 2: Selected Hero ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">⚔ SELECTED HERO</div>
+      <button class="dash-card-action" onclick="location.href='characters.html'">Change →</button>
+    </div>
+    <div class="dash-card-body" id="hero-card-body">
+      <div style="text-align:center;padding:20px;color:var(--subtext);font-style:italic;font-size:0.85rem;">
+        No hero selected.<br>
+        <a href="characters.html" style="color:var(--gold);">Choose your legend →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 3: Quick Actions ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🎮 QUICK ACTIONS</div>
+    </div>
+    <div class="dash-card-body">
+      <div class="quick-actions">
+        <a class="qa-btn highlight" href="battle.html" onclick="safeSessionStorage.setItem('tenfold_battle_mode','arena');safeSessionStorage.removeItem('tenfold_battle_enemy');safeSessionStorage.removeItem('tenfold_battle_enemy_lv');safeSessionStorage.removeItem('tenfold_battle_chapter');safeSessionStorage.removeItem('tenfold_battle_stage');safeSessionStorage.removeItem('tenfold_battle_name');safeSessionStorage.removeItem('tenfold_battle_is_boss');">
+          <span class="qa-icon">⚔</span>
+          <div class="qa-text">
+            <div class="qa-title">Enter Arena</div>
+            <div class="qa-sub">1v1 Battle · Random Enemy · Random Map</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+        <a class="qa-btn" href="story.html">
+          <span class="qa-icon">📖</span>
+          <div class="qa-text">
+            <div class="qa-title">Story Mode</div>
+            <div class="qa-sub" id="qa-story-sub">5 Chapters · 25 Stages</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+        <a class="qa-btn" href="characters.html">
+          <span class="qa-icon">🦸</span>
+          <div class="qa-text">
+            <div class="qa-title">My Heroes</div>
+            <div class="qa-sub" id="qa-heroes-sub">View all 10 legends</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+        <a class="qa-btn" href="leaderboard.html">
+          <span class="qa-icon">🏆</span>
+          <div class="qa-text">
+            <div class="qa-title">Leaderboard</div>
+            <div class="qa-sub">Check your global ranking</div>
+          </div>
+          <span class="qa-arrow">›</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 4: Story Progress ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">📖 STORY PROGRESS</div>
+      <button class="dash-card-action" onclick="location.href='story.html'">Continue →</button>
+    </div>
+    <div class="dash-card-body" id="story-card-body">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- ── CARD 5: My Heroes Grid ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🦸 HEROES ROSTER</div>
+      <button class="dash-card-action" onclick="location.href='characters.html'">View All →</button>
+    </div>
+    <div class="dash-card-body">
+      <div class="heroes-unlock-grid" id="heroes-unlock-grid">
+        <!-- JS populated -->
+      </div>
+      <div style="margin-top:10px;text-align:center;font-size:0.72rem;color:var(--subtext);">
+        <span id="unlocked-count">2</span> / 10 Unlocked
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 6: Next Unlock ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🔓 NEXT UNLOCK</div>
+    </div>
+    <div class="next-unlock-body" id="next-unlock-body">
+      <div style="color:var(--subtext);font-size:0.82rem;">Loading…</div>
+    </div>
+  </div>
+
+  <!-- ── CARD 7: Recent Battles (span 2) ── -->
+  <div class="dash-card col-span-2">
+    <div class="dash-card-header">
+      <div class="dash-card-title">⚔ RECENT BATTLES</div>
+      <button class="dash-card-action" onclick="location.href='battle.html'">Play Now →</button>
+    </div>
+    <div class="dash-card-body">
+      <div class="battle-log-list" id="battle-log-list">
+        <div class="no-battles">No battles yet — enter the arena and write your legend!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD 8: Leaderboard Mini ── -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">🏆 TOP LEGENDS</div>
+      <button class="dash-card-action" onclick="location.href='leaderboard.html'">Full Board →</button>
+    </div>
+    <div class="dash-card-body" id="lb-mini-body">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- ── CARD 9: Daily Tip ── -->
+  <div class="dash-card tip-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">💡 BATTLE TIP</div>
+    </div>
+    <div class="tip-body">
+      <div class="tip-icon" id="tip-icon">💡</div>
+      <div class="tip-text" id="tip-text">Loading tip…</div>
+    </div>
+  </div>
+
+</div><!-- /dash-grid -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="game.js"></script>
+<script>
+// ── GUARD ─────────────────────────────────────────────────────
+if (!Game.requireLogin()) { /* redirected */ }
+
+const user           = Game.user;
+const selectedHeroId = Game.getSelectedHero();
+
+document.getElementById('nav-username').textContent = user.username;
+document.getElementById('nav-score').textContent    = user.totalScore || 0;
+document.getElementById('banner-username').textContent = user.username;
+document.getElementById('banner-score').textContent    = formatNumber(user.totalScore || 0);
+document.getElementById('stat-score').textContent      = formatNumber(user.totalScore || 0);
+
+// ── MOBILE NAV SYNC ───────────────────────────────────────────
+const _mobileUn = document.getElementById('nav-username-mobile');
+const _mobileSc = document.getElementById('nav-score-mobile');
+if (_mobileUn) _mobileUn.textContent = user.username;
+if (_mobileSc) _mobileSc.textContent = user.totalScore || 0;
+
+// ── AUTHORITATIVE SCORE SYNC ─────────────────────────────────
+// Update the dashboard from the exact TotalScore stored in Apps Script.
+Game.syncScore().then((score) => {
+  if (score === null) return;
+  updateScoreUI(score);
+  renderBanner();
+  renderHeroCard();
+  renderNextUnlock();
+});
+
+// ── HAMBURGER ─────────────────────────────────────────────────
+(function() {
+  const btn    = document.getElementById('nav-hamburger');
+  const drawer = document.getElementById('nav-mobile-drawer');
+  if (!btn || !drawer) return;
+  btn.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+  // Close drawer when any nav button inside it is clicked
+  drawer.querySelectorAll('.nav-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      btn.classList.remove('open');
+    });
+  });
+})();
+
+
+
+// ── ROTATE TOAST (soft, shows once per session) ───────────────
+(function() {
+  const toast = document.getElementById('rotate-toast');
+  if (!toast) return;
+  if (safeSessionStorage.getItem('tenfold_rotate_shown')) return;
+
+  function isMobile()  { return window.innerWidth <= 900 || 'ontouchstart' in window; }
+  function isPortrait() {
+    if (screen.orientation && screen.orientation.type)
+      return screen.orientation.type.startsWith('portrait');
+    return window.innerHeight > window.innerWidth;
+  }
+  function check() {
+    if (isMobile() && isPortrait()) {
+      toast.classList.add('show');
+      safeSessionStorage.setItem('tenfold_rotate_shown', '1');
+      setTimeout(() => toast.classList.remove('show'), 5000);
+    }
+  }
+  // Slight delay so page layout is done first
+  setTimeout(check, 300);
+  window.addEventListener('orientationchange', () => setTimeout(check, 200));
+})();
+
+// ── LOCAL DATA ────────────────────────────────────────────────
+let unlocked = JSON.parse(safeLocalStorage.getItem('tenfold_unlocked_' + user.userID) || '["aeron","lyra"]');
+let levels   = JSON.parse(safeLocalStorage.getItem('tenfold_levels_'   + user.userID) || '{}');
+let progress = JSON.parse(safeLocalStorage.getItem('tenfold_story_'    + user.userID) || '{}');
+
+// ── RANK TIERS ────────────────────────────────────────────────
+const RANK_TIERS = [
+  { name:'Bronze',   min:0,    max:499,    color:'#cd7f32', icon:'🥉' },
+  { name:'Silver',   min:500,  max:999,    color:'#c0c0c0', icon:'🥈' },
+  { name:'Gold',     min:1000, max:1999,   color:'#ffd700', icon:'🥇' },
+  { name:'Platinum', min:2000, max:3499,   color:'#00cfff', icon:'💎' },
+  { name:'Diamond',  min:3500, max:5999,   color:'#c8a8ff', icon:'♦'  },
+  { name:'Legend',   min:6000, max:999999, color:'#ff4500', icon:'👑' },
+];
+function getTier(score) {
+  return RANK_TIERS.find(t => score >= t.min && score <= t.max) || RANK_TIERS[0];
+}
+
+// ── UNLOCK THRESHOLDS ─────────────────────────────────────────
+const UNLOCK_PTS = [
+  { id:'kael',   pts:200  }, { id:'riven',  pts:400  },
+  { id:'selene', pts:600  }, { id:'draven', pts:800  },
+  { id:'mira',   pts:1000 }, { id:'brutus', pts:1400 },
+  { id:'elysia', pts:1800 }, { id:'zephyr', pts:2400 },
+];
+
+// ── BATTLE TIPS ───────────────────────────────────────────────
+const TIPS = [
+  { icon:'⚡', text: '<strong>Use Ultimate wisely</strong> — it costs 80 MP. Build up mana with basic attacks before unleashing it.' },
+  { icon:'❄️', text: '<strong>Lyra\'s Frozen Prison</strong> skips the enemy\'s next turn. Use it right before their ultimate to waste it.' },
+  { icon:'🔥', text: '<strong>Aeron\'s burn</strong> deals 5% max HP per turn. Stack it with Inferno Burst for massive damage over time.' },
+  { icon:'🛡', text: '<strong>Brutus\'s Steel Guard</strong> reduces incoming damage by 60%. Use it when the enemy is about to use their ultimate.' },
+  { icon:'💧', text: '<strong>Mira\'s Healing Tide</strong> restores 150 HP. Use it when HP drops below 35% to turn the fight around.' },
+  { icon:'🎯', text: '<strong>Draven\'s Dark Step</strong> has a higher crit chance. Combine it with a basic attack follow-up for maximum burst.' },
+  { icon:'🌙', text: '<strong>Selene\'s Moonfall</strong> always crits. Save your 80 MP for the decisive final blow.' },
+  { icon:'🔮', text: '<strong>Elysia\'s Mana Surge</strong> boosts ATK for 2 turns. Activate it before using Celestial Judgment for maximum damage.' },
+  { icon:'⚔', text: '<strong>Keyboard shortcuts:</strong> Q = Basic Skill, W = Special Skill, E = Ultimate Skill. React faster in battle!' },
+  { icon:'🏆', text: '<strong>Win battles</strong> to earn 100 pts each. Reach 200 pts to unlock Kael — the Storm Hunter!' },
+];
+
+// ── BANNER ────────────────────────────────────────────────────
+function renderBanner() {
+  if (selectedHeroId && HEROES[selectedHeroId]) {
+    const h  = HEROES[selectedHeroId];
+    const bg = (h.sprites.backgrounds && h.sprites.backgrounds[0]) || '';
+    if (bg) document.getElementById('banner-bg').style.backgroundImage = `url('${bg}')`;
+
+    // Portrait
+    const pWrap = document.getElementById('banner-portrait');
+    if (h.sprites.portrait) {
+      const img = document.createElement('img');
+      img.src = h.sprites.portrait;
+      img.className = 'dash-hero-portrait';
+      img.alt = h.name;
+      img.onerror = function() {
+        const fb = document.createElement('div');
+        fb.className = 'dash-hero-portrait-fb';
+        fb.textContent = ELEMENT_ICONS[h.element];
+        this.parentNode.replaceChild(fb, this);
+      };
+      pWrap.innerHTML = '';
+      pWrap.appendChild(img);
+    } else {
+      pWrap.innerHTML = `<div class="dash-hero-portrait-fb">${ELEMENT_ICONS[h.element]}</div>`;
+    }
+
+    document.getElementById('banner-hero-name').innerHTML =
+      `${h.name} <span>· ${h.title} · ${ELEMENT_ICONS[h.element]} ${h.element}</span>`;
+    document.getElementById('banner-quote').textContent = h.quote;
+  }
+
+  // Rank badge
+  const score = user.totalScore || 0;
+  const tier  = getTier(score);
+  const badge = document.getElementById('banner-rank-badge');
+  badge.textContent = `${tier.icon} ${tier.name}`;
+  badge.style.color = tier.color;
+  badge.style.borderColor = tier.color;
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function renderStats(wins, losses, globalRank) {
+  const total = wins + losses;
+  const wr    = total ? Math.round(wins / total * 100) : 0;
+  const wrW   = total ? Math.round(wins   / total * 100) : 0;
+  const wrL   = total ? Math.round(losses / total * 100) : 0;
+
+  document.getElementById('stat-wins').textContent    = wins;
+  document.getElementById('stat-losses').textContent  = losses;
+  document.getElementById('stat-rank').textContent    = globalRank ? '#' + globalRank : '—';
+  document.getElementById('wr-pct').textContent       = wr + '%';
+  document.getElementById('wr-fill-w').style.width    = wrW + '%';
+  document.getElementById('wr-fill-l').style.width    = wrL + '%';
+
+  const tier = getTier(user.totalScore || 0);
+  document.getElementById('stat-tier-val').textContent   = tier.icon + ' ' + tier.name;
+  document.getElementById('stat-tier-val').style.color   = tier.color;
+  document.getElementById('stat-unlocked').textContent   = unlocked.length;
+  document.getElementById('unlocked-count').textContent  = unlocked.length;
+}
+
+// ── HERO CARD ─────────────────────────────────────────────────
+function renderHeroCard() {
+  const body = document.getElementById('hero-card-body');
+  if (!selectedHeroId || !HEROES[selectedHeroId]) return;
+  const h  = HEROES[selectedHeroId];
+  const lv = levels[selectedHeroId] || 1;
+  const xp = levels[selectedHeroId + '_xp'] || 0;
+  const xpNeeded = lv * 100;
+  const xpPct = Math.min(100, Math.round(xp / xpNeeded * 100));
+  const st = getScaledStats(selectedHeroId, lv);
+  const maxSt = { hp:1500, atk:200, def:160, spd:160, crit:50 };
+
+  const portraitHtml = h.sprites.portrait
+    ? `<img src="${h.sprites.portrait}" class="my-hero-portrait" alt="${h.name}"
+          onerror="this.style.display='none'">`
+    : `<div class="my-hero-portrait-fb">${ELEMENT_ICONS[h.element]}</div>`;
+
+  function miniBar(lbl, val, max, color) {
+    const pct = Math.min(100, Math.round(val / max * 100));
+    return `
+      <div class="mini-stat-bar">
+        <span class="mini-stat-bar-lbl">${lbl}</span>
+        <div class="mini-stat-bar-track"><div class="mini-stat-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+        <span class="mini-stat-bar-val" style="color:${color};">${val}</span>
+      </div>`;
+  }
+
+  // Skill icons
+  let skillsHtml = '';
+  ['basic','special','ultimate'].forEach(t => {
+    const sk = h.skills[t];
+    const iconHtml = sk.icon
+      ? `<img src="${sk.icon}" alt="${sk.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`
+      : ELEMENT_ICONS[h.element];
+    skillsHtml += `
+      <div class="skill-mini" title="${sk.name}: ${sk.desc}"
+           style="border-color:${t==='ultimate'?'rgba(240,192,64,0.5)':t==='special'?'rgba(60,130,255,0.4)':'rgba(160,160,160,0.3)'};">
+        ${iconHtml}
+      </div>`;
+  });
+
+  body.innerHTML = `
+    <div class="my-hero-body">
+      ${portraitHtml}
+      <div class="my-hero-details">
+        <div class="my-hero-title-row">
+          <span class="my-hero-name">${h.name}</span>
+          <span class="my-hero-elem" style="color:${h.color};border-color:${h.color};">
+            ${ELEMENT_ICONS[h.element]} ${h.element}
+          </span>
+        </div>
+        <div class="my-hero-level">Level ${lv} · ${h.fightingStyle}</div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar-header">
+            <span class="xp-bar-label">EXP</span>
+            <span class="xp-bar-val">${xp} / ${xpNeeded}</span>
+          </div>
+          <div class="xp-bar-track">
+            <div class="xp-bar-fill" style="width:${xpPct}%;"></div>
+          </div>
+        </div>
+        ${miniBar('HP',  st.hp,   maxSt.hp,   '#ff5555')}
+        ${miniBar('ATK', st.atk,  maxSt.atk,  '#ffaa44')}
+        ${miniBar('SPD', st.spd,  maxSt.spd,  '#44ffaa')}
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <div style="font-size:0.65rem;color:var(--subtext);letter-spacing:2px;margin-bottom:6px;">SKILLS</div>
+      <div class="hero-skills-mini">${skillsHtml}</div>
+    </div>
+  `;
+}
+
+// ── STORY PROGRESS ────────────────────────────────────────────
+const CHAPTER_DATA = [
+  { id:1, title:'The Awakening',        icon:'🔥', stages:5 },
+  { id:2, title:'The Shattered Realm',  icon:'⚡', stages:5 },
+  { id:3, title:'Shadows and Stars',    icon:'🌑', stages:5 },
+  { id:4, title:'Rise of the Iron Legion',icon:'⚙️',stages:5 },
+  { id:5, title:'The Final Reckoning',  icon:'👑', stages:5 },
+];
+
+function renderStoryProgress() {
+  const body = document.getElementById('story-card-body');
+  let html   = '';
+  let totalDone = 0, totalStars = 0;
+  let nextChapter = null, nextStage = null;
+
+  CHAPTER_DATA.forEach((ch, ci) => {
+    const done  = Array.from({length: ch.stages}, (_,i) =>
+      progress[`${ch.id}_${i+1}`]?.completed).filter(Boolean).length;
+    const stars = Array.from({length: ch.stages}, (_,i) =>
+      progress[`${ch.id}_${i+1}`]?.stars || 0).reduce((a,b) => a+b, 0);
+    const locked = ci > 0 && CHAPTER_DATA[ci-1] &&
+      Array.from({length:CHAPTER_DATA[ci-1].stages},(_,i) =>
+        progress[`${ci}_${i+1}`]?.completed).filter(Boolean).length < CHAPTER_DATA[ci-1].stages;
+
+    totalDone  += done;
+    totalStars += stars;
+
+    if (!nextChapter && done < ch.stages && !locked) {
+      nextChapter = ch.id;
+      nextStage   = done + 1;
+    }
+
+    const pct = Math.round(done / ch.stages * 100);
+    const starsHtml = Array.from({length:3}, (_,i) =>
+      `<span class="sp-star ${i < Math.floor(stars / ch.stages) ? 'on' : 'off'}">★</span>`).join('');
+
+    html += `
+      <div class="story-prog-item ${locked ? 'sp-locked' : ''}">
+        <span class="sp-chapter-icon">${ch.icon}</span>
+        <div class="sp-info">
+          <div class="sp-chapter-name">${ch.title}</div>
+          <div class="sp-stage-text">${done}/${ch.stages} stages · ${stars}★</div>
+          <div class="sp-prog-bar-wrap">
+            <div class="sp-prog-bar"><div class="sp-prog-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>
+        <div class="sp-stars">${starsHtml}</div>
+      </div>`;
+  });
+
+  // Update story quick action text
+  if (nextChapter) {
+    document.getElementById('qa-story-sub').textContent =
+      `Continue: Chapter ${nextChapter}, Stage ${nextStage}`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ── HEROES ROSTER GRID ────────────────────────────────────────
+function renderHeroesGrid() {
+  const grid = document.getElementById('heroes-unlock-grid');
+  grid.innerHTML = '';
+  HERO_ORDER.forEach(id => {
+    const h       = HEROES[id];
+    const isUnlck = unlocked.includes(id);
+    const lv      = levels[id] || 1;
+    const isSel   = id === selectedHeroId;
+
+    const slot = document.createElement('div');
+    slot.className = `hu-slot ${isUnlck ? '' : 'locked'} ${isSel ? 'active' : ''}`;
+    slot.title     = `${h.name} — ${h.title}${!isUnlck ? ' (Locked)' : ' Lv ' + lv}`;
+    slot.onclick   = () => isUnlck && (location.href='characters.html');
+
+    if (h.sprites.portrait && isUnlck) {
+      slot.innerHTML = `
+        <img src="${h.sprites.portrait}" alt="${h.name}"
+          onerror="this.outerHTML='<div class=\\"hu-slot-fb\\">${ELEMENT_ICONS[h.element]}</div>'">
+        <div class="hu-slot-lv">Lv${lv}</div>`;
+    } else {
+      slot.innerHTML = `
+        <div class="hu-slot-fb">${ELEMENT_ICONS[h.element]}</div>
+        ${!isUnlck ? '<div class="hu-slot-lock">🔒</div>' : `<div class="hu-slot-lv">Lv${lv}</div>`}`;
+    }
+    grid.appendChild(slot);
+  });
+
+  document.getElementById('qa-heroes-sub').textContent =
+    `${unlocked.length} unlocked · ${10 - unlocked.length} locked`;
+}
+
+// ── NEXT UNLOCK ───────────────────────────────────────────────
+function renderNextUnlock() {
+  const body  = document.getElementById('next-unlock-body');
+  const score = user.totalScore || 0;
+  const next  = UNLOCK_PTS.find(u => !unlocked.includes(u.id));
+
+  if (!next) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:2rem;margin-bottom:8px;">🎉</div>
+        <div style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.9rem;letter-spacing:2px;">ALL HEROES UNLOCKED!</div>
+        <div style="font-size:0.75rem;color:var(--subtext);margin-top:6px;">You have collected all 10 legends.</div>
+      </div>`;
+    return;
+  }
+
+  const h    = HEROES[next.id];
+  const pct  = Math.min(100, Math.round(score / next.pts * 100));
+  const need = Math.max(0, next.pts - score);
+
+  body.innerHTML = `
+    <div class="nu-progress-row">
+      <div class="nu-hero-icon">${ELEMENT_ICONS[h.element]}</div>
+      <div class="nu-info">
+        <div class="nu-hero-name">${h.name} <span style="font-size:0.72rem;color:var(--subtext);">· ${h.title}</span></div>
+        <div class="nu-sub">${h.element} · ${h.fightingStyle}</div>
+      </div>
+    </div>
+    <div class="nu-bar"><div class="nu-fill" style="width:${pct}%;"></div></div>
+    <div class="nu-pts-row">
+      <span>${formatNumber(score)} pts</span>
+      <span>${pct}% · ${formatNumber(need)} pts to unlock</span>
+    </div>
+    <div style="margin-top:12px;">
+      <a class="qa-btn" href="battle.html" style="padding:10px 12px;">
+        <span class="qa-icon" style="font-size:1.1rem;">⚔</span>
+        <div class="qa-text">
+          <div class="qa-title" style="font-size:0.82rem;">Win battles to unlock ${h.name}</div>
+          <div class="qa-sub">+100 pts per win</div>
+        </div>
+      </a>
+    </div>
+  `;
+}
+
+// ── RECENT BATTLES ────────────────────────────────────────────
+function renderRecentBattles(battles) {
+  const list = document.getElementById('battle-log-list');
+  if (!battles || battles.length === 0) {
+    list.innerHTML = `<div class="no-battles">No battles yet — enter the arena and write your legend!</div>`;
+    return;
+  }
+
+  list.innerHTML = battles.slice(0, 6).map(b => {
+    const won   = b.result === 'win';
+    const hero  = HEROES[b.heroID]  || { name: b.heroName  || '?' };
+    const enemy = HEROES[b.enemyHeroID] || { name: b.enemyHeroName || '?' };
+    const date  = b.battleDate ? new Date(b.battleDate).toLocaleDateString() : 'Recently';
+    return `
+      <div class="bl-item">
+        <div class="bl-result ${won ? 'win' : 'lose'}">${won ? 'WIN' : 'LOSE'}</div>
+        <div class="bl-info">
+          <div class="bl-matchup">${hero.name || b.heroName} vs ${enemy.name || b.enemyHeroName}</div>
+          <div class="bl-meta">${date}${b.storyChapter > 0 ? ' · Chapter ' + b.storyChapter : ' · Arena'}</div>
+        </div>
+        <div class="bl-pts ${won ? 'win' : 'lose'}">${won ? '+100' : '+10'}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── LEADERBOARD MINI ──────────────────────────────────────────
+function renderLbMini(entries) {
+  const body = document.getElementById('lb-mini-body');
+  if (!entries || entries.length === 0) {
+    body.innerHTML = `<div style="text-align:center;color:var(--subtext);font-size:0.82rem;padding:16px;">No rankings yet.</div>`;
+    return;
+  }
+
+  const myEntry = entries.find(e => e.userID === user.userID);
+  let html = '';
+
+  // Show top 5 + player's position if not in top 5
+  const top5 = entries.slice(0, 5);
+  const showMe = myEntry && myEntry.rank > 5;
+
+  top5.forEach(e => {
+    const isMe  = e.userID === user.userID;
+    const rcls  = e.rank <= 3 ? `r${e.rank}` : 'rn';
+    const medal = e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank;
+    html += `
+      <div class="lb-mini-row" ${isMe ? 'style="background:rgba(240,192,64,0.07);border-radius:6px;padding:8px 6px;"' : ''}>
+        <div class="lb-mini-rank ${rcls}">${medal}</div>
+        <div class="lb-mini-name ${isMe ? 'you' : ''}">${e.username}${isMe ? ' <span style="font-size:0.6rem;color:var(--gold);">(You)</span>' : ''}</div>
+        <div class="lb-mini-score">${formatNumber(e.totalScore)}</div>
+      </div>`;
+  });
+
+  if (showMe) {
+    html += `<div style="text-align:center;color:var(--subtext);font-size:0.7rem;padding:4px 0;">···</div>`;
+    const rcls = myEntry.rank <= 3 ? `r${myEntry.rank}` : 'rn';
+    html += `
+      <div class="lb-mini-row" style="background:rgba(240,192,64,0.07);border-radius:6px;padding:8px 6px;">
+        <div class="lb-mini-rank ${rcls}">#${myEntry.rank}</div>
+        <div class="lb-mini-name you">${myEntry.username} <span style="font-size:0.6rem;">(You)</span></div>
+        <div class="lb-mini-score">${formatNumber(myEntry.totalScore)}</div>
+      </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ── BATTLE TIP ────────────────────────────────────────────────
+function renderTip() {
+  const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+  document.getElementById('tip-icon').textContent  = tip.icon;
+  document.getElementById('tip-text').innerHTML    = tip.text;
+}
+
+// ══════════════════════════════════════════════════════════════
+// FULL BI-DIRECTIONAL SYNC HELPERS
+// ══════════════════════════════════════════════════════════════
+
+// Storage keys (all scoped to userID)
+function SK(suffix) { return 'tenfold_' + suffix + '_' + user.userID; }
+const KEY = {
+  pending:  () => SK('pending_scores'),
+  levels:   () => SK('levels'),
+  unlocked: () => SK('unlocked'),
+  skills:   () => SK('skills'),
+  story:    () => SK('story'),
+  battles:  () => SK('battles'),
+  lbCache:  () => 'tenfold_lb_cache',
+  scoreCache: () => SK('score_cache'),
+};
+
+// ── FLUSH PENDING OFFLINE SCORES ─────────────────────────────
+// Pushes any battles queued while offline to the server.
+// Returns number of records successfully flushed.
+async function flushPendingScores() {
+  const pending = JSON.parse(safeLocalStorage.getItem(KEY.pending()) || '[]');
+  if (pending.length === 0) return 0;
+
+  let flushed = 0;
+  const remaining = [];
+
+  for (const p of pending) {
+    try {
+      const res = await apiCall(p);
+      if (res && res.success) {
+        flushed++;
+        if (res.newTotalScore !== undefined && res.newTotalScore > (user.totalScore || 0)) {
+          user.totalScore = res.newTotalScore;
+          Game.login(user);
+        }
+        // Push hero level that was earned with this offline battle
+        if (p.heroID) {
+          const lvls = JSON.parse(safeLocalStorage.getItem(KEY.levels()) || '{}');
+          apiCall({ action:'setHeroLevel', userID:user.userID,
+                    heroID:p.heroID, level:lvls[p.heroID]||1, xp:lvls[p.heroID+'_xp']||0 });
+        }
+      } else {
+        remaining.push(p);
+      }
+    } catch(e) {
+      remaining.push(p);
+      break; // still offline, stop trying
+    }
+  }
+
+  safeLocalStorage.setItem(KEY.pending(), JSON.stringify(remaining));
+
+  if (flushed > 0) {
+    updateScoreUI(user.totalScore || 0);
+    showToast(`✅ ${flushed} offline battle${flushed > 1 ? 's' : ''} synced!`, 'success');
+  }
+  return flushed;
+}
+
+// ── DOWNLOAD FULL PLAYER DATA (server → local) ───────────────
+// Pulls hero levels/XP, unlocked heroes, story progress from
+// the server and caches everything locally for offline use.
+// Skills are derived from story progress (no separate server field).
+async function downloadPlayerData() {
+  // ── Hero levels + unlocked heroes ──
+  const charsRes = await apiCall({ action:'getChars', userID:user.userID });
+  if (charsRes.success && charsRes.characters) {
+    const lvls     = JSON.parse(safeLocalStorage.getItem(KEY.levels())   || '{}');
+    const unlockedSet = new Set(JSON.parse(safeLocalStorage.getItem(KEY.unlocked()) || '["aeron","lyra"]'));
+
+    charsRes.characters.forEach(c => {
+      const servLv = c.level || 1;
+      const servXP = c.xp    || 0;
+      const localLv = lvls[c.heroID] || 1;
+
+      // Take the HIGHER level between server and local (never downgrade)
+      if (servLv > localLv) {
+        lvls[c.heroID]         = servLv;
+        lvls[c.heroID + '_xp'] = servXP;
+      } else if (servLv === localLv) {
+        lvls[c.heroID + '_xp'] = Math.max(lvls[c.heroID + '_xp'] || 0, servXP);
+      }
+
+      // If server says hero is unlocked, unlock it locally too
+      if (c.unlocked) unlockedSet.add(c.heroID);
+    });
+
+    safeLocalStorage.setItem(KEY.levels(),   JSON.stringify(lvls));
+    safeLocalStorage.setItem(KEY.unlocked(), JSON.stringify([...unlockedSet]));
+  }
+
+  // ── Story progress ──
+  const storyRes = await apiCall({ action:'getStory', userID:user.userID });
+  if (storyRes.success && storyRes.progress) {
+    const prog = JSON.parse(safeLocalStorage.getItem(KEY.story()) || '{}');
+    storyRes.progress.forEach(p => {
+      const key = `${p.chapter}_${p.stage}`;
+      const local = prog[key] || {};
+      // Take best stars between server and local
+      if (p.completed && (!local.completed || (p.stars || 0) > (local.stars || 0))) {
+        prog[key] = { completed: true, stars: p.stars || 0 };
+      }
+    });
+    safeLocalStorage.setItem(KEY.story(), JSON.stringify(prog));
+
+    // ── Derive skill unlocks from story progress ──────────────
+    // Skills are locked/unlocked based on story stage completion.
+    // Re-derive them from the merged story progress so offline and
+    // online always have the same skill state.
+    const skillUL = JSON.parse(safeLocalStorage.getItem(KEY.skills()) || '{}');
+    const ALL_HEROES = ['aeron','lyra','kael','riven','selene','draven','mira','orion','brutus','elysia'];
+    const ch1s1 = prog['1_1']?.completed;
+    const ch1s3 = prog['1_3']?.completed;
+    const ch1s4 = prog['1_4']?.completed;
+    const toGrant = [];
+    if (ch1s1) toGrant.push('basic');
+    if (ch1s3) toGrant.push('special');
+    if (ch1s4) toGrant.push('ultimate');
+
+    if (toGrant.length > 0) {
+      ALL_HEROES.forEach(hid => {
+        if (!skillUL[hid]) skillUL[hid] = [];
+        toGrant.forEach(t => { if (!skillUL[hid].includes(t)) skillUL[hid].push(t); });
+      });
+      safeLocalStorage.setItem(KEY.skills(), JSON.stringify(skillUL));
+    }
+  }
+}
+
+// ── UPLOAD LOCAL DATA (local → server) ───────────────────────
+// Pushes hero levels that may be higher locally (from offline battles)
+// and story progress up to the server.
+async function uploadLocalData() {
+  const lvls = JSON.parse(safeLocalStorage.getItem(KEY.levels()) || '{}');
+  const prog = JSON.parse(safeLocalStorage.getItem(KEY.story())  || '{}');
+
+  // Push all hero levels
+  const ALL_HEROES = ['aeron','lyra','kael','riven','selene','draven','mira','orion','brutus','elysia'];
+  for (const hid of ALL_HEROES) {
+    const lv = lvls[hid] || 1;
+    const xp = lvls[hid + '_xp'] || 0;
+    if (lv > 1 || xp > 0) {
+      await apiCall({ action:'setHeroLevel', userID:user.userID, heroID:hid, level:lv, xp:xp });
+    }
+  }
+
+  // Push all completed story stages
+  for (const key of Object.keys(prog)) {
+    const p = prog[key];
+    if (!p.completed) continue;
+    const [ch, st] = key.split('_');
+    await apiCall({ action:'saveStory', userID:user.userID,
+                    chapter:ch, stage:st, stars:p.stars || 1 });
+  }
+}
+
+// ── UPDATE ALL SCORE DISPLAY ELEMENTS ────────────────────────
+function updateScoreUI(score) {
+  const s = formatNumber(score);
+  const els = {
+    'nav-score':    score,
+    'banner-score': s,
+    'stat-score':   s,
+    'nav-score-mobile': score,
+  };
+  Object.entries(els).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  });
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────────
+async function loadDashboard() {
+  // ════════════════════════════════════════════════════════
+  // STEP 0 — RENDER LOCAL DATA IMMEDIATELY (no API wait)
+  // Shows all cards right away using cached/localStorage data.
+  // ════════════════════════════════════════════════════════
+  renderBanner();
+  renderHeroCard();
+  renderStoryProgress();
+  renderHeroesGrid();
+  renderNextUnlock();
+  renderTip();
+  renderStats(0, 0, null);
+
+  // Show cached recent battles while we wait for server
+  const cachedBattles = JSON.parse(safeLocalStorage.getItem(KEY.battles()) || '[]');
+  renderRecentBattles(cachedBattles);
+
+  // Show cached leaderboard while we wait for server
+  try {
+    const cached = JSON.parse(safeLocalStorage.getItem(KEY.lbCache()) || 'null');
+    if (cached && cached.data && cached.data.length) {
+      renderLbMini(cached.data);
+      const meC = cached.data.find(e => e.userID === user.userID);
+      if (meC) renderStats(meC.wins || 0, meC.losses || 0, meC.rank || null);
+    }
+  } catch(e) {}
+
+  // ════════════════════════════════════════════════════════
+  // STEP 1 — FULL SYNC IN BACKGROUND (runs only when online)
+  // Order:
+  //   a) Flush offline-queued scores → server
+  //   b) Upload local levels/story → server  (offline → online)
+  //   c) Download server levels/story/unlocks → local  (online → offline)
+  // ════════════════════════════════════════════════════════
+  const pingRes = await apiCall({ action:'ping' });
+  const isOnline = !!(pingRes && pingRes.success);
+
+  if (isOnline) {
+    // a) Push any queued offline battles first
+    await flushPendingScores();
+
+    // b) Upload local-only progress to server
+    await uploadLocalData();
+
+    // c) Download authoritative data from server
+    await downloadPlayerData();
+  } else {
+    // Offline: base score is the last confirmed server score.
+    // Add only battles that are actually queued for later sync.
+    const cachedScore = Math.max(0, parseInt(
+      safeLocalStorage.getItem(KEY.scoreCache()) || '0', 10
+    ) || 0);
+    let pendingPoints = 0;
+    try {
+      const pending = JSON.parse(
+        safeLocalStorage.getItem('tenfold_pending_scores_' + user.userID) || '[]'
+      );
+      pendingPoints = pending.reduce(
+        (sum, p) => sum + (parseInt(p.pts, 10) || (p.result === 'win' ? 100 : 10)), 0
+      );
+    } catch (e) {}
+    user.totalScore = cachedScore + pendingPoints;
+    Game.login(user);
+  }
+
+  // Reload merged local data after sync — update module-level vars
+  // so ALL render functions (renderHeroCard, renderHeroesGrid, etc.) see fresh data
+  unlocked.length = 0;
+  JSON.parse(safeLocalStorage.getItem(KEY.unlocked()) || '["aeron","lyra"]')
+    .forEach(id => unlocked.push(id));
+
+  const freshLevels = JSON.parse(safeLocalStorage.getItem(KEY.levels()) || '{}');
+  Object.keys(levels).forEach(k => delete levels[k]);
+  Object.assign(levels, freshLevels);
+
+  const freshProg = JSON.parse(safeLocalStorage.getItem(KEY.story()) || '{}');
+  Object.keys(progress).forEach(k => delete progress[k]);
+  Object.assign(progress, freshProg);
+
+  // ── STEP 1: Render with correct data ─────────────────────
+  renderBanner();
+  renderHeroCard();
+  renderStoryProgress();
+  renderHeroesGrid();
+  renderNextUnlock();
+  renderTip();
+  renderStats(0, 0, null);
+
+  // ── STEP 2: Leaderboard ───────────────────────────────────
+  let entries = [];
+  const lbRes = await apiCall({ action:'leaderboard' });
+
+  if (lbRes.success && lbRes.leaderboard) {
+    entries = lbRes.leaderboard;
+    // Cache for offline
+    safeLocalStorage.setItem(KEY.lbCache(), JSON.stringify({ ts:Date.now(), data:entries }));
+  } else {
+    // Use cached leaderboard when offline
+    try {
+      const cached = JSON.parse(safeLocalStorage.getItem(KEY.lbCache()) || 'null');
+      entries = (cached && cached.data) || [];
+    } catch(e) { entries = []; }
+
+    if (!entries.length) {
+      entries = [{ rank:1, userID:user.userID, username:user.username,
+                   totalScore:user.totalScore||0, wins:0, losses:0, winRate:'0%' }];
+    }
+  }
+
+  const me = entries.find(e => e.userID === user.userID);
+
+  // SCORE SYNC — Google Sheets is authoritative while online.
+  // Never use Math.max() here: a stale local value must not overwrite
+  // the real server score (for example 1700 vs 1670).
+  if (me && me.totalScore !== undefined) {
+    const serverScore = Math.max(0, parseInt(me.totalScore, 10) || 0);
+    user.totalScore = serverScore;
+    Game.login(user);
+    safeLocalStorage.setItem(KEY.scoreCache(), String(serverScore));
+  }
+
+  updateScoreUI(user.totalScore || 0);
+  renderBanner();
+  renderNextUnlock();
+
+  renderStats(me?.wins || 0, me?.losses || 0, me?.rank || null);
+  renderLbMini(entries);
+
+  // Recent battles (local log)
+  const battles = JSON.parse(safeLocalStorage.getItem(KEY.battles()) || '[]');
+  renderRecentBattles(battles);
+
+  // Story progress — already synced above, just re-render
+  renderStoryProgress();
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadDashboard();
+</script>
+
+<style>#tfl-connection{position:fixed;right:10px;bottom:10px;z-index:99999;font:600 11px Arial,sans-serif;padding:5px 8px;border:1px solid rgba(240,192,64,.35);border-radius:12px;background:rgba(5,5,15,.82);color:#aaa;pointer-events:none;opacity:.8}</style>
+<div id="tfl-connection">● ONLINE</div>
+<script>(function(){function u(){var e=document.getElementById('tfl-connection');if(!e)return;e.textContent=navigator.onLine?'● ONLINE':'● OFFLINE';e.style.color=navigator.onLine?'#7ee787':'#ffcc66';}window.addEventListener('online',u);window.addEventListener('offline',u);u();})();</script>
+</body>
+</html>
