@@ -4,17 +4,25 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <link rel="manifest" href="manifest.json"/>
+  <link rel="preload" href="https://res.cloudinary.com/jtrgd4x8/image/upload/f_auto,q_auto/background" as="image"/>
   <title>Tenfold Legends: Rise of the Ten</title>
   <link rel="stylesheet" href="style.css"/>
   <style>
     .login-bg-animated {
       position: fixed; inset: 0; z-index: 0; overflow: hidden;
-      background: url('background.png') center center / cover no-repeat;
+      background: #05050f;
+    }
+    .login-bg-animated img.bg-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
     }
     .login-bg-animated::before {
       content: '';
       position: absolute; inset: 0;
-      background: rgba(0,0,0,0.68);
+      background: rgba(0,0,0,0.45);
+      z-index: 1;
     }
     .login-page {
       position: relative;
@@ -372,7 +380,9 @@
 </script>
 </head>
 <body>
-<div class="login-bg-animated"></div>
+<div class="login-bg-animated">
+  <img class="bg-img" src="https://res.cloudinary.com/jtrgd4x8/image/upload/f_auto,q_auto/background" alt="" fetchpriority="high"/>
+</div>
 <div class="embers" id="embers"></div>
 
 <div class="login-page">
@@ -631,40 +641,41 @@
 
     btn.disabled = true;
     btn.style.pointerEvents = 'none';
-    btnText.textContent = 'CREATING LEGEND…';
+    btnText.textContent = 'SAVING TO SERVER…';
 
-    // ── OFFLINE-FIRST: log the user in immediately so the phone
-    // never feels "stuck". The server sync runs quietly in background.
-    const localID = 'USR_' + Date.now();
-    Game.login({
-      userID:     localID,
-      username:   username,
-      email:      email,
-      totalScore: 0,
-      sessionID:  ''
-    });
+    // ── SERVER-FIRST REGISTER ────────────────────────────────────
+    // Wait for Google Sheets to save the account before proceeding.
+    // This ensures the UserID is the real server-side ID so all
+    // EXP, scores, and progress are saved correctly.
+    const res = await mobileApiCall({ action: 'register', username, email, password }, 12000);
 
-    showAlert(`Legend created! Welcome, ${username}!`, 'success');
-    btnText.textContent = 'LEGEND CREATED ✓';
+    if (res && res.success) {
+      // Real server ID — all progress will save correctly to Google Sheets
+      Game.login({
+        userID:     res.userID,
+        username:   res.username   || username,
+        email:      email,
+        totalScore: 0,
+        sessionID:  res.sessionID  || ''
+      });
+      showAlert(`Legend created! Welcome, ${username}!`, 'success');
+      btnText.textContent = 'LEGEND CREATED ✓';
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
 
-    // Redirect immediately — don't wait for the server
-    setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+    } else if (res && res.timeout) {
+      // Server unreachable — warn the user, do NOT proceed with a local ID
+      showAlert('Cannot reach the server. Please check your internet connection and try again.', 'error');
+      btn.disabled = false;
+      btn.style.pointerEvents = '';
+      btnText.textContent = '✦ CREATE YOUR LEGEND';
 
-    // Background sync — update the session with the real server ID if it arrives
-    mobileApiCall({ action:'register', username, email, password }, 10000)
-      .then(res => {
-        if (res && res.success) {
-          // Patch the stored session with the real server-side userID
-          Game.login({
-            userID:     res.userID     || localID,
-            username:   res.username   || username,
-            email:      res.email      || email,
-            totalScore: Number(res.totalScore || 0),
-            sessionID:  res.sessionID  || ''
-          });
-        }
-      })
-      .catch(() => { /* silent — local session is already good enough */ });
+    } else {
+      // Server returned an error (e.g. email already taken)
+      showAlert(res.message || 'Registration failed. Please try again.', 'error');
+      btn.disabled = false;
+      btn.style.pointerEvents = '';
+      btnText.textContent = '✦ CREATE YOUR LEGEND';
+    }
   }
 
   function showForgotMsg(e) {
