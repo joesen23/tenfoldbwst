@@ -516,6 +516,14 @@ const user = Game.user;
 document.getElementById('nav-username').textContent = user.username;
 document.getElementById('nav-score').textContent    = user.totalScore || 0;
 
+// Show admin badge in navbar if this is an admin account
+if (Game.isAdmin()) {
+  const badge = document.createElement('span');
+  badge.textContent = '👑 ADMIN';
+  badge.style.cssText = 'font-size:0.68rem;font-weight:800;letter-spacing:1.5px;color:#f0c040;background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.4);border-radius:20px;padding:3px 9px;flex-shrink:0;';
+  document.querySelector('.nav-user').prepend(badge);
+}
+
 // ── UNLOCKED HEROES ───────────────────────────────────────────
 // Aeron is always free. Every other hero unlocks ONLY by clearing
 // the required chapter boss in Story Mode.
@@ -527,7 +535,14 @@ let storyProgress  = JSON.parse(safeLocalStorage.getItem('tenfold_story_'    + u
 
 // Wipe any stale unlock data so safeLocalStorage can never bypass story locks.
 // The only valid unlocks are aeron (free) + heroes whose chapter boss is cleared.
+// Admin accounts skip this — they keep all heroes unlocked.
 function rebuildUnlockedFromStory() {
+  if (Game.isAdmin()) {
+    // Admins always have every hero unlocked
+    unlockedHeroes = Object.keys(HERO_UNLOCK_AFTER_CH);
+    safeLocalStorage.setItem('tenfold_unlocked_' + user.userID, JSON.stringify(unlockedHeroes));
+    return;
+  }
   const rebuilt = ['aeron'];
   for (const [id, afterCh] of Object.entries(HERO_UNLOCK_AFTER_CH)) {
     if (afterCh === 0) continue;
@@ -569,7 +584,9 @@ const HERO_UNLOCK_AFTER_CH = {
 };
 
 // Returns true if the hero is story-unlocked (chapter boss cleared or hero is aeron)
+// Admin accounts bypass all story locks and always return true.
 function isHeroStoryUnlocked(id) {
+  if (Game.isAdmin()) return true; // admins have all heroes unlocked
   const afterCh = HERO_UNLOCK_AFTER_CH[id];
   if (afterCh === undefined || afterCh === 0) return true; // aeron / unknown
   // Check if ch{afterCh}_st5 is completed in storyProgress
@@ -811,9 +828,21 @@ function showToast(msg, type = 'info') {
 async function loadHeroData() {
   const res = await apiCall({ action: 'getChars', userID: user.userID });
   if (res.success && res.characters) {
-    // Only pull level data from the API — do NOT use API unlock list.
-    // Story progress is the sole unlock authority.
-    res.characters.forEach(c => { heroLevels[c.heroID] = c.level; });
+    // Merge server levels into local — keep whichever is higher, never downgrade.
+    // After the setHeroLevel fix in battle.html, the server should always be
+    // up-to-date, but this guard protects against any offline play edge cases.
+    res.characters.forEach(c => {
+      const servLv  = c.level || 1;
+      const servXP  = c.xp    || 0;
+      const localLv = heroLevels[c.heroID] || 1;
+      if (servLv > localLv) {
+        heroLevels[c.heroID]          = servLv;
+        heroLevels[c.heroID + '_xp']  = servXP;
+      } else if (servLv === localLv) {
+        // Same level — take server XP if it's higher (more accurate)
+        heroLevels[c.heroID + '_xp'] = Math.max(heroLevels[c.heroID + '_xp'] || 0, servXP);
+      }
+    });
     safeLocalStorage.setItem('tenfold_levels_' + user.userID, JSON.stringify(heroLevels));
   }
   // Re-read story progress in case it was updated by a recent battle
@@ -837,6 +866,16 @@ const _mobileUn = document.getElementById('nav-username-mobile');
 const _mobileSc = document.getElementById('nav-score-mobile');
 if (_mobileUn) _mobileUn.textContent = user.username;
 if (_mobileSc) _mobileSc.textContent = user.totalScore || 0;
+
+// Keep the visible score identical to the authoritative Apps Script value.
+Game.syncScore().then((score) => {
+  if (score === null) return;
+  user.totalScore = score;
+  const nav = document.getElementById('nav-score');
+  if (nav) nav.textContent = score;
+  const navMobile = document.getElementById('nav-score-mobile');
+  if (navMobile) navMobile.textContent = score;
+});
 
 (function() {
   const btn    = document.getElementById('nav-hamburger');
@@ -881,5 +920,9 @@ if (_mobileSc) _mobileSc.textContent = user.totalScore || 0;
 // ── INIT ──────────────────────────────────────────────────────
 loadHeroData();
 </script>
+
+<style>#tfl-connection{position:fixed;right:10px;bottom:10px;z-index:99999;font:600 11px Arial,sans-serif;padding:5px 8px;border:1px solid rgba(240,192,64,.35);border-radius:12px;background:rgba(5,5,15,.82);color:#aaa;pointer-events:none;opacity:.8}</style>
+<div id="tfl-connection">● ONLINE</div>
+<script>(function(){function u(){var e=document.getElementById('tfl-connection');if(!e)return;e.textContent=navigator.onLine?'● ONLINE':'● OFFLINE';e.style.color=navigator.onLine?'#7ee787':'#ffcc66';}window.addEventListener('online',u);window.addEventListener('offline',u);u();})();</script>
 </body>
 </html>
