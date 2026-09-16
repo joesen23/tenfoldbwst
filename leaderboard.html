@@ -1344,7 +1344,7 @@
   id="toast">
 </div>
 
-<script src="game.js?v=exact-score-20260916"></script>
+<script src="game.js"></script>
 
 <script>
 
@@ -1362,7 +1362,7 @@
     user.username;
 
   document.getElementById('nav-score').textContent =
-    String(Math.trunc(Number(user.totalScore) || 0));
+    user.totalScore || 0;
 
 
   // ==========================================================
@@ -1633,7 +1633,7 @@
     document.getElementById(
       'stat-top-score'
     ).textContent =
-      String(Math.trunc(Number(topScore) || 0));
+      formatNumber(topScore);
 
 
     document.getElementById(
@@ -2698,18 +2698,11 @@
   // Apps Script TotalScore is authoritative for the navbar.
   Game.syncScore().then((score) => {
     if (score === null) return;
-
-    const exactScore = Math.trunc(Number(score) || 0);
-    user.totalScore = exactScore;
-
+    user.totalScore = score;
     const nav = document.getElementById('nav-score');
-    if (nav) nav.textContent = String(exactScore);
-
+    if (nav) nav.textContent = score;
     const navMobile = document.getElementById('nav-score-mobile');
-    if (navMobile) navMobile.textContent = String(exactScore);
-
-    const top = document.getElementById('stat-top-score');
-    if (top) top.textContent = String(exactScore);
+    if (navMobile) navMobile.textContent = score;
   });
 
   loadLeaderboard();
